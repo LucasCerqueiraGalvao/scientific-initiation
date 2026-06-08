@@ -1,0 +1,13 @@
+{
+  "device": "cuda",
+  "seed": 42,
+  "batch_size": 1,
+  "sequence_lengths": [64],
+  "dimensions": [64],
+  "warmup_iterations": 3,
+  "measure_iterations": 5,
+  "repetitions": 1,
+  "scenarios": ["baseline", "pruning_50", "quantization_int8"],
+  "operations": ["dense_projection", "self_attention"],
+  "pruning_sparsity": 0.5
+}

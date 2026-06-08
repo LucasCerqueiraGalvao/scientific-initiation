@@ -1,0 +1,427 @@
+{
+  "meta": {
+    "outputFileName": "Apresentacao_Simposio_LucasGalvao.pptx",
+    "title": "Eficiência computacional em operações de Transformers",
+    "subtitle": "quantização, pruning e análise experimental",
+    "author": "Lucas Cerqueira Galvão",
+    "advisor": "Orientador: Prof. Me. Walter Silva Oliveira",
+    "affiliation": "Universidade Católica de Santos • Ciência da Computação • Santos/SP",
+    "eventLine": "I Simpósio de Ciência de Dados das Fatecs • Santos/SP • 2026"
+  },
+  "slides": [
+    {
+      "kind": "cover",
+      "templateSlide": 1,
+      "timingSec": 20,
+      "notes": "Abrir o tema e adiantar que a apresentação mostra um problema atual, uma hipótese clara e um desenho experimental consistente."
+    },
+    {
+      "kind": "overview",
+      "templateSlide": 2,
+      "title": "ROTEIRO",
+      "bullets": [
+        "1. Contexto e problema",
+        "2. Operações e estratégias",
+        "3. TurboQuant e hipótese",
+        "4. Metodologia e andamento",
+        "5. Evidências e conclusões"
+      ],
+      "timingSec": 20,
+      "notes": "Dar previsibilidade para a banca e mostrar a sequência da fala."
+    },
+    {
+      "kind": "text",
+      "templateSlide": 3,
+      "title": "TRANSFORMERS E A IA ATUAL",
+      "bullets": [
+        "Transformers são a base de LLMs, visão computacional e multimodalidade.",
+        "Eles combinam paralelização com modelagem de dependências de longo alcance.",
+        "Por isso, eficiência passou a ser uma questão prática e não opcional."
+      ],
+      "timingSec": 35,
+      "notes": "Posicionar relevância do tema."
+    },
+    {
+      "kind": "text",
+      "templateSlide": 3,
+      "title": "CUSTO DA INFERÊNCIA",
+      "bullets": [
+        "O custo cresce com sequência, dimensão e número de camadas.",
+        "Em produção, latência, memória e throughput viram restrições simultâneas.",
+        "Otimizar inferência é essencial para viabilizar modelos em hardware real."
+      ],
+      "timingSec": 30,
+      "notes": "Explicar por que o problema aparece na prática."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 7,
+      "title": "GARGALOS PRINCIPAIS",
+      "bullets": [
+        "Atenção compara tokens entre si e cresce com o contexto.",
+        "Projeções densas repetem multiplicações matriciais em larga escala.",
+        "KV cache amplia a pressão de memória em contextos longos."
+      ],
+      "visual": {
+        "type": "cards_row",
+        "theme": "blue",
+        "items": [
+          {
+            "title": "Atenção",
+            "detail": "comparações entre tokens"
+          },
+          {
+            "title": "Projeções",
+            "detail": "matrizes densas repetidas"
+          },
+          {
+            "title": "KV cache",
+            "detail": "memória cresce com contexto"
+          }
+        ],
+        "footer": "Foco do trabalho: eficiência em inferência."
+      },
+      "timingSec": 40,
+      "notes": "Localizar os gargalos centrais."
+    },
+    {
+      "kind": "text",
+      "templateSlide": 3,
+      "title": "PROBLEMA E HIPÓTESE",
+      "bullets": [
+        "Problema: reduzir custo sem degradar excessivamente a saída.",
+        "Recorte: projeções densas e self-attention em inferência controlada.",
+        "Hipótese: quantização tende a ter melhor trade-off que pruning."
+      ],
+      "timingSec": 30,
+      "notes": "Definir o recorte científico do trabalho."
+    },
+    {
+      "kind": "text",
+      "templateSlide": 5,
+      "title": "OBJETIVOS",
+      "bullets": [
+        "Implementar um protótipo simplificado de operações centrais do Transformer.",
+        "Comparar baseline, pruning por magnitude e quantização INT8 simulada.",
+        "Medir custo computacional e qualidade das saídas."
+      ],
+      "timingSec": 25,
+      "notes": "Resumir o que será medido."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 6,
+      "title": "PROJEÇÕES DENSAS",
+      "bullets": [
+        "Projeções densas transformam vetores por multiplicações com matrizes de pesos.",
+        "Elas aparecem em Q, K, V e em camadas lineares do bloco Transformer.",
+        "Por isso concentram custo relevante mesmo fora da atenção."
+      ],
+      "visual": {
+        "type": "pipeline",
+        "theme": "blue",
+        "items": [
+          {
+            "title": "Entrada",
+            "detail": "vetor ou lote"
+          },
+          {
+            "title": "Pesos",
+            "detail": "matriz densa"
+          },
+          {
+            "title": "Produto",
+            "detail": "multiplicação"
+          },
+          {
+            "title": "Saída",
+            "detail": "nova representação"
+          }
+        ]
+      },
+      "timingSec": 30,
+      "notes": "Explicar a primeira operação estudada."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 6,
+      "title": "SELF-ATTENTION E KV CACHE",
+      "bullets": [
+        "Self-attention gera Q, K e V, calcula escores e aplica softmax.",
+        "O KV cache reduz recomputação, mas cresce com o comprimento da sequência.",
+        "Essa combinação afeta simultaneamente latência e memória."
+      ],
+      "visual": {
+        "type": "pipeline",
+        "theme": "blue",
+        "items": [
+          {
+            "title": "Q/K/V",
+            "detail": "projeções"
+          },
+          {
+            "title": "Scores",
+            "detail": "Q x K^T"
+          },
+          {
+            "title": "Softmax",
+            "detail": "pesos"
+          },
+          {
+            "title": "Cache",
+            "detail": "memória no contexto"
+          }
+        ]
+      },
+      "timingSec": 40,
+      "notes": "Explicar a segunda operação e a relevância do KV cache."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 7,
+      "title": "QUANTIZAÇÃO",
+      "bullets": [
+        "Quantização reduz a precisão numérica de pesos, ativações ou caches.",
+        "Os ganhos esperados são menor memória e maior throughput.",
+        "O principal risco é introduzir erro numérico na saída."
+      ],
+      "visual": {
+        "type": "cards_row",
+        "theme": "green",
+        "items": [
+          {
+            "title": "Menos bits",
+            "detail": "representação compacta"
+          },
+          {
+            "title": "Menos memória",
+            "detail": "menor custo por tensor"
+          },
+          {
+            "title": "Mais throughput",
+            "detail": "potencial ganho real"
+          }
+        ],
+        "footer": "Pergunta central: quanto erro aparece em troca desses ganhos?"
+      },
+      "timingSec": 30,
+      "notes": "Apresentar a estratégia numérica."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 7,
+      "title": "PRUNING",
+      "bullets": [
+        "Pruning remove pesos menos relevantes e induz esparsidade.",
+        "A economia teórica pode ser alta, mas o ganho depende do hardware.",
+        "O efeito na saída tende a ser menos previsível."
+      ],
+      "visual": {
+        "type": "cards_row",
+        "theme": "amber",
+        "items": [
+          {
+            "title": "Esparsidade",
+            "detail": "menos pesos ativos"
+          },
+          {
+            "title": "Ganho prático",
+            "detail": "depende da execução"
+          },
+          {
+            "title": "Risco estrutural",
+            "detail": "altera o cálculo"
+          }
+        ],
+        "footer": "Pruning entra como comparação importante, não como hipótese principal."
+      },
+      "timingSec": 30,
+      "notes": "Contrastar pruning com quantização."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 7,
+      "title": "TURBOQUANT",
+      "bullets": [
+        "Google Research divulgou o TurboQuant em 24/03/2026; o paper está no arXiv desde 28/04/2025.",
+        "O foco está em compressão de vetores e do KV cache para inferência.",
+        "Para este projeto, ele reforça a prioridade da quantização."
+      ],
+      "visual": {
+        "type": "cards_row",
+        "theme": "green",
+        "items": [
+          {
+            "title": "Blog",
+            "detail": "Google Research"
+          },
+          {
+            "title": "Paper",
+            "detail": "arXiv 2504.19874"
+          },
+          {
+            "title": "Sinal técnico",
+            "detail": "menos memória e mais velocidade"
+          }
+        ],
+        "footer": "Isso motiva a hipótese; não substitui a validação experimental."
+      },
+      "timingSec": 45,
+      "notes": "Usar a literatura recente como reforço da hipótese."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 6,
+      "title": "METODOLOGIA: DESENHO",
+      "bullets": [
+        "Comparação entre baseline, pruning 50% e quantização INT8 simulada.",
+        "Operações: projeção densa e self-attention de cabeça única.",
+        "Grade: L = 64, 128, 256 e D = 128, 256, 512."
+      ],
+      "visual": {
+        "type": "pipeline",
+        "theme": "blue",
+        "items": [
+          {
+            "title": "Entrada fixa",
+            "detail": "mesmos dados"
+          },
+          {
+            "title": "Operações",
+            "detail": "densa + atenção"
+          },
+          {
+            "title": "Cenários",
+            "detail": "base, pruning, INT8"
+          },
+          {
+            "title": "Saída",
+            "detail": "custo e qualidade"
+          }
+        ]
+      },
+      "timingSec": 35,
+      "notes": "Mostrar o desenho experimental."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 7,
+      "title": "METODOLOGIA: MÉTRICAS",
+      "bullets": [
+        "Ambiente: Python 3.11, PyTorch, NumPy, Pandas e RTX 4070 Ti Super.",
+        "Procedimento: aquecimento, repetições e sincronização para latência.",
+        "Métricas: latência, memória, FLOPs, MSE, MAE, R² e cosseno."
+      ],
+      "visual": {
+        "type": "cards_row",
+        "theme": "blue",
+        "items": [
+          {
+            "title": "Latência",
+            "detail": "média, p50 e p95"
+          },
+          {
+            "title": "Memória",
+            "detail": "pico e teórica"
+          },
+          {
+            "title": "FLOPs",
+            "detail": "custo analítico"
+          },
+          {
+            "title": "Qualidade",
+            "detail": "MSE, MAE, R², cosseno"
+          }
+        ],
+        "footer": "Controle central: mesma semente, mesmos dados e mesmos pesos-base."
+      },
+      "timingSec": 35,
+      "notes": "Mostrar rigor experimental."
+    },
+    {
+      "kind": "text_with_visual",
+      "templateSlide": 7,
+      "title": "RESULTADOS PARCIAIS",
+      "bullets": [
+        "O código-base já implementa operações, métricas e cenários.",
+        "O pipeline está pronto para gerar benchmarks comparáveis.",
+        "A próxima etapa é executar os cenários e coletar os CSVs."
+      ],
+      "visual": {
+        "type": "cards_row",
+        "theme": "amber",
+        "items": [
+          {
+            "title": "Código-base",
+            "detail": "benchmark e métricas"
+          },
+          {
+            "title": "Cenários",
+            "detail": "base, pruning, INT8"
+          },
+          {
+            "title": "Métricas",
+            "detail": "latência, memória, erro"
+          },
+          {
+            "title": "Próxima etapa",
+            "detail": "execução e coleta"
+          }
+        ],
+        "footer": "Projeto em fase inicial, mas já tecnicamente estruturado."
+      },
+      "timingSec": 30,
+      "notes": "Ser honesto sem parecer vazio."
+    },
+    {
+      "kind": "chart",
+      "templateSlide": 7,
+      "title": "EVIDÊNCIAS DA LITERATURA",
+      "bullets": [
+        "Dados publicados já sugerem grande redução de memória com quantização.",
+        "Esses resultados reforçam a hipótese inicial do trabalho."
+      ],
+      "visual": {
+        "type": "chart_image",
+        "path": "grafico_turboquant_literatura.png",
+        "caption": "Figura adaptada do Google Research Blog, 24/03/2026. Não representa resultado deste trabalho."
+      },
+      "timingSec": 40,
+      "notes": "Usar o gráfico como evidência publicada, não como resultado próprio."
+    },
+    {
+      "kind": "text",
+      "templateSlide": 8,
+      "title": "CONCLUSÕES",
+      "bullets": [
+        "O projeto ataca um problema real de inferência em Transformers.",
+        "Quantização é hoje a hipótese inicial mais forte.",
+        "O próximo passo é validar essa hipótese com benchmarks próprios."
+      ],
+      "timingSec": 35,
+      "notes": "Fechar com direção clara."
+    },
+    {
+      "kind": "references",
+      "templateSlide": 9,
+      "title": "REFERÊNCIAS",
+      "bullets": [
+        "Vaswani et al. Attention Is All You Need. 2017.",
+        "Tang et al. A Survey on Transformer Compression. 2024.",
+        "Bibi et al. Pruning and Quantization for NLP. 2024.",
+        "Google Research Blog. TurboQuant. 24 mar. 2026.",
+        "Zandieh et al. TurboQuant. arXiv:2504.19874, 2025."
+      ],
+      "timingSec": 20,
+      "notes": "Destacar as referências principais."
+    },
+    {
+      "kind": "closing",
+      "templateSlide": 10,
+      "title": "OBRIGADO!",
+      "subtitle": "Perguntas e discussão",
+      "timingSec": 10,
+      "notes": "Encerrar e abrir para perguntas."
+    }
+  ]
+}

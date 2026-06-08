@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roteiro de 10 Minutos</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --paper: #ffffff;
+      --ink: #163b72;
+      --text: #22324a;
+      --muted: #5a6a85;
+      --line: #dbe4f0;
+      --accent: #f08a24;
+      --accent-soft: #fff3e6;
+      --shadow: 0 18px 40px rgba(20, 46, 87, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(22, 59, 114, 0.08), transparent 28%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 40px 24px 72px;
+    }
+
+    .hero {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-top: 8px solid var(--ink);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 10px;
+    }
+
+    h1, h2, h3 {
+      color: var(--ink);
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-size: clamp(1.35rem, 2vw, 1.7rem);
+      margin-bottom: 14px;
+    }
+
+    h3 {
+      font-size: 1.02rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle,
+    .meta,
+    .toc a,
+    .label,
+    .transition {
+      color: var(--muted);
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      max-width: 760px;
+    }
+
+    .meta {
+      margin-top: 14px;
+      font-weight: 700;
+    }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 24px 0 8px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .toc a {
+      display: block;
+      text-decoration: none;
+      background: #f8fbff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 700;
+      transition: transform 140ms ease, border-color 140ms ease;
+    }
+
+    .toc a:hover {
+      transform: translateY(-1px);
+      border-color: #b9c8df;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .slide-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .time {
+      align-self: start;
+      background: var(--accent-soft);
+      border: 1px solid #ffd2a5;
+      border-radius: 999px;
+      color: #9b540f;
+      font-weight: 700;
+      padding: 6px 12px;
+      white-space: nowrap;
+    }
+
+    .label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .footer-card {
+      border-left: 6px solid var(--accent);
+      background: #fffdfa;
+    }
+
+    .top-link {
+      margin-top: 14px;
+      font-weight: 700;
+    }
+
+    .top-link a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        max-width: none;
+        padding: 0;
+      }
+
+      .hero,
+      .card {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+
+      .toc a {
+        color: var(--text);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page" id="topo">
+    <section class="hero">
+      <p class="eyebrow">Apresentação oral</p>
+      <h1>Roteiro de 10 Minutos</h1>
+      <p class="subtitle">Guia de fala slide a slide para a apresentação sobre eficiência computacional em operações de Transformers.</p>
+      <p class="meta">Tempo total planejado: aproximadamente 9min40s.</p>
+
+      <ul class="toc">
+        <li><a href="#slide-1">Slide 1 a 5</a></li>
+        <li><a href="#slide-6">Slide 6 a 10</a></li>
+        <li><a href="#slide-11">Slide 11 a 15</a></li>
+        <li><a href="#slide-16">Slide 16 a 19</a></li>
+        <li><a href="#acelerar">Onde acelerar</a></li>
+      </ul>
+    </section>
+
+    <section class="grid">
+      <article class="card" id="slide-1">
+        <div class="slide-head">
+          <h2>Slide 1 — Capa</h2>
+          <span class="time">20s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Abrir a fala e posicionar o tema.</p>
+        <p><span class="label">Fala</span>Este trabalho discute eficiência computacional em operações de Transformers. O foco está em quantização, pruning e em como comparar essas estratégias de forma experimental. Hoje eu apresento o problema, a hipótese e o desenho do estudo.</p>
+        <p class="transition"><span class="label">Transição</span>Primeiro, vale situar por que esse tema é relevante.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 2 — Roteiro</h2>
+          <span class="time">20s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Dar previsibilidade para a banca.</p>
+        <p><span class="label">Fala</span>Vou dividir a apresentação em cinco partes. Começo pelo contexto e pelo problema. Depois passo pelas operações centrais e pelas estratégias de otimização. Em seguida mostro a metodologia, o estado atual do projeto e as conclusões.</p>
+        <p class="transition"><span class="label">Transição</span>Começando pelo contexto geral.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 3 — Transformers e a IA atual</h2>
+          <span class="time">35s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Justificar relevância.</p>
+        <p><span class="label">Fala</span>Transformers se tornaram a arquitetura dominante em linguagem, visão e multimodalidade. Isso acontece porque eles combinam paralelização com boa modelagem de dependências de longo alcance. Com essa adoção ampla, eficiência deixou de ser detalhe técnico e passou a ser requisito prático.</p>
+        <p class="transition"><span class="label">Transição</span>Mas o problema aparece de forma mais clara quando olhamos a inferência.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 4 — Custo da inferência</h2>
+          <span class="time">30s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Mostrar por que otimizar é necessário.</p>
+        <p><span class="label">Fala</span>O custo da inferência cresce com o comprimento da sequência, com a dimensão interna do modelo e com o número de camadas. Em produção, isso aparece como latência, uso de memória e limite de throughput. Então, tornar a inferência mais eficiente é essencial para viabilizar esses modelos em hardware real.</p>
+        <p class="transition"><span class="label">Transição</span>Esse custo se concentra em alguns gargalos bem definidos.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 5 — Gargalos principais</h2>
+          <span class="time">40s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Localizar os gargalos.</p>
+        <p><span class="label">Fala</span>Os gargalos centrais são a autoatenção, as projeções densas e o KV cache. A atenção cresce com o contexto, as projeções densas repetem multiplicações matriciais e o KV cache pressiona a memória. Esses pontos são justamente os mais promissores para otimização.</p>
+        <p class="transition"><span class="label">Transição</span>Isso leva ao problema de pesquisa do trabalho.</p>
+      </article>
+
+      <article class="card" id="slide-6">
+        <div class="slide-head">
+          <h2>Slide 6 — Problema e hipótese</h2>
+          <span class="time">30s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Explicitar o recorte científico.</p>
+        <p><span class="label">Fala</span>O problema de pesquisa é reduzir custo computacional sem degradar excessivamente a saída. O recorte escolhido foi trabalhar com projeções densas e self-attention em cenários controlados de inferência. A hipótese inicial é que quantização tende a oferecer um trade-off melhor do que pruning.</p>
+        <p class="transition"><span class="label">Transição</span>Com esse recorte, os objetivos ficam mais claros.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 7 — Objetivos</h2>
+          <span class="time">25s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Resumir o que será feito.</p>
+        <p><span class="label">Fala</span>O trabalho implementa um protótipo simplificado das operações centrais do Transformer. Depois compara baseline, pruning por magnitude e quantização INT8 simulada. Por fim, mede custo computacional e qualidade de saída.</p>
+        <p class="transition"><span class="label">Transição</span>Agora eu mostro as operações estudadas.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 8 — Projeções densas</h2>
+          <span class="time">30s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Explicar a primeira operação.</p>
+        <p><span class="label">Fala</span>As projeções densas transformam vetores por multiplicações com matrizes de pesos. Elas aparecem na construção de Q, K e V e também em camadas lineares do bloco Transformer. Por isso, já concentram custo importante mesmo antes de analisar a atenção completa.</p>
+        <p class="transition"><span class="label">Transição</span>A segunda operação é a self-attention com KV cache.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 9 — Self-attention e KV cache</h2>
+          <span class="time">40s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Explicar a segunda operação.</p>
+        <p><span class="label">Fala</span>Na self-attention, o modelo gera Q, K e V, calcula escores, aplica softmax e monta a saída contextualizada. Para inferência autoregressiva, o KV cache evita recomputação, mas cresce com o tamanho do contexto. Então essa operação impacta tanto latência quanto memória.</p>
+        <p class="transition"><span class="label">Transição</span>Com essas operações definidas, entram as estratégias de otimização.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 10 — Quantização</h2>
+          <span class="time">30s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Apresentar a primeira estratégia.</p>
+        <p><span class="label">Fala</span>Quantização reduz a precisão numérica usada para representar pesos, ativações ou caches. Os ganhos esperados são menor uso de memória e maior throughput. O ponto de atenção é o erro numérico introduzido na saída.</p>
+        <p class="transition"><span class="label">Transição</span>A outra estratégia relevante é o pruning.</p>
+      </article>
+
+      <article class="card" id="slide-11">
+        <div class="slide-head">
+          <h2>Slide 11 — Pruning</h2>
+          <span class="time">30s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Contrastar com quantização.</p>
+        <p><span class="label">Fala</span>Pruning remove pesos considerados menos relevantes e introduz esparsidade. A economia teórica pode ser alta, mas o ganho real depende muito do suporte do hardware. Além disso, o efeito na saída tende a ser menos previsível.</p>
+        <p class="transition"><span class="label">Transição</span>A literatura recente reforça por que a hipótese inicial favorece quantização.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 12 — TurboQuant</h2>
+          <span class="time">45s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Sustentar a hipótese com literatura.</p>
+        <p><span class="label">Fala</span>Um trabalho importante aqui é o TurboQuant. Ele foi divulgado pelo Google Research em 24 de março de 2026, com paper disponível no arXiv desde 28 de abril de 2025. O foco está em compressão de vetores e do KV cache para inferência. Para o meu projeto, isso não é prova final, mas reforça a decisão de priorizar quantização no primeiro ciclo experimental.</p>
+        <p class="transition"><span class="label">Transição</span>Com essa base teórica, eu passo para a metodologia.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 13 — Metodologia: desenho</h2>
+          <span class="time">35s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Mostrar o desenho do experimento.</p>
+        <p><span class="label">Fala</span>O estudo compara três cenários: baseline, pruning em 50% e quantização INT8 simulada. As operações analisadas são projeção densa e self-attention de cabeça única. A grade principal varia comprimento de sequência e dimensão para observar o comportamento do custo.</p>
+        <p class="transition"><span class="label">Transição</span>Além do desenho, também defini métricas e controles.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 14 — Metodologia: métricas</h2>
+          <span class="time">35s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Mostrar rigor experimental.</p>
+        <p><span class="label">Fala</span>O ambiente previsto usa Python 3.11, bibliotecas numéricas e GPU RTX 4070 Ti Super. Cada cenário terá aquecimento, repetições e sincronização para medir latência. As métricas cobrem latência, memória, FLOPs e qualidade de saída com MSE, MAE, R² e cosseno.</p>
+        <p class="transition"><span class="label">Transição</span>Com isso, eu mostro o que já está pronto no projeto.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 15 — Resultados parciais</h2>
+          <span class="time">30s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Mostrar andamento real.</p>
+        <p><span class="label">Fala</span>O projeto ainda não tem benchmarks completos executados. Mas o código-base já implementa operações, métricas e cenários. Ou seja, o trabalho já tem estrutura técnica pronta para iniciar a coleta comparativa.</p>
+        <p class="transition"><span class="label">Transição</span>Mesmo antes dos dados próprios, a literatura já aponta uma direção inicial.</p>
+      </article>
+
+      <article class="card" id="slide-16">
+        <div class="slide-head">
+          <h2>Slide 16 — Evidências da literatura</h2>
+          <span class="time">40s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Usar o gráfico como motivação.</p>
+        <p><span class="label">Fala</span>Esse gráfico resume evidências publicadas sobre TurboQuant. De um lado aparece a redução relativa de memória para KV cache; do outro, o ganho relativo de velocidade reportado. Esses números não são resultados do meu projeto, mas ajudam a justificar por que quantização é a hipótese inicial mais forte.</p>
+        <p class="transition"><span class="label">Transição</span>Com isso, eu posso fechar as conclusões.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 17 — Conclusões</h2>
+          <span class="time">35s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Fechar com direção clara.</p>
+        <p><span class="label">Fala</span>O trabalho ataca um problema real de inferência em Transformers. Hoje, a quantização aparece como a estratégia inicial mais promissora para esse recorte. O próximo passo é validar essa hipótese com benchmarks próprios e análise comparativa dos cenários.</p>
+        <p class="transition"><span class="label">Transição</span>Por fim, deixo as referências principais.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 18 — Referências</h2>
+          <span class="time">20s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Mostrar base bibliográfica.</p>
+        <p><span class="label">Fala</span>Aqui estão as referências principais que sustentam a apresentação. Elas incluem o trabalho original de Transformer, revisões recentes de compressão e as fontes usadas para o slide de TurboQuant.</p>
+        <p class="transition"><span class="label">Transição</span>Encerrando, fico à disposição para perguntas.</p>
+      </article>
+
+      <article class="card">
+        <div class="slide-head">
+          <h2>Slide 19 — Obrigado</h2>
+          <span class="time">10s</span>
+        </div>
+        <p><span class="label">Objetivo</span>Fechamento.</p>
+        <p><span class="label">Fala</span>Obrigado pela atenção. Fico aberto para perguntas e discussão.</p>
+      </article>
+
+      <article class="card footer-card" id="acelerar">
+        <h2>Onde acelerar se faltar tempo</h2>
+        <ul>
+          <li>Resumir o Slide 4 em uma frase.</li>
+          <li>Juntar verbalmente os Slides 8 e 9.</li>
+          <li>Resumir o Slide 18 em uma única frase.</li>
+        </ul>
+        <p class="top-link"><a href="#topo">Voltar ao topo</a></p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
