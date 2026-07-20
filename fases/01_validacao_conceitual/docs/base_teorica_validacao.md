@@ -457,13 +457,13 @@ Regras de classificacao:
 5. Somente depois disso, definir benchmarks de hardware.
 
 O protocolo detalhado de passagem entre validacao e benchmark esta em
-`documentacao/protocolo_experimental.md`.
+`fases/01_validacao_conceitual/docs/protocolo_experimental.md`.
 
 As perguntas de pesquisa, hipoteses e criterios de conclusao estao em
-`documentacao/perguntas_pesquisa.md`.
+`fases/01_validacao_conceitual/docs/perguntas_pesquisa.md`.
 
 A validacao especifica da rede neural usada como bloco Transformer esta em
-`documentacao/validacao_transformer.md`.
+`fases/01_validacao_conceitual/docs/validacao_transformer.md`.
 
 ## Criterios de aceite desta fase
 

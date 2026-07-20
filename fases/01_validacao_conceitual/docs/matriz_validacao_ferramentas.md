@@ -5,7 +5,7 @@ observavel, o conceito que afirma implementar. Ela deve ser atualizada sempre
 que novos testes forem executados.
 
 Os valores numericos derivados das definicoes e a comparacao com as fontes
-primarias estao registrados em `documentacao/confronto_resultados_literatura.md`.
+primarias estao registrados em `fases/01_validacao_conceitual/docs/confronto_resultados_literatura.md`.
 
 Status possiveis:
 

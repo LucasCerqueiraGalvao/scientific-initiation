@@ -230,7 +230,7 @@ script Python que implementa essa propriedade, e por fim apontamos o teste que
 confere se o comportamento bate com o esperado.
 
 Essa ponte ficou documentada de forma completa em
-`documentacao/validacao_transformer.md`. A ideia central dela e:
+`fases/01_validacao_conceitual/docs/validacao_transformer.md`. A ideia central dela e:
 
 ```text
 Vaswani et al. (2017)
@@ -246,7 +246,7 @@ Por exemplo, Vaswani define a attention escalonada como:
 Attention(Q, K, V) = softmax(QK^T / sqrt(d_k))V
 ```
 
-Entao, por conta disso, o nosso script `validacao/attention.py` precisa fazer
+Entao, por conta disso, o nosso script `fases/01_validacao_conceitual/validacao/attention.py` precisa fazer
 essa conta explicitamente:
 
 ```python
