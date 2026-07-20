@@ -1,0 +1,15 @@
+# Ambiente de validacao conceitual.
+#
+# Instale primeiro o trio PyTorch com CUDA 12.8 usando o indice oficial:
+#   python -m pip install torch==2.11.0+cu128 torchvision==0.26.0+cu128 torchaudio==2.11.0+cu128 --index-url https://download.pytorch.org/whl/cu128
+#
+# Depois instale este arquivo:
+#   python -m pip install -r requirements-validacao.txt
+
+pytest>=8.3
+numpy>=2.0
+pandas>=2.2
+scikit-learn>=1.5
+matplotlib>=3.9
+seaborn>=0.13
+torchao
