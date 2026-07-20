@@ -43,6 +43,41 @@ Documentação da fase:
 - [Protocolo experimental](fases/01_validacao_conceitual/docs/protocolo_experimental.md)
 - [Resumo operacional dos conceitos](fases/01_validacao_conceitual/docs/conceitos.txt)
 
+## Como A Validação Está Organizada
+
+A validação não foi estruturada como "um arquivo Python por conceito". Alguns
+conceitos fazem parte da mesma operação técnica e, por isso, ficam juntos. Por
+exemplo, scaled dot-product attention, self-attention e multi-head attention
+ficam no módulo de atenção.
+
+O fluxo usado na fase atual é:
+
+```text
+conceito científico
+-> propriedade que deve aparecer no código
+-> função/classe Python pequena e auditável
+-> teste determinístico
+-> evidência registrada na documentação
+```
+
+```mermaid
+flowchart LR
+    A["Conceitos e referências"] --> B["Módulos Python agrupados por domínio"]
+    B --> C["Testes determinísticos"]
+    C --> D["Matriz de validação"]
+    D --> E["Benchmark controlado posterior"]
+```
+
+Em termos práticos:
+
+- `fases/01_validacao_conceitual/docs/` explica os conceitos, referências e limites.
+- `fases/01_validacao_conceitual/validacao/` implementa operações pequenas e rastreáveis.
+- `fases/01_validacao_conceitual/tests/` importa essas operações e compara com fórmulas, valores esperados, PyTorch, NumPy, scikit-learn ou checklists.
+
+Essa organização serve para responder três perguntas importantes: o que a
+literatura diz, como isso foi traduzido para código e como sabemos que o código
+está aderente ao comportamento esperado.
+
 ## Materiais Acadêmicos
 
 O plano de trabalho fica em:

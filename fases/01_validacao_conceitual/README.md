@@ -52,6 +52,60 @@ flowchart TD
     F --> G["Benchmark controlado posterior"]
 ```
 
+## Como Conceitos, Código E Testes Se Relacionam
+
+Os conceitos documentados não têm uma relação 1 para 1 com arquivos `.py`.
+Alguns conceitos pertencem ao mesmo domínio técnico e, por isso, ficam no mesmo
+módulo. Por exemplo, scaled dot-product attention, self-attention e multi-head
+attention ficam juntos porque todos fazem parte da lógica de atenção.
+
+Por conta disso, a pasta `validacao/` tem menos arquivos do que a lista de
+conceitos validados. Isso é esperado: os arquivos representam domínios técnicos,
+não capítulos isolados.
+
+A relação correta é:
+
+```text
+docs/conceitos.txt
+  define os conceitos, propriedades esperadas e limites da conclusão
+
+validacao/*.py
+  implementa funções e classes pequenas, agrupadas por domínio técnico
+
+tests/*.py
+  importa essas funções/classes e compara com referências ou valores esperados
+```
+
+```mermaid
+flowchart LR
+    C["Conceitos documentados<br/>docs/conceitos.txt"] --> M["Módulos Python<br/>validacao/*.py"]
+    M --> T["Testes automatizados<br/>tests/*.py"]
+    T --> R["Evidência de aderência<br/>manual, NumPy, PyTorch, sklearn, checklist ou schema"]
+```
+
+### Mapa Código-Teste
+
+| Módulo Python | Conceitos cobertos | Como é validado |
+| --- | --- | --- |
+| `attention.py` | scaled dot-product attention, self-attention, multi-head attention, split/combine heads e máscara aditiva | Compara casos pequenos com valor esperado, NumPy independente e `torch.nn.functional.scaled_dot_product_attention`. |
+| `transformer.py` | bloco Transformer simplificado, Q/K/V, informação posicional, residual, normalização e FFN | Instancia o bloco, verifica componentes, preservação de shape e classificação como bloco simplificado. |
+| `auditoria_transformer.py` | auditoria arquitetural da NN, dependência entre posições, determinismo e controle negativo | Abre o bloco, extrai Q/K/V, compara attention interna com PyTorch e rejeita uma NN comum `Linear + ReLU + Linear`. |
+| `dense.py` | projeção linear densa | Compara `Y = XW^T + b` com cálculo manual e NumPy. |
+| `kv_cache.py` | KV cache e atenção causal com/sem cache | Compara saída com cache contra saída causal completa e mede reaproveitamento de K/V. |
+| `sparsity.py` | sparsity e observação de zeros | Conta zeros em tensores pequenos e classifica o nível de validade. |
+| `quantization.py` | quantização simétrica int8, armazenamento e erro numérico | Verifica dtype `int8`, bytes por elemento e erro após dequantização. |
+| `flops.py` | custo teórico de projeções, attention e FFN | Compara fórmulas analíticas com casos pequenos conhecidos. |
+| `metrics.py` | MSE, MAE, R2 e similaridade de cosseno usadas na análise posterior | Compara implementações manuais com valores conhecidos e `scikit-learn`. |
+| `protocolo.py` | schema obrigatório dos resultados | Valida colunas e campos obrigatórios do CSV de benchmark. |
+| `pesquisa.py` | perguntas de pesquisa e hipóteses | Verifica se perguntas, métricas e hipóteses estão registradas. |
+| `benchmark_controlado.py` | baseline, pruning, quantização, latência, throughput, memória e nível de validade | Executa uma grade pequena, registra ambiente/seed e impede promoção indevida para `hardware`. |
+| `analise_resultados.py` | análise posterior dos CSVs | Compara cenários com baseline, gera tabelas e conclusões classificadas por validade. |
+| `classificacao.py` | rótulos de aderência à família Transformer | Classifica como `nao_aderente`, `operacao_inspirada_em_transformer`, `bloco_transformer_simplificado` ou `transformer`. |
+
+Assim, a pergunta "quantos conceitos existem?" é respondida pelos documentos; a
+pergunta "onde isso está implementado?" é respondida pelos módulos; e a pergunta
+"como sei que funciona?" é respondida pelos testes.
+
 ## Estrutura Da Fase
 
 ```text
