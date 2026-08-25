@@ -1,0 +1,7 @@
+2026-08-25T04:31:57-03:00 START diagnostico_cpu_l64_d128_v1
+purpose=cpu_diagnostic device=cpu seed=42
+RUN 1/2 START
+RUN 1/2 OK records=6
+RUN 2/2 START
+RUN 2/2 OK records=6
+2026-08-25T04:31:59-03:00 COMPLETE

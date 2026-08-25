@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "experiment_id": "diagnostico_cpu_l64_d128_v1",
+  "purpose": "cpu_diagnostic",
+  "device": "cpu",
+  "required_gpu_name": "",
+  "seed": 42,
+  "batch_sizes": [
+    1
+  ],
+  "sequence_lengths": [
+    64
+  ],
+  "dimensions": [
+    128
+  ],
+  "operations": [
+    "dense_projection",
+    "self_attention"
+  ],
+  "scenarios": [
+    "baseline",
+    "pruning_magnitude",
+    "quantization_int8"
+  ],
+  "pruning_sparsity": 0.5,
+  "warmup_iterations": 20,
+  "measure_iterations": 50,
+  "independent_runs": 2,
+  "scenario_order": "rotate_by_run",
+  "dtype": "float32"
+}

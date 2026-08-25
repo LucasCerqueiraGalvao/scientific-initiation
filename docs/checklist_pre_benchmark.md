@@ -31,6 +31,9 @@ permitidos para validar a infraestrutura, desde que sejam rotulados como tal.
   log e hashes de entradas/saídas em pasta versionável.
 - [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Rejeitar shapes, dtypes, métricas ou
   resultados inválidos, `NaN` e infinitos.
+- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Corrigir e documentar a inicialização
+  dos pesos-base: o diagnóstico v1 mostrou que `N(0,1)` faz a escala da saída
+  crescer com a dimensão e prejudica a comparação de MSE/MAE.
 - [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Fazer smoke test ponta a ponta,
   incluindo análise, gráficos e reexecução determinística.
 - [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Confirmar que o dispositivo da coleta
@@ -44,7 +47,7 @@ permitidos para validar a infraestrutura, desde que sejam rotulados como tal.
 - [x] **[RECOMENDADO ANTES DO BENCHMARK]** Registrar snapshot exato do ambiente
   instalado, sem transformar o arquivo de requisitos mínimos em um lock
   específico desta máquina.
-- [ ] **[RECOMENDADO ANTES DO BENCHMARK]** Fazer sanity checks de crescimento de
+- [x] **[RECOMENDADO ANTES DO BENCHMARK]** Fazer sanity checks de crescimento de
   FLOPs e shapes antes da grade completa.
 - [x] **[RECOMENDADO ANTES DO BENCHMARK]** Consolidar as duas execuções com
   média, desvio-padrão e resultados individuais preservados.

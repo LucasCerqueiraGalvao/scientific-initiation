@@ -174,3 +174,35 @@ acidental em CPU.
 pela ausência da RTX/CUDA neste ambiente. Como trabalho independente, será
 executado um diagnóstico CPU em um ponto representativo da grade formal, sem
 promovê-lo a resultado de hardware.
+
+### Continuação — diagnóstico CPU v1 em L=64, D=128
+
+**Objetivo e configuração.** Exercitar o primeiro ponto da grade formal com o
+protocolo completo de 20 warm-ups, 50 medições e duas execuções, preservando
+seed 42 e os mesmos cenários. A coleta terminou em aproximadamente dois segundos
+de tempo registrado pelo log e gerou 12 registros analisáveis.
+
+**Integridade e reprodutibilidade.** Manifesto completo, checksums válidos e
+hashes de entradas/saídas idênticos entre execuções. Os gráficos foram
+inspecionados e estão legíveis.
+
+**Resultado de qualidade.** Na projeção densa, MSE `0.00995697` da quantização
+contra `9.30825` do pruning. Na self-attention, MSE `732.65` contra `12144.35`;
+R² da quantização `0.95428` e cosseno `0.97714`. H1 continua compatível, mas o
+erro absoluto chamou atenção.
+
+**Investigação do resultado inesperado.** O gerador v1 usa pesos independentes
+`N(0,1)`. Em matrizes maiores, essa variância faz projeções e saída da atenção
+crescerem com `D`. Assim, MSE/MAE aumentam também pela escala do baseline e não
+podem ser comparados diretamente entre dimensões. Não se trata de adulterar um
+resultado ruim: a coleta v1 foi preservada e identificou uma ameaça à validade.
+
+**Decisão metodológica.** Antes do benchmark principal, tornar a distribuição
+dos dados explícita na configuração e usar inicialização de pesos escalada pela
+dimensão (Xavier para matrizes quadradas), mantendo entradas `N(0,1)` e bias
+zero. O diagnóstico será repetido como v2; v1 continuará versionado como
+evidência da correção.
+
+**Latência.** As razões em CPU sugeriram valores abaixo do baseline em alguns
+cenários, mas com desvio alto e sem kernel esparso/INT8. Nenhuma aceleração foi
+concluída.

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "experiment_id": "diagnostico_cpu_l64_d128_v1",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "environment": "environment.json",
+  "log": "execution.log",
+  "runs": [
+    {
+      "independent_run": 1,
+      "csv": "run_01.csv",
+      "csv_sha256": "3ada80f48794e49a0b7a2b7d2c1fc177154e747aa84e3efdb56fd94350b6750c",
+      "metadata": "run_01.metadata.json",
+      "metadata_sha256": "f15506751e62b0a5bb50ffafe53b0abf1894991925c33f91cc35a11e3f2bde82",
+      "records": 6
+    },
+    {
+      "independent_run": 2,
+      "csv": "run_02.csv",
+      "csv_sha256": "59c27b91e26e5f7a1634a367c14324dc25a2bbfbe553db2e744f50f53c7ba7ae",
+      "metadata": "run_02.metadata.json",
+      "metadata_sha256": "c05e0eaa12a041186321c05062ffe280da32deb4d593d48fcb65cf379bb2f41c",
+      "records": 6
+    }
+  ],
+  "completed_at": "2026-08-25T04:31:59-03:00"
+}
