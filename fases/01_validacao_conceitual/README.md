@@ -227,6 +227,10 @@ Configurações versionadas:
   `L={64,128,256}`, `D={128,256,512}`, 20 warm-ups, 50 medições e duas execuções
   na RTX 4070 Ti Super.
 
+As configurações atuais usam schema v2: entradas `N(0,1)`, pesos Xavier normal
+escalados por `D` e bias zero. O loader mantém compatibilidade de leitura com as
+evidências v1 geradas antes dessa correção metodológica.
+
 Exemplo de smoke:
 
 ```powershell

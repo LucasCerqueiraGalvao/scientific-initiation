@@ -139,7 +139,10 @@ formal e a reuniao:
 Os dados sao sinteticos pseudoaleatorios com distribuicao normal, pois o estudo
 mede operacoes e fidelidade de saida, nao uma tarefa supervisionada ou um
 dataset. Mesma seed, shapes, entradas e pesos-base sao usados em todos os
-cenarios. Pruning e quantizacao afetam apenas as matrizes de pesos.
+cenarios. A configuracao schema v2 fixa entradas `N(0,1)`, pesos com
+inicializacao Xavier normal (`desvio=1/sqrt(D)` para matrizes quadradas) e bias
+zero. Essa escala evita que a variancia das projecoes cresca artificialmente com
+`D`. Pruning e quantizacao afetam apenas as matrizes de pesos.
 
 A configuracao `experimentos/benchmark_principal_gpu.json` codifica seed `42`,
 lote `1`, `L={64,128,256}`, `D={128,256,512}`, 20 iteracoes de aquecimento, 50

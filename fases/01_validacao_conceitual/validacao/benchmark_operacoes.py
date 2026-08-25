@@ -28,7 +28,7 @@ from validacao.protocolo import CSV_COLUMNS, empty_benchmark_record, validate_be
 from validacao.quantization import symmetric_int8_quantize, tensor_storage_bytes
 
 
-CONFIG_KEYS = {
+CONFIG_KEYS_V1 = {
     "schema_version",
     "experiment_id",
     "purpose",
@@ -46,6 +46,11 @@ CONFIG_KEYS = {
     "independent_runs",
     "scenario_order",
     "dtype",
+}
+CONFIG_KEYS_V2 = CONFIG_KEYS_V1 | {
+    "input_distribution",
+    "weight_initialization",
+    "bias_initialization",
 }
 OPERATIONS = ("dense_projection", "self_attention")
 SCENARIOS = ("baseline", "pruning_magnitude", "quantization_int8")
@@ -79,11 +84,17 @@ class OperationExperimentConfig:
     independent_runs: int
     scenario_order: str
     dtype: str
+    input_distribution: str
+    weight_initialization: str
+    bias_initialization: str
 
     def to_dict(self) -> dict[str, object]:
         result = asdict(self)
         for key in ("batch_sizes", "sequence_lengths", "dimensions", "operations", "scenarios"):
             result[key] = list(result[key])
+        if self.schema_version == 1:
+            for key in ("input_distribution", "weight_initialization", "bias_initialization"):
+                result.pop(key)
         return result
 
 
@@ -133,14 +144,16 @@ def _require_positive_int(name: str, value: object) -> int:
 
 
 def config_from_mapping(data: Mapping[str, object]) -> OperationExperimentConfig:
-    missing = sorted(CONFIG_KEYS - set(data))
-    extra = sorted(set(data) - CONFIG_KEYS)
+    if "schema_version" not in data:
+        raise ExperimentConfigurationError("chave obrigatoria ausente: schema_version")
+    schema_version = _require_positive_int("schema_version", data["schema_version"])
+    if schema_version not in {1, 2}:
+        raise ExperimentConfigurationError("schema_version suportado: 1 ou 2")
+    expected_keys = CONFIG_KEYS_V1 if schema_version == 1 else CONFIG_KEYS_V2
+    missing = sorted(expected_keys - set(data))
+    extra = sorted(set(data) - expected_keys)
     if missing or extra:
         raise ExperimentConfigurationError(f"chaves invalidas; ausentes={missing}, extras={extra}")
-
-    schema_version = _require_positive_int("schema_version", data["schema_version"])
-    if schema_version != 1:
-        raise ExperimentConfigurationError("schema_version suportado: 1")
 
     experiment_id = str(data["experiment_id"])
     if not re.fullmatch(r"[A-Za-z0-9._-]+", experiment_id):
@@ -159,6 +172,16 @@ def config_from_mapping(data: Mapping[str, object]) -> OperationExperimentConfig
     dtype = str(data["dtype"])
     if dtype != "float32":
         raise ExperimentConfigurationError("o protocolo inicial aceita somente float32")
+
+    input_distribution = str(data.get("input_distribution", "standard_normal"))
+    weight_initialization = str(data.get("weight_initialization", "standard_normal"))
+    bias_initialization = str(data.get("bias_initialization", "standard_normal"))
+    if input_distribution != "standard_normal":
+        raise ExperimentConfigurationError("input_distribution suportada: standard_normal")
+    if weight_initialization not in {"standard_normal", "xavier_normal"}:
+        raise ExperimentConfigurationError("weight_initialization deve ser standard_normal ou xavier_normal")
+    if bias_initialization not in {"standard_normal", "zeros"}:
+        raise ExperimentConfigurationError("bias_initialization deve ser standard_normal ou zeros")
 
     batch_sizes = _as_unique_tuple("batch_sizes", data["batch_sizes"])
     sequence_lengths = _as_unique_tuple("sequence_lengths", data["sequence_lengths"])
@@ -210,6 +233,9 @@ def config_from_mapping(data: Mapping[str, object]) -> OperationExperimentConfig
         independent_runs=_require_positive_int("independent_runs", data["independent_runs"]),
         scenario_order=scenario_order,
         dtype=dtype,
+        input_distribution=input_distribution,
+        weight_initialization=weight_initialization,
+        bias_initialization=bias_initialization,
     )
 
 
@@ -320,10 +346,16 @@ def _case_seed(config: OperationExperimentConfig, operation: str, batch_size: in
     return config.seed + operation_offset + batch_size * 1_000_000 + seq_len * 1_000 + dimension
 
 
-def _randn(shape: tuple[int, ...], seed: int, device: torch.device) -> torch.Tensor:
+def _randn(
+    shape: tuple[int, ...],
+    seed: int,
+    device: torch.device,
+    *,
+    scale: float = 1.0,
+) -> torch.Tensor:
     generator = torch.Generator(device="cpu")
     generator.manual_seed(seed)
-    return torch.randn(shape, generator=generator, dtype=torch.float32).to(device)
+    return (torch.randn(shape, generator=generator, dtype=torch.float32) * scale).to(device)
 
 
 def build_operation_inputs(
@@ -334,20 +366,40 @@ def build_operation_inputs(
     dimension: int,
     seed: int,
     device: torch.device,
+    input_distribution: str = "standard_normal",
+    weight_initialization: str = "standard_normal",
+    bias_initialization: str = "standard_normal",
 ) -> dict[str, torch.Tensor]:
+    if input_distribution != "standard_normal":
+        raise ValueError(f"distribuicao de entrada desconhecida: {input_distribution}")
+    if weight_initialization == "standard_normal":
+        weight_scale = 1.0
+    elif weight_initialization == "xavier_normal":
+        # Para matrizes quadradas: sqrt(2 / (fan_in + fan_out)) = 1/sqrt(D).
+        weight_scale = 1.0 / math.sqrt(dimension)
+    else:
+        raise ValueError(f"inicializacao de peso desconhecida: {weight_initialization}")
+
+    if bias_initialization == "zeros":
+        bias = torch.zeros(dimension, dtype=torch.float32, device=device)
+    elif bias_initialization == "standard_normal":
+        bias = _randn((dimension,), seed + 2, device)
+    else:
+        raise ValueError(f"inicializacao de bias desconhecida: {bias_initialization}")
+
     if operation == "dense_projection":
         return {
             "x": _randn((batch_size, seq_len, dimension), seed, device),
-            "weight": _randn((dimension, dimension), seed + 1, device),
-            "bias": _randn((dimension,), seed + 2, device),
+            "weight": _randn((dimension, dimension), seed + 1, device, scale=weight_scale),
+            "bias": bias,
         }
     if operation == "self_attention":
         return {
             "x": _randn((batch_size, seq_len, dimension), seed, device),
-            "w_q": _randn((dimension, dimension), seed + 1, device),
-            "w_k": _randn((dimension, dimension), seed + 2, device),
-            "w_v": _randn((dimension, dimension), seed + 3, device),
-            "w_o": _randn((dimension, dimension), seed + 4, device),
+            "w_q": _randn((dimension, dimension), seed + 1, device, scale=weight_scale),
+            "w_k": _randn((dimension, dimension), seed + 2, device, scale=weight_scale),
+            "w_v": _randn((dimension, dimension), seed + 3, device, scale=weight_scale),
+            "w_o": _randn((dimension, dimension), seed + 4, device, scale=weight_scale),
         }
     raise ValueError(f"operacao desconhecida: {operation}")
 
@@ -606,6 +658,9 @@ def run_independent_benchmark(
             dimension=dimension,
             seed=seed,
             device=device,
+            input_distribution=config.input_distribution,
+            weight_initialization=config.weight_initialization,
+            bias_initialization=config.bias_initialization,
         )
         with torch.inference_mode():
             reference_output = run_operation(operation, base_tensors).detach()
@@ -695,6 +750,9 @@ def run_independent_benchmark(
         "independent_run": run_index,
         "seed": config.seed,
         "same_inputs_across_independent_runs": True,
+        "input_distribution": config.input_distribution,
+        "weight_initialization": config.weight_initialization,
+        "bias_initialization": config.bias_initialization,
         "scenario_order": list(order),
         "warmup_iterations": config.warmup_iterations,
         "measure_iterations": config.measure_iterations,

@@ -45,6 +45,10 @@ def test_primary_config_matches_formal_protocol() -> None:
     assert config.warmup_iterations == 20
     assert config.measure_iterations == 50
     assert config.independent_runs == 2
+    assert config.schema_version == 2
+    assert config.input_distribution == "standard_normal"
+    assert config.weight_initialization == "xavier_normal"
+    assert config.bias_initialization == "zeros"
 
 
 def test_cpu_diagnostic_uses_one_formal_grid_point_and_full_measurement_protocol() -> None:
@@ -89,6 +93,24 @@ def test_pruning_is_exact_and_quantization_does_not_claim_low_precision_kernel_s
     assert quantized.compact_representation_bytes < quantized.runtime_tensor_bytes
     assert all(tensor.dtype == torch.float32 for tensor in quantized.tensors.values())
     assert not quantized.uses_low_precision_storage_in_kernel
+
+
+def test_xavier_initialization_scales_weights_and_zeroes_bias() -> None:
+    dimension = 128
+    tensors = build_operation_inputs(
+        "dense_projection",
+        batch_size=1,
+        seq_len=4,
+        dimension=dimension,
+        seed=42,
+        device=torch.device("cpu"),
+        weight_initialization="xavier_normal",
+        bias_initialization="zeros",
+    )
+
+    expected_std = 1.0 / dimension**0.5
+    assert float(tensors["weight"].std()) == pytest.approx(expected_std, rel=0.05)
+    assert torch.count_nonzero(tensors["bias"]).item() == 0
 
 
 def test_independent_runs_reuse_inputs_and_outputs_but_rotate_scenario_order() -> None:

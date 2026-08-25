@@ -319,6 +319,7 @@ def _build_report(
         "- Hipótese: a quantização terá MSE/MAE menores e R²/cosseno maiores que o pruning.",
         "- Amostra: tensores sintéticos de distribuição normal, gerados deterministicamente; não há dataset ou pré-processamento externo.",
         f"- Seed: `{config.seed}`; lote(s): `{list(config.batch_sizes)}`; sequências: `{list(config.sequence_lengths)}`; dimensões: `{list(config.dimensions)}`.",
+        f"- Dados/pesos: entrada `{config.input_distribution}`, pesos `{config.weight_initialization}` e bias `{config.bias_initialization}`.",
         f"- Medição: `{config.warmup_iterations}` warm-ups, `{config.measure_iterations}` medições e `{config.independent_runs}` execuções independentes.",
         f"- Dispositivo observado: `{loaded.environment.get('device', '')}` {device_name}".rstrip(),
         "- Inclusão: todos os casos válidos da grade e os três cenários registrados; exclusão: qualquer artefato com checksum, shape, dtype ou valor numérico inválido.",

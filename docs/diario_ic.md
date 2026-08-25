@@ -206,3 +206,22 @@ evidência da correção.
 **Latência.** As razões em CPU sugeriram valores abaixo do baseline em alguns
 cenários, mas com desvio alto e sem kernel esparso/INT8. Nenhuma aceleração foi
 concluída.
+
+### Continuação — correção metodológica da inicialização
+
+**Mudança.** O schema de configuração passou à versão 2 e agora registra
+explicitamente distribuição das entradas, inicialização dos pesos e bias. As
+entradas continuam `N(0,1)`; matrizes quadradas usam Xavier normal com desvio
+`1/sqrt(D)`; o bias da projeção densa é zero. Evidências de schema v1 continuam
+legíveis para preservar o histórico.
+
+**Justificativa.** A mudança não foi escolhida para melhorar uma métrica
+observada, mas para controlar a variância das projeções ao comparar diferentes
+dimensões. A coleta v1 permanece intacta e será confrontada com v2.
+
+**Testes.** A suíte passou com `45 passed, 1 skipped`. Um teste novo verifica a
+escala empírica dos pesos e o bias zero; as evidências v1 foram reabertas e
+mantiveram checksums e reprodutibilidade válidos.
+
+**Próximo passo.** Commit da correção e repetição do diagnóstico em nova pasta
+v2, sem sobrescrever o resultado anterior.

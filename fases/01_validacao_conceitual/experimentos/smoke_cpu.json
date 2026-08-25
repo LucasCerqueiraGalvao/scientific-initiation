@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "experiment_id": "smoke_cpu_v1",
   "purpose": "smoke_test",
   "device": "cpu",
@@ -15,5 +15,8 @@
   "measure_iterations": 5,
   "independent_runs": 2,
   "scenario_order": "rotate_by_run",
-  "dtype": "float32"
+  "dtype": "float32",
+  "input_distribution": "standard_normal",
+  "weight_initialization": "xavier_normal",
+  "bias_initialization": "zeros"
 }
