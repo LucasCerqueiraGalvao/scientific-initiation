@@ -20,7 +20,8 @@ Registros operacionais da pesquisa:
 
 - [Diário da IC](diario_ic.md);
 - [Auditoria do estado em 25/08/2026](auditoria_estado_2026-08-25.md);
-- [Checklist pré-benchmark](checklist_pre_benchmark.md).
+- [Checklist pré-benchmark](checklist_pre_benchmark.md);
+- [Relatório da execução autônoma de 25/08/2026](relatorio_execucao_autonoma_2026-08-25.md).
 
 Os documentos técnicos da fase ativa de validação ficam dentro da própria fase:
 
