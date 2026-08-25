@@ -78,6 +78,12 @@ expôs Intel Iris Xe; `nvidia-smi` não está instalado/disponível.
 **Testes.** Suíte completa: `32 passed, 1 skipped`. Comparação canônica:
 `9/9` aprovada. `pip check`: nenhuma dependência quebrada.
 
+**Correção do runner piloto.** A evidência de armazenamento de baixa precisão
+da quantização manual foi removida: o `int8` é intermediário e o peso executado
+permanece `float32`. TorchAO também saiu dos cenários padrão, permanecendo como
+extensão explícita. O metadado agora diferencia pico CUDA de estimativa de
+armazenamento em CPU. Teste direcionado: `7 passed, 1 skipped` (CUDA).
+
 **Resultados e interpretação.** A validação conceitual está madura, mas o
 benchmark principal ainda não está liberado. A indisponibilidade da GPU é
 externa; os demais portões controláveis serão tratados antes do smoke test.

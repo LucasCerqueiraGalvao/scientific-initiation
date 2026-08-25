@@ -14,6 +14,7 @@ from validacao.benchmark_controlado import (
     ControlledBenchmarkConfig,
     HardwareEvidence,
     ScenarioValidationError,
+    apply_scenario,
     promoted_validity_level,
     run_controlled_benchmark,
     validate_scenarios_registered,
@@ -58,6 +59,25 @@ def test_validity_levels_do_not_promote_pruning_or_quantization_without_hardware
             HardwareEvidence(uses_low_precision_storage=True, uses_low_precision_kernel=False),
         )
         == "numerico"
+    )
+
+
+def test_manual_quantization_keeps_runtime_weights_float32_and_has_no_hardware_evidence() -> None:
+    model = torch.nn.Linear(4, 4).eval()
+
+    evidence = apply_scenario(model, "quantization_int8", pruning_sparsity=0.5)
+
+    assert model.weight.dtype == torch.float32
+    assert model._scientific_validation_quantized_dtype == "torch.int8"
+    assert not evidence.uses_low_precision_storage
+    assert not evidence.uses_low_precision_kernel
+
+
+def test_pilot_defaults_match_first_formal_scenarios() -> None:
+    assert ControlledBenchmarkConfig().scenarios == (
+        "baseline",
+        "pruning_magnitude",
+        "quantization_int8",
     )
     assert (
         promoted_validity_level(

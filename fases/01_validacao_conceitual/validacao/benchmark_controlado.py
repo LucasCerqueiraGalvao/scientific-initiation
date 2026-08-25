@@ -4,6 +4,7 @@ import argparse
 import copy
 import csv
 import json
+import platform
 import statistics
 import time
 from dataclasses import dataclass
@@ -44,7 +45,7 @@ class ControlledBenchmarkConfig:
     seq_lens: tuple[int, ...] = (4, 8)
     d_models: tuple[int, ...] = (8,)
     num_heads: tuple[int, ...] = (2,)
-    scenarios: tuple[str, ...] = ("baseline", "pruning_magnitude", "quantization_int8", "torchao_int8")
+    scenarios: tuple[str, ...] = ("baseline", "pruning_magnitude", "quantization_int8")
     seed: int = 2026
     warmup: int = 5
     repetitions: int = 20
@@ -154,11 +155,17 @@ def environment_metadata(device: torch.device, seed: int) -> dict[str, object]:
         gpu_name = torch.cuda.get_device_name(device)
 
     return {
+        "python_version": platform.python_version(),
+        "python_implementation": platform.python_implementation(),
+        "platform": platform.platform(),
         "torch_version": torch.__version__,
         "cuda_version": torch.version.cuda or "",
         "gpu_name": gpu_name,
         "device": str(device),
         "seed": seed,
+        "memory_measurement_kind": (
+            "torch_cuda_max_memory_allocated" if device.type == "cuda" else "model_storage_estimate"
+        ),
     }
 
 
@@ -191,7 +198,10 @@ def _apply_manual_quantization(model: torch.nn.Module) -> HardwareEvidence:
             quantized, _, dequantized = symmetric_int8_quantize(target_weight.detach())
             target_weight.copy_(dequantized.to(target_weight.device, dtype=target_weight.dtype))
             module._scientific_validation_quantized_dtype = str(quantized.dtype)
-    return HardwareEvidence(uses_low_precision_storage=True, uses_low_precision_kernel=False)
+    # O int8 e usado para produzir a dequantizacao, mas os pesos que permanecem
+    # no modulo e que chegam ao kernel continuam float32. O caminho valida erro
+    # numerico; nao demonstra armazenamento ou execucao de baixa precisao.
+    return HardwareEvidence(uses_low_precision_storage=False, uses_low_precision_kernel=False)
 
 
 def _apply_torchao_quantization(model: torch.nn.Module) -> HardwareEvidence:
@@ -421,7 +431,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument(
         "--scenarios",
-        default="baseline,pruning_magnitude,quantization_int8,torchao_int8",
+        default="baseline,pruning_magnitude,quantization_int8",
         help="Lista separada por virgulas.",
     )
     args = parser.parse_args(argv)

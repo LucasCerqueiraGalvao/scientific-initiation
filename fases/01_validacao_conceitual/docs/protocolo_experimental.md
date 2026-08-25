@@ -119,6 +119,13 @@ O benchmark validado deve ser executado pelo modulo
 - calcula erro contra baseline e FLOPs teoricos;
 - grava CSV apenas se todas as colunas obrigatorias forem validas.
 
+Este runner mede o bloco simplificado e deve ser tratado como piloto de
+infraestrutura. Em CPU, `max_memory_bytes` e uma estimativa do armazenamento do
+modelo; apenas em CUDA o campo usa `torch.cuda.max_memory_allocated`. A
+quantizacao manual dequantiza pesos para `float32`, portanto nao alega
+armazenamento nem kernel INT8. O benchmark principal das operacoes isoladas e
+definido separadamente no checklist pre-benchmark.
+
 Comando padrao:
 
 ```powershell
