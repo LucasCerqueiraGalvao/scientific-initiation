@@ -126,6 +126,33 @@ quantizacao manual dequantiza pesos para `float32`, portanto nao alega
 armazenamento nem kernel INT8. O benchmark principal das operacoes isoladas e
 definido separadamente no checklist pre-benchmark.
 
+## Runner principal das operacoes isoladas
+
+`validacao.benchmark_operacoes` implementa o recorte reconciliado entre o plano
+formal e a reuniao:
+
+- `dense_projection`: operacao mantida porque aparece explicitamente no plano;
+- `self_attention`: uma cabeca com projecoes Q/K/V/saida e SDPA, usada como foco
+  principal sugerido pelo orientador;
+- o bloco Transformer simplificado fica fora do resultado principal.
+
+Os dados sao sinteticos pseudoaleatorios com distribuicao normal, pois o estudo
+mede operacoes e fidelidade de saida, nao uma tarefa supervisionada ou um
+dataset. Mesma seed, shapes, entradas e pesos-base sao usados em todos os
+cenarios. Pruning e quantizacao afetam apenas as matrizes de pesos.
+
+A configuracao `experimentos/benchmark_principal_gpu.json` codifica seed `42`,
+lote `1`, `L={64,128,256}`, `D={128,256,512}`, 20 iteracoes de aquecimento, 50
+medicoes e duas execucoes independentes. Cada execucao preserva os mesmos dados
+e alterna deterministicamente a ordem dos cenarios. O p50 e p95 usam
+`numpy.percentile` com interpolacao linear.
+
+Cada lote independente grava CSV e JSON de metadados imediatamente. O diretorio
+tambem recebe snapshot da configuracao, ambiente, log e manifesto com SHA-256.
+O runner recusa diretorio nao vazio, `device=auto`, campos nao finitos e
+benchmark principal sem CUDA/GPU nominal. Assim, uma interrupcao posterior nao
+apaga o lote ja concluido.
+
 Comando padrao:
 
 ```powershell

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "experiment_id": "smoke_cpu_v1",
+  "purpose": "smoke_test",
+  "device": "cpu",
+  "required_gpu_name": "",
+  "seed": 42,
+  "batch_sizes": [1],
+  "sequence_lengths": [4],
+  "dimensions": [8],
+  "operations": ["dense_projection", "self_attention"],
+  "scenarios": ["baseline", "pruning_magnitude", "quantization_int8"],
+  "pruning_sparsity": 0.5,
+  "warmup_iterations": 2,
+  "measure_iterations": 5,
+  "independent_runs": 2,
+  "scenario_order": "rotate_by_run",
+  "dtype": "float32"
+}

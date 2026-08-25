@@ -95,3 +95,26 @@ de documentação e reconstrução classificada da reunião.
 **Próximos passos.** Implementar configuração e runner das operações isoladas,
 fortalecer validações, persistir evidências, executar smoke reprodutível e então
 reavaliar a liberação da coleta principal.
+
+### Continuação — infraestrutura das operações isoladas
+
+**Implementação.** Foram adicionadas configurações JSON separadas para smoke em
+CPU e experimento principal em CUDA. `validacao.benchmark_operacoes` carrega e
+valida o contrato, gera dados sintéticos determinísticos, mede projeção densa e
+self-attention de cabeça única e executa baseline, poda de 50% e quantização
+INT8 simulada. Cada execução independente grava seu próprio CSV e metadados; um
+manifesto com checksums e um log permitem preservar resultados parciais.
+
+**Controles metodológicos.** O dispositivo não usa `auto`; o benchmark principal
+falha se CUDA ou a GPU nominal estiverem ausentes. As duas execuções reutilizam
+os mesmos dados/pesos e rotacionam deterministicamente a ordem dos cenários. Os
+hashes confirmam entradas e saídas determinísticas. A poda continua densa e a
+quantização executa pesos dequantizados em `float32`, fato registrado nos
+metadados para impedir alegações de kernel otimizado.
+
+**Teste.** `test_benchmark_operacoes.py`: `6 passed`. O teste verifica o contrato
+formal, o portão de GPU, a poda exata, a semântica da quantização, a
+reprodutibilidade entre execuções e todos os artefatos persistidos.
+
+**Pendência imediata.** Consolidar execuções com média/desvio-padrão, integrar a
+análise à pipeline e só então produzir a evidência canônica do smoke test.

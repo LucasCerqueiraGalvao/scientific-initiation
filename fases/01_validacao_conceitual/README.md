@@ -206,6 +206,36 @@ $env:PYTHONPATH = "fases\01_validacao_conceitual"
 .\.venv\Scripts\python.exe -m validacao.benchmark_controlado --device cpu --warmup 1 --repetitions 3 --output resultados\benchmark_controlado.csv
 ```
 
+## Benchmark Das Operações Isoladas
+
+O runner destinado ao protocolo principal é `validacao.benchmark_operacoes`.
+Ele preserva o schema CSV existente, mas mede separadamente projeção densa e
+self-attention de cabeça única. Configurações, execuções independentes, hashes,
+ambiente, manifesto e log ficam fora do CSV para não quebrar a interface.
+
+Configurações versionadas:
+
+- `experimentos/smoke_cpu.json`: validação curta da pipeline, sem conclusão de
+  hardware;
+- `experimentos/benchmark_principal_gpu.json`: seed 42, lote 1,
+  `L={64,128,256}`, `D={128,256,512}`, 20 warm-ups, 50 medições e duas execuções
+  na RTX 4070 Ti Super.
+
+Exemplo de smoke:
+
+```powershell
+$env:PYTHONPATH = "fases\01_validacao_conceitual"
+.\.venv\Scripts\python.exe -m validacao.benchmark_operacoes `
+  --config fases\01_validacao_conceitual\experimentos\smoke_cpu.json `
+  --output-dir fases\01_validacao_conceitual\evidencias\benchmarks\smoke_cpu_<data>
+```
+
+O diretório precisa estar vazio. O runner não sobrescreve evidências. Em CPU,
+`max_memory_bytes` é estimativa dos tensores de execução; em CUDA, é o pico
+reportado por `torch.cuda.max_memory_allocated`. A contagem de FLOPs da
+self-attention inclui projeções e multiplicações matriciais, mas exclui softmax
+e escalonamento, conforme declarado nos metadados.
+
 ## O Que Ainda Não Está Afirmado
 
 Esta fase ainda não afirma:

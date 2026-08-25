@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "experiment_id": "operacoes_principais_gpu_v1",
+  "purpose": "primary_benchmark",
+  "device": "cuda",
+  "required_gpu_name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "seed": 42,
+  "batch_sizes": [1],
+  "sequence_lengths": [64, 128, 256],
+  "dimensions": [128, 256, 512],
+  "operations": ["dense_projection", "self_attention"],
+  "scenarios": ["baseline", "pruning_magnitude", "quantization_int8"],
+  "pruning_sparsity": 0.5,
+  "warmup_iterations": 20,
+  "measure_iterations": 50,
+  "independent_runs": 2,
+  "scenario_order": "rotate_by_run",
+  "dtype": "float32"
+}

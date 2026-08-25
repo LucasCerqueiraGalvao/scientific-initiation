@@ -17,18 +17,19 @@ permitidos para validar a infraestrutura, desde que sejam rotulados como tal.
   Transformer completo fora da coleta principal.
 - [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Fixar cenários principais: baseline,
   pruning por magnitude de 50% e quantização INT8 simulada.
-- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Implementar runner das operações
+- [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Implementar runner das operações
   isoladas sem alterar o schema CSV existente.
-- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Versionar configurações distintas de
+- [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Versionar configurações distintas de
   smoke e coleta principal.
-- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Aplicar o protocolo formal: seed 42,
+- [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Codificar e testar o contrato formal:
+  seed 42,
   lote 1, grade `L={64,128,256}`, `D={128,256,512}`, 20 warm-ups, 50 medições e
-  duas execuções independentes.
-- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Registrar Python, bibliotecas,
+  duas execuções independentes. A execução da grade continua condicionada à GPU.
+- [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Registrar Python, bibliotecas,
   sistema, dispositivo, parâmetros, ordem dos cenários e método de percentil.
-- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Persistir CSV, metadados, manifesto,
+- [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Persistir CSV, metadados, manifesto,
   log e hashes de entradas/saídas em pasta versionável.
-- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Rejeitar shapes, dtypes, métricas ou
+- [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Rejeitar shapes, dtypes, métricas ou
   resultados inválidos, `NaN` e infinitos.
 - [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Fazer smoke test ponta a ponta,
   incluindo análise, gráficos e reexecução determinística.
@@ -38,9 +39,9 @@ permitidos para validar a infraestrutura, desde que sejam rotulados como tal.
 
 ## Recomendado antes do benchmark principal
 
-- [ ] **[RECOMENDADO ANTES DO BENCHMARK]** Variar deterministicamente a ordem
+- [x] **[RECOMENDADO ANTES DO BENCHMARK]** Variar deterministicamente a ordem
   dos cenários entre execuções para reduzir viés de ordem.
-- [ ] **[RECOMENDADO ANTES DO BENCHMARK]** Registrar snapshot exato do ambiente
+- [x] **[RECOMENDADO ANTES DO BENCHMARK]** Registrar snapshot exato do ambiente
   instalado, sem transformar o arquivo de requisitos mínimos em um lock
   específico desta máquina.
 - [ ] **[RECOMENDADO ANTES DO BENCHMARK]** Fazer sanity checks de crescimento de
