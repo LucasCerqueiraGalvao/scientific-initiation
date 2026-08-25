@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import torch
 
+from validacao import benchmark_operacoes
 from validacao.benchmark_operacoes import (
     ExperimentConfigurationError,
     ExperimentEnvironmentError,
@@ -122,6 +123,27 @@ def test_suite_persists_partial_runs_manifest_logs_and_fixed_schema(tmp_path: Pa
 
     with pytest.raises(FileExistsError, match="nao esta vazio"):
         execute_experiment_suite(smoke_config(), suite.output_dir)
+
+
+def test_environment_is_captured_before_output_artifacts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output_dir = tmp_path / "evidence"
+    captured = False
+
+    def capture_before_write(_device: torch.device) -> dict[str, object]:
+        nonlocal captured
+        captured = True
+        assert not output_dir.exists()
+        return {"git": {"worktree_clean_at_start": True}}
+
+    monkeypatch.setattr(benchmark_operacoes, "environment_metadata", capture_before_write)
+    execute_experiment_suite(smoke_config(), output_dir)
+
+    assert captured
+    environment = json.loads((output_dir / "environment.json").read_text(encoding="utf-8"))
+    assert environment["git"]["worktree_clean_at_start"] is True
 
 
 def test_primary_environment_gate_fails_clearly_without_cuda(monkeypatch: pytest.MonkeyPatch) -> None:

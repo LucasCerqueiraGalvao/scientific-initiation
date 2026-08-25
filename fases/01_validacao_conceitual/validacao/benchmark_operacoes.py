@@ -738,6 +738,9 @@ def execute_experiment_suite(
     output_path = Path(output_dir)
     if output_path.exists() and any(output_path.iterdir()):
         raise FileExistsError(f"diretorio de saida nao esta vazio: {output_path}")
+    # Capture antes de criar artefatos no worktree; caso contrario, o proprio
+    # snapshot faria um repositorio inicialmente limpo parecer sujo.
+    captured_environment = environment_metadata(device)
     output_path.mkdir(parents=True, exist_ok=True)
 
     config_path = output_path / "config.snapshot.json"
@@ -749,7 +752,7 @@ def execute_experiment_suite(
         encoding="utf-8",
     )
     environment_path.write_text(
-        json.dumps(environment_metadata(device), indent=2, ensure_ascii=False) + "\n",
+        json.dumps(captured_environment, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
 
