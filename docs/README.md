@@ -9,10 +9,12 @@ docs/
   plano_trabalho/
   apresentacoes/
     simposio_2026/
+  reunioes/
 ```
 
 - `plano_trabalho/`: plano formal submetido para a iniciação científica.
 - `apresentacoes/`: materiais de apresentação, separados por evento.
+- `reunioes/`: atas, transcrições integrais e encaminhamentos das reuniões.
 
 Os documentos técnicos da fase ativa de validação ficam dentro da própria fase:
 
