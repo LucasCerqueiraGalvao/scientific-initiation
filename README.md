@@ -178,7 +178,7 @@ No Windows, usando o `.venv` do repositório:
 Resultado observado em 25/08/2026 após a infraestrutura de benchmark:
 
 ```text
-43 passed, 1 skipped
+45 passed, 1 skipped
 ```
 
 O único teste ignorado exige CUDA; nenhum teste da comparação entre frameworks

@@ -225,3 +225,28 @@ mantiveram checksums e reprodutibilidade válidos.
 
 **Próximo passo.** Commit da correção e repetição do diagnóstico em nova pasta
 v2, sem sobrescrever o resultado anterior.
+
+### Continuação — diagnóstico CPU v2 e confronto com v1
+
+**Execução.** A configuração v2 repetiu `B=1`, `L=64`, `D=128`, 20 warm-ups, 50
+medições e duas execuções com pesos Xavier e bias zero. Manifesto, checksums,
+hashes determinísticos, relatório e gráficos passaram. O ambiente foi capturado
+com worktree limpo no commit da correção.
+
+**Resultado.** Na projeção densa, MSE da quantização `7.7789e-05` contra
+`0.0727207` do pruning. Na self-attention, `1.63925e-05` contra `0.0110127`;
+R²/cosseno da quantização ficaram em `0.999647`/`0.999824`. H1 foi novamente
+compatível neste ponto da grade.
+
+**Confronto.** A queda do MSE da self-attention quantizada de `732.65` (v1) para
+`1.63925e-05` (v2) confirma que a escala anterior dominava o erro absoluto. O
+resultado v1 foi preservado. A decisão, alternativas e limites foram registrados
+em `docs/decisao_inicializacao_benchmark.md`.
+
+**Latência.** As barras ficaram abaixo do baseline em CPU, mas com grande
+variabilidade e sem caminhos físicos otimizados. Esses números permanecem sem
+interpretação de aceleração.
+
+**Estado do portão.** Todas as pendências obrigatórias controláveis pelo código
+estão concluídas. Resta a condição externa: executar a grade principal na RTX
+4070 Ti Super/CUDA e confirmar o calendário institucional.

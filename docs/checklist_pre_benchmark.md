@@ -31,7 +31,7 @@ permitidos para validar a infraestrutura, desde que sejam rotulados como tal.
   log e hashes de entradas/saídas em pasta versionável.
 - [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Rejeitar shapes, dtypes, métricas ou
   resultados inválidos, `NaN` e infinitos.
-- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Corrigir e documentar a inicialização
+- [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Corrigir e documentar a inicialização
   dos pesos-base: o diagnóstico v1 mostrou que `N(0,1)` faz a escala da saída
   crescer com a dimensão e prejudica a comparação de MSE/MAE.
 - [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Fazer smoke test ponta a ponta,

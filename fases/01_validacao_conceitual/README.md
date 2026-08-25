@@ -174,7 +174,7 @@ Rodar da raiz do repositório:
 Resultado observado após a infraestrutura de benchmark em 25/08/2026:
 
 ```text
-43 passed, 1 skipped
+45 passed, 1 skipped
 ```
 
 O teste ignorado exige CUDA e permanece explicitamente marcado quando o
@@ -258,6 +258,13 @@ O smoke canônico está em
 [`evidencias/benchmarks/smoke_cpu_2026-08-25/`](evidencias/benchmarks/smoke_cpu_2026-08-25/).
 Ele aprovou 12 registros, os hashes determinísticos e a análise ponta a ponta.
 Os tempos são diagnósticos de CPU e não sustentam conclusão de hardware.
+
+O diagnóstico `L=64`, `D=128` foi preservado em duas versões. A
+[v1](evidencias/benchmarks/diagnostico_cpu_l64_d128_2026-08-25/) revelou que
+pesos `N(0,1)` faziam a escala crescer com `D`; a
+[v2](evidencias/benchmarks/diagnostico_cpu_l64_d128_v2_2026-08-25/) valida o
+contrato Xavier vigente. A justificativa está na
+[decisão de inicialização](docs/decisao_inicializacao_benchmark.md).
 
 ## O Que Ainda Não Está Afirmado
 
