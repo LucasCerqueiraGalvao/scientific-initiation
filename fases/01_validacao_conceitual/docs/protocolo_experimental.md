@@ -24,7 +24,31 @@ hardware. Isso nao e falha; e uma conclusao experimental importante.
 3. Deve existir teste pequeno e deterministico para o comportamento essencial.
 4. A classificacao deve dizer se o resultado e conceitual, numerico,
    algoritmico ou hardware.
-5. Benchmark amplo so pode ser executado depois dos testes conceituais passarem.
+5. O nucleo da attention deve bater com uma referencia matematica independente
+   e com APIs publicas de frameworks consolidados.
+6. Benchmark amplo so pode ser executado depois dos testes conceituais e da
+   comparacao entre frameworks passarem.
+
+## Validacao cruzada entre frameworks
+
+Antes dos benchmarks, `validacao.comparacao_frameworks` executa os mesmos
+tensores `Q`, `K` e `V` em quatro caminhos:
+
+- formula transparente em NumPy, usada como referencia matematica;
+- formula transparente em PyTorch;
+- `torch.nn.functional.scaled_dot_product_attention`;
+- `keras.ops.nn.dot_product_attention` com backend TensorFlow.
+
+A comparacao usa `float32`, CPU, dropout desativado, flash attention desativada,
+seed `2026`, `atol=1e-6` e `rtol=1e-5`. Os casos cobrem valor manual pequeno,
+multi-head com entradas pseudoaleatorias compartilhadas e mascara aditiva. A
+entrada e gerada uma unica vez pelo NumPy para evitar divergencia entre os
+geradores aleatorios dos frameworks.
+
+O CSV desta etapa tem schema proprio e nao altera o schema dos benchmarks de
+desempenho. A evidencia canônica fica em
+`evidencias/comparacao_frameworks/` e so e aprovada se shape, dtype, finitude e
+tolerancias passarem em todas as comparacoes.
 
 ## Recorte experimental
 

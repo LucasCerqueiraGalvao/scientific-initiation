@@ -27,6 +27,7 @@ dataset, mesmo resultado final do artigo". A comparacao correta nesta fase e:
 | Projecao densa | Goodfellow et al.; Vaswani et al. (2017) para projecoes lineares em Q/K/V | Para `X=[[1,2],[3,4]]`, `W=[[1,0],[0,2]]`, `b=[0.5,-0.5]`, a saida esperada e `[[1.5,3.5],[3.5,7.5]]`. | O teste retornou exatamente `[[1.5, 3.5], [3.5, 7.5]]`. | Sim | Valida a operacao linear `Y=XW^T+b`, nao uma rede completa. |
 | Scaled dot-product attention | Vaswani et al. (2017), formula `softmax(QK^T/sqrt(d_k))V` | Para `Q=K=[[1,0],[0,1]]`, `V=[[1,2],[3,4]]`, a saida esperada e `[[1.6604769, 2.6604769], [2.3395231, 3.3395231]]`. | O teste retornou `[[1.6604769, 2.6604769], [2.3395228, 3.3395233]]`. | Sim | Valida a operacao matematica de atencao escalonada, nao uma arquitetura Transformer completa. |
 | Attention PyTorch | Documentacao PyTorch + Vaswani et al. (2017) | A API deve produzir a mesma operacao de scaled dot-product attention, com tolerancia numerica. | A saida de `torch.nn.functional.scaled_dot_product_attention` bateu com a implementacao manual em `1e-6`. | Sim | Valida a API como referencia algoritmica para attention pequena e deterministica. |
+| Attention Keras/TensorFlow | Documentacao Keras Ops + Vaswani et al. (2017) | A API publica deve produzir a mesma scaled dot-product attention para os mesmos `Q`, `K`, `V` e mascara. | Os tres casos contra NumPy foram aprovados; o maior erro absoluto Keras/TensorFlow foi `2.38418579e-07`, abaixo de `atol=1e-6`. | Sim | Valida equivalencia numerica entre frameworks em CPU/float32; nao compara desempenho. |
 | Mascara em attention | Documentacao PyTorch SDPA | Mascara aditiva deve alterar os scores antes do `softmax` e produzir a mesma saida da API de referencia. | A implementacao manual com mascara bateu com PyTorch em `1e-6`. | Sim | Valida mascara aditiva no caso pequeno; outros tipos de mascara devem ser testados se usados. |
 | Multi-head attention | Vaswani et al. (2017), divisao da representacao em multiplas heads | A saida apos split, attention por head e combine deve preservar shape `[batch, seq, d_model]`. | Para entrada `[2,3,4]` e `2` heads, a saida preservou `[2,3,4]` e bateu com PyTorch em `1e-6`. | Sim | Valida a mecanica multi-head, ainda sem treino ou avaliacao de tarefa. |
 | Dependencia entre posicoes | Vaswani et al. (2017), ideia de self-attention sobre sequencias | Alterar o valor de uma posicao pode alterar a saida calculada em outra posicao. | O teste alterou um token e a saida de outra posicao mudou. | Sim | Valida dependencia sequencial minima; ainda nao prova qualidade de modelagem. |
@@ -80,6 +81,8 @@ benchmarks forem comparaveis aos protocolos dos artigos escolhidos.
   <https://arxiv.org/abs/1706.03762>.
 - PyTorch. `scaled_dot_product_attention`:
   <https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html>.
+- Keras. `keras.ops.nn.dot_product_attention`:
+  <https://keras.io/api/ops/nn/>.
 - PyTorch. `torch.nn.utils.prune.l1_unstructured`:
   <https://docs.pytorch.org/docs/stable/generated/torch.nn.utils.prune.l1_unstructured.html>.
 - PyTorch Tutorials. *Pruning Tutorial*:

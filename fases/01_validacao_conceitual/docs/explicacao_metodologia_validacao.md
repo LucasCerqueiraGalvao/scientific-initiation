@@ -517,12 +517,16 @@ Comparamos com:
 
 1. calculo NumPy independente;
 2. resultado numerico derivado da formula;
-3. `torch.nn.functional.scaled_dot_product_attention`.
+3. `torch.nn.functional.scaled_dot_product_attention`;
+4. `keras.ops.nn.dot_product_attention` com backend TensorFlow, usando os mesmos
+   `Q`, `K`, `V` e mascara.
 
 ### O que podemos concluir
 
 Podemos concluir que a attention manual esta matematicamente aderente ao
-conceito.
+conceito e numericamente compativel com APIs publicas de dois frameworks. A
+execucao canônica aprovou 9/9 comparacoes, com erro absoluto maximo de
+`2.38418579e-07` para `atol=1e-6` e `rtol=1e-5`.
 
 ### O que ainda nao podemos concluir
 
@@ -1318,11 +1322,14 @@ O estado atual dos testes confirma essa base:
 .\.venv\Scripts\python.exe -m pytest -q -W error
 ```
 
-Resultado esperado:
+Resultado observado no ambiente de validacao cruzada em 24/08/2026:
 
 ```text
-24 passed
+32 passed, 1 skipped
 ```
+
+O teste ignorado exige CUDA. Os testes NumPy, PyTorch e TensorFlow/Keras
+passaram sem `skip`.
 
 Entao, o proximo passo do projeto nao e "inventar a metodologia"; a metodologia
 ja esta desenhada. O proximo passo e usar esse protocolo para rodar benchmarks

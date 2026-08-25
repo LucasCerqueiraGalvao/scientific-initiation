@@ -72,7 +72,7 @@ Em termos práticos:
 
 - `fases/01_validacao_conceitual/docs/` explica os conceitos, referências e limites.
 - `fases/01_validacao_conceitual/validacao/` implementa operações pequenas e rastreáveis.
-- `fases/01_validacao_conceitual/tests/` importa essas operações e compara com fórmulas, valores esperados, PyTorch, NumPy, scikit-learn ou checklists.
+- `fases/01_validacao_conceitual/tests/` importa essas operações e compara com fórmulas, valores esperados, NumPy, PyTorch, TensorFlow/Keras, scikit-learn ou checklists.
 
 Essa organização serve para responder três perguntas importantes: o que a
 literatura diz, como isso foi traduzido para código e como sabemos que o código
@@ -87,6 +87,7 @@ fases/01_validacao_conceitual/
   validacao/
   tests/
   docs/
+  evidencias/
 ```
 
 A pasta `validacao/` contém os scripts Python que implementam as operações. A
@@ -101,6 +102,7 @@ verificar se aquilo se comporta como esperado.
 | Arquivo | O que ele representa | O que é validado |
 | --- | --- | --- |
 | `validacao/attention.py` | Operações de atenção usadas em Transformers. | Valida scaled dot-product attention, self-attention, multi-head attention, divisão em cabeças, recombinação das cabeças e uso de máscara. A saída é comparada com cálculo manual/NumPy e com `torch.nn.functional.scaled_dot_product_attention`. |
+| `validacao/comparacao_frameworks.py` | Validação cruzada do núcleo da atenção. | Compara os mesmos `Q`, `K`, `V` e máscara em NumPy manual, PyTorch manual, PyTorch SDPA e Keras SDPA com backend TensorFlow. |
 | `validacao/transformer.py` | Um bloco Transformer simplificado. | Valida se o bloco tem entrada sequencial, projeções `Q`, `K`, `V`, atenção, projeção de saída, residual, normalização, FFN e informação posicional. Ele é classificado como bloco Transformer simplificado, não como Transformer completa. |
 | `validacao/auditoria_transformer.py` | Auditoria para responder se a NN usada realmente pertence ao recorte Transformer. | Verifica componentes internos do bloco, testa dependência entre posições da sequência, compara a atenção interna com PyTorch e rejeita uma rede comum `Linear + ReLU + Linear` como controle negativo. |
 | `validacao/dense.py` | Projeção linear densa. | Valida a operação `Y = XW^T + b`, que aparece nas projeções `Q`, `K`, `V`, na projeção de saída e na FFN. O teste compara a função com cálculo manual e NumPy. |
@@ -115,12 +117,13 @@ verificar se aquilo se comporta como esperado.
 | `validacao/benchmark_controlado.py` | Runner de benchmark piloto. | Executa cenários pequenos e reprodutíveis, registra ambiente/seed, mede latência/throughput/memória quando possível e impede chamar algo de `hardware` sem evidência suficiente. |
 | `validacao/analise_resultados.py` | Análise dos CSVs gerados. | Compara cenários contra baseline, calcula degradação numérica e organiza conclusões por nível de validade. |
 
-Os testes principais ficam em dois arquivos:
+Os testes principais ficam em três arquivos:
 
 | Arquivo de teste | Função metodológica |
 | --- | --- |
 | `tests/test_validacao_conceitual.py` | Testa as definições matemáticas e conceituais: atenção, projeção densa, bloco Transformer simplificado, KV cache, pruning, sparsity, quantização, métricas e FLOPs. |
 | `tests/test_benchmark_controlado.py` | Testa se o protocolo experimental está protegido: schema do CSV, ambiente, seed, cenários permitidos, perguntas de pesquisa e impedimento de conclusões de hardware sem evidência. |
+| `tests/test_comparacao_frameworks.py` | Testa layouts, dependências e equivalência numérica entre NumPy, PyTorch e TensorFlow/Keras, além dos artefatos auditáveis. |
 
 Em resumo: os arquivos em `validacao/` são as implementações auditáveis; os
 arquivos em `tests/` são a prova determinística de que essas implementações
@@ -168,11 +171,14 @@ No Windows, usando o `.venv` do repositório:
 .\.venv\Scripts\python.exe -m pytest fases\01_validacao_conceitual\tests -q -W error
 ```
 
-Resultado esperado:
+Resultado observado em 24/08/2026 no ambiente com TensorFlow/Keras:
 
 ```text
-24 passed
+32 passed, 1 skipped
 ```
+
+O único teste ignorado exige CUDA; nenhum teste da comparação entre frameworks
+foi ignorado. Consulte a [evidência numérica](fases/01_validacao_conceitual/evidencias/comparacao_frameworks/comparacao_atencao.md).
 
 ## Mapa Do Projeto
 

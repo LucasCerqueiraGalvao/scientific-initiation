@@ -80,7 +80,7 @@ tests/*.py
 flowchart LR
     C["Conceitos documentados<br/>docs/conceitos.txt"] --> M["Módulos Python<br/>validacao/*.py"]
     M --> T["Testes automatizados<br/>tests/*.py"]
-    T --> R["Evidência de aderência<br/>manual, NumPy, PyTorch, sklearn, checklist ou schema"]
+    T --> R["Evidência de aderência<br/>manual, NumPy, PyTorch, TensorFlow/Keras, sklearn, checklist ou schema"]
 ```
 
 ### Mapa Código-Teste
@@ -88,6 +88,7 @@ flowchart LR
 | Módulo Python | Conceitos cobertos | Como é validado |
 | --- | --- | --- |
 | `attention.py` | scaled dot-product attention, self-attention, multi-head attention, split/combine heads e máscara aditiva | Compara casos pequenos com valor esperado, NumPy independente e `torch.nn.functional.scaled_dot_product_attention`. |
+| `comparacao_frameworks.py` | equivalência numérica da scaled dot-product attention entre frameworks | Usa os mesmos `Q`, `K`, `V` e máscara em NumPy manual, PyTorch manual, PyTorch SDPA e Keras SDPA com backend TensorFlow. |
 | `transformer.py` | bloco Transformer simplificado, Q/K/V, informação posicional, residual, normalização e FFN | Instancia o bloco, verifica componentes, preservação de shape e classificação como bloco simplificado. |
 | `auditoria_transformer.py` | auditoria arquitetural da NN, dependência entre posições, determinismo e controle negativo | Abre o bloco, extrai Q/K/V, compara attention interna com PyTorch e rejeita uma NN comum `Linear + ReLU + Linear`. |
 | `dense.py` | projeção linear densa | Compara `Y = XW^T + b` com cálculo manual e NumPy. |
@@ -112,14 +113,17 @@ pergunta "onde isso está implementado?" é respondida pelos módulos; e a pergu
 fases/01_validacao_conceitual/
   README.md
   requirements.txt
+  requirements-comparacao.txt
   validacao/
   tests/
   docs/
+  evidencias/
 ```
 
 - `validacao/`: scripts Python transparentes e pequenos.
 - `tests/`: testes conceituais, matemáticos e de protocolo.
 - `docs/`: documentos metodológicos e matriz de validação.
+- `evidencias/`: resultados pequenos e reproduzíveis que sustentam os portões de validação.
 
 ## Ambiente
 
@@ -142,6 +146,16 @@ Instalar dependências da fase:
 .\.venv\Scripts\python.exe -m pip install -r fases\01_validacao_conceitual\requirements.txt
 ```
 
+Para incluir a validação cruzada com TensorFlow/Keras, instalar o requisito
+adicional, que também referencia as dependências comuns:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r fases\01_validacao_conceitual\requirements-comparacao.txt
+```
+
+No Windows nativo, TensorFlow 2.21 é usado em CPU apenas para equivalência
+numérica. Isso não altera o caminho PyTorch/CUDA dos benchmarks.
+
 Se CUDA não estiver disponível, os testes conceituais podem rodar em CPU. Nesse
 caso, conclusões de hardware ficam pendentes.
 
@@ -153,11 +167,32 @@ Rodar da raiz do repositório:
 .\.venv\Scripts\python.exe -m pytest fases\01_validacao_conceitual\tests -q -W error
 ```
 
-Resultado esperado:
+Resultado observado no ambiente de validação cruzada em 24/08/2026:
 
 ```text
-24 passed
+32 passed, 1 skipped
 ```
+
+O teste ignorado exige CUDA e permanece explicitamente marcado quando o
+dispositivo não está disponível. Os testes TensorFlow/Keras não foram ignorados.
+
+## Comparação Numérica Entre Frameworks
+
+A comparação de correção roda em CPU e usa NumPy manual como referência. Ela não
+mede velocidade e não sustenta conclusão de hardware.
+
+```powershell
+$env:PYTHONPATH = "fases\01_validacao_conceitual"
+.\.venv\Scripts\python.exe -m validacao.comparacao_frameworks `
+  --output-dir fases\01_validacao_conceitual\evidencias\comparacao_frameworks `
+  --seed 2026 --atol 1e-6 --rtol 1e-5
+```
+
+A execução canônica aprovou as nove comparações. O maior erro absoluto observado
+foi `2.38418579e-07`, abaixo da tolerância absoluta de `1e-6`. Consulte a
+[tabela de comparação](evidencias/comparacao_frameworks/comparacao_atencao.md),
+o [CSV auditável](evidencias/comparacao_frameworks/comparacao_atencao.csv) e os
+[metadados do ambiente](evidencias/comparacao_frameworks/comparacao_atencao.metadata.json).
 
 ## Benchmark Piloto
 
@@ -193,3 +228,4 @@ representação, formato, kernel ou caminho de execução compatível.
 - [Confronto com literatura](docs/confronto_resultados_literatura.md)
 - [Explicação narrativa da metodologia](docs/explicacao_metodologia_validacao.md)
 - [Resumo operacional dos conceitos](docs/conceitos.txt)
+- [Comparação NumPy, PyTorch e TensorFlow/Keras](evidencias/comparacao_frameworks/comparacao_atencao.md)

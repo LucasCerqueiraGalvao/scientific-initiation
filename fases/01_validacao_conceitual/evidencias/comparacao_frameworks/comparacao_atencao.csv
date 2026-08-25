@@ -1,0 +1,10 @@
+case_id,reference,candidate,dtype,batch_size,num_heads,seq_len,head_dim,mask_kind,max_abs_error,mean_abs_error,mse,cosine_similarity,atol,rtol,passed
+tiny_manual_unmasked,numpy_manual,pytorch_manual,float32,1,1,2,2,none,2.384185791015625e-07,5.960464477539063e-08,1.4210854715202004e-14,0.9999999999999992,1e-06,1e-05,True
+tiny_manual_unmasked,numpy_manual,pytorch_sdpa,float32,1,1,2,2,none,0.0,0.0,0.0,1.0,1e-06,1e-05,True
+tiny_manual_unmasked,numpy_manual,keras_tensorflow_sdpa,float32,1,1,2,2,none,2.384185791015625e-07,5.960464477539063e-08,1.4210854715202004e-14,0.9999999999999992,1e-06,1e-05,True
+seeded_multihead_unmasked,numpy_manual,pytorch_manual,float32,2,2,3,4,none,1.1920928955078125e-07,2.4563632905483246e-08,1.7738270343311176e-15,0.9999999999999979,1e-06,1e-05,True
+seeded_multihead_unmasked,numpy_manual,pytorch_sdpa,float32,2,2,3,4,none,1.1920928955078125e-07,2.6426278054714203e-08,1.5182444422038681e-15,0.9999999999999981,1e-06,1e-05,True
+seeded_multihead_unmasked,numpy_manual,keras_tensorflow_sdpa,float32,2,2,3,4,none,1.1920928955078125e-07,2.332186947266261e-08,1.5749120757524437e-15,0.9999999999999981,1e-06,1e-05,True
+seeded_multihead_additive_mask,numpy_manual,pytorch_manual,float32,1,2,3,4,additive_bias,5.960464477539063e-08,6.20881716410319e-09,3.3306690738754696e-16,1.0,1e-06,1e-05,True
+seeded_multihead_additive_mask,numpy_manual,pytorch_sdpa,float32,1,2,3,4,additive_bias,1.1920928955078125e-07,2.2351741790771484e-08,1.5358085173981333e-15,0.9999999999999994,1e-06,1e-05,True
+seeded_multihead_additive_mask,numpy_manual,keras_tensorflow_sdpa,float32,1,2,3,4,additive_bias,1.1920928955078125e-07,2.7318795522054035e-08,2.0909200297107114e-15,0.9999999999999992,1e-06,1e-05,True

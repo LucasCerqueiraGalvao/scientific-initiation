@@ -1,0 +1,4 @@
+-r requirements.txt
+
+# Referencia cruzada da attention. No Windows nativo, esta validacao roda em CPU.
+tensorflow==2.21.0
