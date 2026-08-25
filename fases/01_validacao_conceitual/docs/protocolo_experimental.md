@@ -153,6 +153,12 @@ O runner recusa diretorio nao vazio, `device=auto`, campos nao finitos e
 benchmark principal sem CUDA/GPU nominal. Assim, uma interrupcao posterior nao
 apaga o lote ja concluido.
 
+`validacao.analise_benchmark_operacoes` valida os checksums do manifesto antes
+de ler os dados. Cada candidato e comparado somente com o baseline da mesma
+configuracao e execucao independente. Depois, as execucoes sao consolidadas com
+media e desvio-padrao, preservando tambem os resultados individuais. Hashes de
+entrada e saida precisam coincidir entre execucoes; latencias podem variar.
+
 Comando padrao:
 
 ```powershell

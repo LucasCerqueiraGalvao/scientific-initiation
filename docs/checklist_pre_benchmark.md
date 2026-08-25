@@ -46,7 +46,7 @@ permitidos para validar a infraestrutura, desde que sejam rotulados como tal.
   específico desta máquina.
 - [ ] **[RECOMENDADO ANTES DO BENCHMARK]** Fazer sanity checks de crescimento de
   FLOPs e shapes antes da grade completa.
-- [ ] **[RECOMENDADO ANTES DO BENCHMARK]** Consolidar as duas execuções com
+- [x] **[RECOMENDADO ANTES DO BENCHMARK]** Consolidar as duas execuções com
   média, desvio-padrão e resultados individuais preservados.
 - [ ] **[RECOMENDADO ANTES DO BENCHMARK]** Confirmar datas institucionais e
   corrigir, no canal apropriado, a inconsistência 2026/2027 do cronograma.

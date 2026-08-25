@@ -101,6 +101,8 @@ flowchart LR
 | `pesquisa.py` | perguntas de pesquisa e hipóteses | Verifica se perguntas, métricas e hipóteses estão registradas. |
 | `benchmark_controlado.py` | baseline, pruning, quantização, latência, throughput, memória e nível de validade | Executa uma grade pequena, registra ambiente/seed e impede promoção indevida para `hardware`. |
 | `analise_resultados.py` | análise posterior dos CSVs | Compara cenários com baseline, gera tabelas e conclusões classificadas por validade. |
+| `benchmark_operacoes.py` | benchmark principal de projeção densa e self-attention isoladas | Carrega configuração versionada, executa lotes independentes e persiste CSV, hashes, ambiente, manifesto e log. |
+| `analise_benchmark_operacoes.py` | consolidação das execuções isoladas | Valida checksums/reprodutibilidade, compara com o baseline da mesma execução e calcula média/desvio-padrão. |
 | `classificacao.py` | rótulos de aderência à família Transformer | Classifica como `nao_aderente`, `operacao_inspirada_em_transformer`, `bloco_transformer_simplificado` ou `transformer`. |
 
 Assim, a pergunta "quantos conceitos existem?" é respondida pelos documentos; a
@@ -114,6 +116,7 @@ fases/01_validacao_conceitual/
   README.md
   requirements.txt
   requirements-comparacao.txt
+  experimentos/
   validacao/
   tests/
   docs/
@@ -121,6 +124,7 @@ fases/01_validacao_conceitual/
 ```
 
 - `validacao/`: scripts Python transparentes e pequenos.
+- `experimentos/`: configurações JSON versionadas para smoke e coleta principal.
 - `tests/`: testes conceituais, matemáticos e de protocolo.
 - `docs/`: documentos metodológicos e matriz de validação.
 - `evidencias/`: resultados pequenos e reproduzíveis que sustentam os portões de validação.
@@ -228,6 +232,9 @@ $env:PYTHONPATH = "fases\01_validacao_conceitual"
 .\.venv\Scripts\python.exe -m validacao.benchmark_operacoes `
   --config fases\01_validacao_conceitual\experimentos\smoke_cpu.json `
   --output-dir fases\01_validacao_conceitual\evidencias\benchmarks\smoke_cpu_<data>
+
+.\.venv\Scripts\python.exe -m validacao.analise_benchmark_operacoes `
+  --evidence-dir fases\01_validacao_conceitual\evidencias\benchmarks\smoke_cpu_<data>
 ```
 
 O diretório precisa estar vazio. O runner não sobrescreve evidências. Em CPU,
@@ -235,6 +242,11 @@ O diretório precisa estar vazio. O runner não sobrescreve evidências. Em CPU,
 reportado por `torch.cuda.max_memory_allocated`. A contagem de FLOPs da
 self-attention inclui projeções e multiplicações matriciais, mas exclui softmax
 e escalonamento, conforme declarado nos metadados.
+
+A análise recusa CSVs ou metadados cujos checksums não coincidam com o
+manifesto. Ela produz resultados enriquecidos com o índice da execução,
+comparações contra o baseline correspondente, média/desvio-padrão, verificação
+de reprodutibilidade, relatório preliminar e gráficos.
 
 ## O Que Ainda Não Está Afirmado
 

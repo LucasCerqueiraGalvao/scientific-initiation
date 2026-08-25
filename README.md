@@ -116,14 +116,18 @@ verificar se aquilo se comporta como esperado.
 | `validacao/pesquisa.py` | Perguntas de pesquisa e hipóteses. | Registra RQs, hipóteses e métricas associadas para impedir que os benchmarks sejam interpretados sem critério científico. |
 | `validacao/benchmark_controlado.py` | Runner de benchmark piloto. | Executa cenários pequenos e reprodutíveis, registra ambiente/seed, mede latência/throughput/memória quando possível e impede chamar algo de `hardware` sem evidência suficiente. |
 | `validacao/analise_resultados.py` | Análise dos CSVs gerados. | Compara cenários contra baseline, calcula degradação numérica e organiza conclusões por nível de validade. |
+| `validacao/benchmark_operacoes.py` | Runner das operações isoladas. | Executa projeção densa e self-attention com configurações versionadas, lotes independentes, hashes, manifesto e log. |
+| `validacao/analise_benchmark_operacoes.py` | Análise entre execuções. | Valida checksums e reprodutibilidade, compara cada candidato com seu baseline e consolida média/desvio-padrão. |
 
-Os testes principais ficam em três arquivos:
+Os testes principais ficam em cinco arquivos:
 
 | Arquivo de teste | Função metodológica |
 | --- | --- |
 | `tests/test_validacao_conceitual.py` | Testa as definições matemáticas e conceituais: atenção, projeção densa, bloco Transformer simplificado, KV cache, pruning, sparsity, quantização, métricas e FLOPs. |
 | `tests/test_benchmark_controlado.py` | Testa se o protocolo experimental está protegido: schema do CSV, ambiente, seed, cenários permitidos, perguntas de pesquisa e impedimento de conclusões de hardware sem evidência. |
 | `tests/test_comparacao_frameworks.py` | Testa layouts, dependências e equivalência numérica entre NumPy, PyTorch e TensorFlow/Keras, além dos artefatos auditáveis. |
+| `tests/test_benchmark_operacoes.py` | Testa configurações, portão da GPU, cenários, reprodutibilidade e persistência do runner principal. |
+| `tests/test_analise_benchmark_operacoes.py` | Testa checksums, consolidação das execuções, relatório e gráficos. |
 
 Em resumo: os arquivos em `validacao/` são as implementações auditáveis; os
 arquivos em `tests/` são a prova determinística de que essas implementações

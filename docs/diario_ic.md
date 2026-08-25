@@ -118,3 +118,23 @@ reprodutibilidade entre execuções e todos os artefatos persistidos.
 
 **Pendência imediata.** Consolidar execuções com média/desvio-padrão, integrar a
 análise à pipeline e só então produzir a evidência canônica do smoke test.
+
+### Continuação — análise entre execuções
+
+**Implementação.** `validacao.analise_benchmark_operacoes` verifica os SHA-256
+do manifesto, valida a completude da grade, confere hashes determinísticos e
+associa cada candidato ao baseline da mesma execução. A análise preserva os
+registros individuais, calcula média e desvio-padrão entre execuções e gera
+comparações, relatório e gráficos.
+
+**Proteção contra interpretação indevida.** O relatório identifica o propósito
+do experimento. Para smoke em CPU, tempos e memória são rotulados como
+diagnóstico da pipeline. A cadeia pergunta → hipótese → configuração → execução
+→ resultado → interpretação fica explícita, e caminhos densos/dequantizados não
+são promovidos a hardware.
+
+**Testes.** Dois testes direcionados passaram: geração completa dos oito
+artefatos de análise e rejeição de CSV adulterado por divergência de checksum.
+
+**Próximo passo.** Fazer commit desta infraestrutura, executar o smoke canônico
+em diretório versionável novo, inspecionar seus artefatos e repetir a análise.
