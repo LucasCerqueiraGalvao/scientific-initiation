@@ -49,7 +49,7 @@ CONFIG_KEYS = {
 }
 OPERATIONS = ("dense_projection", "self_attention")
 SCENARIOS = ("baseline", "pruning_magnitude", "quantization_int8")
-PURPOSES = ("smoke_test", "primary_benchmark")
+PURPOSES = ("smoke_test", "cpu_diagnostic", "primary_benchmark")
 
 
 class ExperimentConfigurationError(ValueError):

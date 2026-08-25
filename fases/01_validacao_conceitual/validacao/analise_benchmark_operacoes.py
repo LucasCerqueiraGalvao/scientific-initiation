@@ -296,11 +296,18 @@ def _build_report(
     config = loaded.config
     gpu = loaded.environment.get("gpu", {})
     device_name = gpu.get("name", "") if isinstance(gpu, dict) else ""
-    hardware_warning = (
-        "Esta coleta e um smoke test em CPU. Os tempos servem apenas para validar a pipeline e não sustentam conclusão de hardware."
-        if config.purpose == "smoke_test"
-        else "Esta coleta foi configurada como benchmark principal em CUDA; as conclusões ainda devem respeitar o nível de validade de cada cenário."
-    )
+    if config.purpose == "primary_benchmark":
+        hardware_warning = (
+            "Esta coleta foi configurada como benchmark principal em CUDA; as conclusões ainda devem respeitar o nível de validade de cada cenário."
+        )
+    elif config.purpose == "cpu_diagnostic":
+        hardware_warning = (
+            "Esta coleta é um diagnóstico em CPU de um ponto da grade formal. Os tempos não substituem a coleta na GPU-alvo e não sustentam conclusão de hardware."
+        )
+    else:
+        hardware_warning = (
+            "Esta coleta e um smoke test em CPU. Os tempos servem apenas para validar a pipeline e não sustentam conclusão de hardware."
+        )
     lines = [
         f"# Relatório preliminar — {config.experiment_id}",
         "",
@@ -356,7 +363,7 @@ def _build_report(
         [
             "- Pruning usa matriz densa e não usa kernel esparso; quantização é dequantizada para `float32` e não usa kernel INT8.",
             "- Razões de latência e memória estão nos CSVs de análise, mas só podem sustentar alegação de hardware se o experimento for principal e o caminho executado tiver validade `hardware`.",
-            "- Resultados deste smoke são diagnósticos da infraestrutura, não estimativas finais de desempenho.",
+            "- Resultados de smoke ou diagnóstico CPU não são estimativas finais de desempenho no hardware-alvo.",
             "",
             "## Cadeia de evidência",
             "",

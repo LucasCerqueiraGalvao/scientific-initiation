@@ -221,6 +221,8 @@ Configurações versionadas:
 
 - `experimentos/smoke_cpu.json`: validação curta da pipeline, sem conclusão de
   hardware;
+- `experimentos/diagnostico_cpu_l64_d128.json`: um ponto da grade formal com o
+  protocolo completo de repetições, ainda sem conclusão de hardware;
 - `experimentos/benchmark_principal_gpu.json`: seed 42, lote 1,
   `L={64,128,256}`, `D={128,256,512}`, 20 warm-ups, 50 medições e duas execuções
   na RTX 4070 Ti Super.

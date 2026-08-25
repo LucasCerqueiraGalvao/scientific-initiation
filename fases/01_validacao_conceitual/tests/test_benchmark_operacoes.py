@@ -47,6 +47,19 @@ def test_primary_config_matches_formal_protocol() -> None:
     assert config.independent_runs == 2
 
 
+def test_cpu_diagnostic_uses_one_formal_grid_point_and_full_measurement_protocol() -> None:
+    config = load_experiment_config(PHASE_ROOT / "experimentos" / "diagnostico_cpu_l64_d128.json")
+
+    assert config.purpose == "cpu_diagnostic"
+    assert config.device == "cpu"
+    assert config.seed == 42
+    assert config.sequence_lengths == (64,)
+    assert config.dimensions == (128,)
+    assert config.warmup_iterations == 20
+    assert config.measure_iterations == 50
+    assert config.independent_runs == 2
+
+
 def test_config_rejects_auto_device_and_primary_cpu() -> None:
     data = smoke_config().to_dict()
     data["device"] = "auto"
