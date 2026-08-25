@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "experiment_id": "smoke_cpu_v1",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "environment": "environment.json",
+  "log": "execution.log",
+  "runs": [
+    {
+      "independent_run": 1,
+      "csv": "run_01.csv",
+      "csv_sha256": "e0e259c522ed4a6b84c3f851618ce99b84c48361a5f9aa1bda4dce64104ed174",
+      "metadata": "run_01.metadata.json",
+      "metadata_sha256": "44d96578d67a31efdbea80e9bd22da079516ba8bc50b54a259158debc36079d6",
+      "records": 6
+    },
+    {
+      "independent_run": 2,
+      "csv": "run_02.csv",
+      "csv_sha256": "4168e1a3f381abf56558e563f2d3506d0ce25c82cb943a8124f40ca8a9ca0d11",
+      "metadata": "run_02.metadata.json",
+      "metadata_sha256": "fb1c36bfcfb0723f0d2b0d434d14683ccda53accbd8a9cfe7f7f5975e2e09409",
+      "records": 6
+    }
+  ],
+  "completed_at": "2026-08-25T04:28:17-03:00"
+}

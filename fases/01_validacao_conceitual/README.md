@@ -171,10 +171,10 @@ Rodar da raiz do repositório:
 .\.venv\Scripts\python.exe -m pytest fases\01_validacao_conceitual\tests -q -W error
 ```
 
-Resultado observado no ambiente de validação cruzada em 24/08/2026:
+Resultado observado após a infraestrutura de benchmark em 25/08/2026:
 
 ```text
-32 passed, 1 skipped
+43 passed, 1 skipped
 ```
 
 O teste ignorado exige CUDA e permanece explicitamente marcado quando o
@@ -247,6 +247,11 @@ A análise recusa CSVs ou metadados cujos checksums não coincidam com o
 manifesto. Ela produz resultados enriquecidos com o índice da execução,
 comparações contra o baseline correspondente, média/desvio-padrão, verificação
 de reprodutibilidade, relatório preliminar e gráficos.
+
+O smoke canônico está em
+[`evidencias/benchmarks/smoke_cpu_2026-08-25/`](evidencias/benchmarks/smoke_cpu_2026-08-25/).
+Ele aprovou 12 registros, os hashes determinísticos e a análise ponta a ponta.
+Os tempos são diagnósticos de CPU e não sustentam conclusão de hardware.
 
 ## O Que Ainda Não Está Afirmado
 

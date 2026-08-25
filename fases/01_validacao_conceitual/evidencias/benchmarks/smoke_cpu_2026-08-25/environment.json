@@ -1,0 +1,33 @@
+{
+  "captured_at": "2026-08-25T04:28:15-03:00",
+  "python_version": "3.11.9",
+  "python_implementation": "CPython",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "machine": "AMD64",
+  "processor": "Intel64 Family 6 Model 154 Stepping 4, GenuineIntel",
+  "torch_version": "2.11.0+cu128",
+  "torch_cuda_build": "12.8",
+  "cuda_available": false,
+  "cuda_device_count": 0,
+  "device": "cpu",
+  "gpu": {
+    "name": "",
+    "total_memory_bytes": 0,
+    "compute_capability": ""
+  },
+  "torch_num_threads": 10,
+  "torch_num_interop_threads": 10,
+  "package_versions": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.5",
+    "scikit-learn": "1.9.0",
+    "matplotlib": "3.11.1",
+    "seaborn": "0.13.2",
+    "torchao": "0.18.0"
+  },
+  "git": {
+    "commit": "a0aebe5393f17ce49efa9d7307a5a7e315f1e9c2",
+    "branch": "main",
+    "worktree_clean_at_start": true
+  }
+}

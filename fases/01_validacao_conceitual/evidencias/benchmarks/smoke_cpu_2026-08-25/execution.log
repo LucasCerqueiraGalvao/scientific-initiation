@@ -1,0 +1,7 @@
+2026-08-25T04:28:15-03:00 START smoke_cpu_v1
+purpose=smoke_test device=cpu seed=42
+RUN 1/2 START
+RUN 1/2 OK records=6
+RUN 2/2 START
+RUN 2/2 OK records=6
+2026-08-25T04:28:17-03:00 COMPLETE

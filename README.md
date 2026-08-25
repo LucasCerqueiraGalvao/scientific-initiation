@@ -175,14 +175,15 @@ No Windows, usando o `.venv` do repositório:
 .\.venv\Scripts\python.exe -m pytest fases\01_validacao_conceitual\tests -q -W error
 ```
 
-Resultado observado em 24/08/2026 no ambiente com TensorFlow/Keras:
+Resultado observado em 25/08/2026 após a infraestrutura de benchmark:
 
 ```text
-32 passed, 1 skipped
+43 passed, 1 skipped
 ```
 
 O único teste ignorado exige CUDA; nenhum teste da comparação entre frameworks
-foi ignorado. Consulte a [evidência numérica](fases/01_validacao_conceitual/evidencias/comparacao_frameworks/comparacao_atencao.md).
+foi ignorado. Consulte a [evidência numérica](fases/01_validacao_conceitual/evidencias/comparacao_frameworks/comparacao_atencao.md)
+e o [smoke da pipeline](fases/01_validacao_conceitual/evidencias/benchmarks/smoke_cpu_2026-08-25/).
 
 ## Mapa Do Projeto
 

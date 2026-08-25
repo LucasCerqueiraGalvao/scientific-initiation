@@ -138,3 +138,39 @@ artefatos de análise e rejeição de CSV adulterado por divergência de checksu
 
 **Próximo passo.** Fazer commit desta infraestrutura, executar o smoke canônico
 em diretório versionável novo, inspecionar seus artefatos e repetir a análise.
+
+### Continuação — smoke canônico e portão da GPU
+
+**Objetivo.** Validar ponta a ponta leitura da configuração, geração dos dados,
+execução, métricas, persistência, logs, integridade, análise e visualização antes
+de qualquer grade maior.
+
+**Configuração.** CPU, seed 42, `B=1`, `L=4`, `D=8`, projeção densa e
+self-attention, três cenários, 2 warm-ups, 5 medições e 2 execuções
+independentes. Evidência em
+`evidencias/benchmarks/smoke_cpu_2026-08-25/`.
+
+**Resultados da pipeline.** Manifesto `complete`; 6 registros por execução e 12
+no total; CSVs e metadados passaram nos checksums; hashes de entrada e saída
+coincidiram entre execuções; oito artefatos de análise foram gerados; os dois
+gráficos foram inspecionados e estão legíveis.
+
+**Qualidade da saída.** Na projeção densa, MSE de `7.28672e-05` para quantização
+contra `0.352201` para pruning. Na self-attention, MSE de `0.00503124` contra
+`25.8574`. O sinal é compatível com H1 nesta amostra sintética: a quantização
+simulada preservou melhor a saída que a poda de 50%.
+
+**Latência e limitação.** Os casos minúsculos apresentaram grande variabilidade
+entre as duas execuções. A quantização simulada também executa dequantização em
+`float32`, e a poda usa matriz densa. Portanto, razões de latência do smoke não
+são evidência de aceleração nem de hardware.
+
+**Portão negativo da GPU.** A tentativa controlada com a configuração principal
+terminou com código 2 e mensagem de CUDA indisponível, antes de criar qualquer
+diretório de saída. Isso confirma que o runner não fará coleta principal
+acidental em CPU.
+
+**Decisão.** O smoke está aprovado. A grade principal continua bloqueada apenas
+pela ausência da RTX/CUDA neste ambiente. Como trabalho independente, será
+executado um diagnóstico CPU em um ponto representativo da grade formal, sem
+promovê-lo a resultado de hardware.

@@ -31,7 +31,7 @@ permitidos para validar a infraestrutura, desde que sejam rotulados como tal.
   log e hashes de entradas/saídas em pasta versionável.
 - [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Rejeitar shapes, dtypes, métricas ou
   resultados inválidos, `NaN` e infinitos.
-- [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Fazer smoke test ponta a ponta,
+- [x] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Fazer smoke test ponta a ponta,
   incluindo análise, gráficos e reexecução determinística.
 - [ ] **[OBRIGATÓRIO ANTES DO BENCHMARK]** Confirmar que o dispositivo da coleta
   principal é CUDA e registrar a RTX 4070 Ti Super. **Bloqueio externo atual:**
