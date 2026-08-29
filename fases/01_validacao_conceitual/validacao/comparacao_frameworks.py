@@ -370,27 +370,56 @@ def _format_metric(value: object) -> str:
     return f"{number:.8e}"
 
 
-def _build_markdown(run: FrameworkComparisonRun) -> str:
+def _latex_escape(value: object) -> str:
+    text = str(value)
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "#": r"\#",
+        "_": r"\_\allowbreak{}",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+    }
+    return "".join(replacements.get(char, char) for char in text)
+
+
+def _build_latex(run: FrameworkComparisonRun) -> str:
     lines = [
-        "# Comparação numérica da scaled dot-product attention",
+        r"\chapter{Comparação numérica da scaled dot-product attention}",
         "",
-        "> Esta evidência valida correção numérica. Ela não compara desempenho e não sustenta alegações de hardware.",
+        r"\begin{icquote}",
+        "Esta evidência valida correção numérica. Ela não compara desempenho e não sustenta alegações de hardware.",
+        r"\end{icquote}",
         "",
-        f"- Referência: `{run.metadata['reference']}`",
-        f"- Seed: `{run.metadata['seed']}`",
-        f"- Dtype e dispositivo: `{run.metadata['dtype']}` em `{run.metadata['device']}`",
-        f"- Tolerâncias: `atol={run.metadata['atol']}` e `rtol={run.metadata['rtol']}`",
-        f"- Backend Keras: `{run.metadata['keras_backend']}`",
+        r"\begin{itemize}",
+        rf"\item Referência: \texttt{{{_latex_escape(run.metadata['reference'])}}}.",
+        rf"\item Seed: \texttt{{{_latex_escape(run.metadata['seed'])}}}.",
+        rf"\item Dtype e dispositivo: \texttt{{{_latex_escape(run.metadata['dtype'])}}} em \texttt{{{_latex_escape(run.metadata['device'])}}}.",
+        rf"\item Tolerâncias: \texttt{{atol={_latex_escape(run.metadata['atol'])}}} e \texttt{{rtol={_latex_escape(run.metadata['rtol'])}}}.",
+        rf"\item Backend Keras: \texttt{{{_latex_escape(run.metadata['keras_backend'])}}}.",
+        r"\end{itemize}",
         "",
-        "| Caso | Candidato | Máscara | Erro máximo | Erro médio | MSE | Similaridade de cosseno | Passou |",
-        "| --- | --- | --- | ---: | ---: | ---: | ---: | :---: |",
+        r"\begin{landscape}",
+        r"\scriptsize",
+        r"\begin{longtable}{@{}p{0.18\linewidth}p{0.16\linewidth}p{0.12\linewidth}rrrrc@{}}",
+        r"\toprule",
+        r"\textbf{Caso} & \textbf{Candidato} & \textbf{Máscara} & \textbf{Erro máximo} & \textbf{Erro médio} & \textbf{MSE} & \textbf{Cosseno} & \textbf{Passou} \\",
+        r"\midrule",
+        r"\endfirsthead",
+        r"\toprule",
+        r"\textbf{Caso} & \textbf{Candidato} & \textbf{Máscara} & \textbf{Erro máximo} & \textbf{Erro médio} & \textbf{MSE} & \textbf{Cosseno} & \textbf{Passou} \\",
+        r"\midrule",
+        r"\endhead",
     ]
     for record in run.records:
         lines.append(
-            "| {case_id} | {candidate} | {mask_kind} | {max_error} | {mean_error} | {mse} | {cosine} | {passed} |".format(
-                case_id=record["case_id"],
-                candidate=record["candidate"],
-                mask_kind=record["mask_kind"],
+            "{case_id} & {candidate} & {mask_kind} & {max_error} & {mean_error} & {mse} & {cosine} & {passed} \\\\".format(
+                case_id=_latex_escape(record["case_id"]),
+                candidate=_latex_escape(record["candidate"]),
+                mask_kind=_latex_escape(record["mask_kind"]),
                 max_error=_format_metric(record["max_abs_error"]),
                 mean_error=_format_metric(record["mean_abs_error"]),
                 mse=_format_metric(record["mse"]),
@@ -401,8 +430,11 @@ def _build_markdown(run: FrameworkComparisonRun) -> str:
 
     lines.extend(
         [
+            r"\bottomrule",
+            r"\end{longtable}",
+            r"\end{landscape}",
             "",
-            "## Conclusão",
+            r"\section{Conclusão}",
             "",
             (
                 "Todos os casos ficaram dentro das tolerâncias definidas."
@@ -410,7 +442,7 @@ def _build_markdown(run: FrameworkComparisonRun) -> str:
                 else "Ao menos um caso ficou fora das tolerâncias definidas; a validação não foi aprovada."
             ),
             "",
-            "As versões completas do ambiente estão em `comparacao_atencao.metadata.json` e os valores auditáveis em `comparacao_atencao.csv`.",
+            r"As versões completas do ambiente estão em \texttt{comparacao\_atencao.metadata.json} e os valores auditáveis em \texttt{comparacao\_atencao.csv}.",
             "",
         ]
     )
@@ -425,7 +457,7 @@ def write_comparison_outputs(
     output_path.mkdir(parents=True, exist_ok=True)
 
     csv_path = output_path / "comparacao_atencao.csv"
-    markdown_path = output_path / "comparacao_atencao.md"
+    latex_path = output_path / "comparacao_atencao.tex"
     metadata_path = output_path / "comparacao_atencao.metadata.json"
 
     for record in run.records:
@@ -436,12 +468,12 @@ def write_comparison_outputs(
         writer.writeheader()
         writer.writerows(run.records)
 
-    markdown_path.write_text(_build_markdown(run), encoding="utf-8")
+    latex_path.write_text(_build_latex(run), encoding="utf-8")
     metadata_path.write_text(
         json.dumps(run.metadata, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    return csv_path, markdown_path, metadata_path
+    return csv_path, latex_path, metadata_path
 
 
 def build_parser() -> argparse.ArgumentParser:

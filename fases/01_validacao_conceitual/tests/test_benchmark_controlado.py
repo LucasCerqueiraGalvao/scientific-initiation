@@ -154,3 +154,6 @@ def test_benchmark_outputs_and_article_analysis_are_schema_valid(tmp_path) -> No
     assert all(conclusion.evidence_source.startswith("CSV:") for conclusion in conclusions)
     assert all(conclusion.matrix_entry for conclusion in conclusions)
     assert all(path.exists() for path in generated)
+    conclusions_tex = generated[2].read_text(encoding="utf-8")
+    assert generated[2].suffix == ".tex"
+    assert r"quantization\_\allowbreak{}int8" in conclusions_tex

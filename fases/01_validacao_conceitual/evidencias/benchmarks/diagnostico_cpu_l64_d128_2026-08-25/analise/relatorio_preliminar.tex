@@ -1,0 +1,94 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: fases/01_validacao_conceitual/evidencias/benchmarks/diagnostico_cpu_l64_d128_2026-08-25/analise/relatorio_preliminar.md
+
+
+\chapter{Relatório preliminar - diagnostico\_\allowbreak{}cpu\_\allowbreak{}l64\_\allowbreak{}d128\_\allowbreak{}v1}
+
+
+
+\begin{icquote}
+Esta coleta é um diagnóstico em CPU de um ponto da grade formal. Os tempos não substituem a coleta na GPU-alvo e não sustentam conclusão de hardware.
+\end{icquote}
+
+
+
+\section{Pergunta, hipótese e desenho}
+
+
+\begin{itemize}
+\item Pergunta principal: quantização INT8 simulada preserva melhor a saída que pruning por magnitude de 50\% nas mesmas operações?
+\item Hipótese: a quantização terá MSE/MAE menores e R²/cosseno maiores que o pruning.
+\item Amostra: tensores sintéticos de distribuição normal, gerados deterministicamente; não há dataset ou pré-processamento externo.
+\item Seed: \texttt{42}; lote(s): \texttt{[1]}; sequências: \texttt{[64]}; dimensões: \texttt{[128]}.
+\item Medição: \texttt{20} warm-ups, \texttt{50} medições e \texttt{2} execuções independentes.
+\item Dispositivo observado: \texttt{cpu}
+\item Inclusão: todos os casos válidos da grade e os três cenários registrados; exclusão: qualquer artefato com checksum, shape, dtype ou valor numérico inválido.
+\end{itemize}
+
+
+\section{Reprodutibilidade}
+
+
+\begin{itemize}
+\item Hashes de entrada iguais entre execuções: \texttt{True}.
+\item Hashes de saída iguais entre execuções: \texttt{True}.
+\item As latências não precisam ser idênticas: elas medem ruído e estado do sistema; entradas e saídas determinísticas precisam coincidir.
+\end{itemize}
+
+
+\section{Resultados por operação e cenário}
+
+
+
+\begin{landscape}
+\scriptsize
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}@{}}
+\toprule
+Operação & Cenário & Latência média (ms) & DP entre execuções & MSE & R² & Cosseno \\
+\midrule
+\endfirsthead
+\toprule
+Operação & Cenário & Latência média (ms) & DP entre execuções & MSE & R² & Cosseno \\
+\midrule
+\endhead
+dense\_\allowbreak{}projection & baseline & 0.088291 & 0.0207253 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.076017 & 0.0643283 & 9.30825 & 0.927085 & 0.962897 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.061625 & 0.00428648 & 0.00995697 & 0.999922 & 0.999961 \\
+self\_\allowbreak{}attention & baseline & 0.93542 & 0.383818 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.609696 & 0.0349735 & 12144.4 & 0.242143 & 0.596755 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.867666 & 0.183593 & 732.65 & 0.95428 & 0.977141 \\
+\bottomrule
+\end{longtable}
+\end{landscape}
+
+
+
+\section{Interpretação preliminar}
+
+
+\begin{itemize}
+\item \texttt{dense\_\allowbreak{}projection}: MSE da quantização \texttt{0.\allowbreak{}00995697} e do pruning \texttt{9.\allowbreak{}30825}; evidência compatível com H1 nesta amostra.
+\item \texttt{self\_\allowbreak{}attention}: MSE da quantização \texttt{732.\allowbreak{}65} e do pruning \texttt{12144.\allowbreak{}4}; evidência compatível com H1 nesta amostra.
+\item Pruning usa matriz densa e não usa kernel esparso; quantização é dequantizada para \texttt{float32} e não usa kernel INT8.
+\item Razões de latência e memória estão nos CSVs de análise, mas só podem sustentar alegação de hardware se o experimento for principal e o caminho executado tiver validade \texttt{hardware}.
+\item Resultados de smoke ou diagnóstico CPU não são estimativas finais de desempenho no hardware-alvo.
+\end{itemize}
+
+
+\section{Cadeia de evidência}
+
+
+
+\texttt{pergunta → H1 → configuração versionada → CSVs por execução → checksums/\allowbreak{}hashes → resumo com média e DP → interpretação limitada}
+
+
+
+\section{Reprodução}
+
+
+
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=powershell]
+$env:PYTHONPATH = "fases\01_validacao_conceitual"
+.\.venv\Scripts\python.exe -m validacao.benchmark_operacoes --config <config.json> --output-dir <diretorio-novo>
+.\.venv\Scripts\python.exe -m validacao.analise_benchmark_operacoes --evidence-dir <diretorio-novo>
+\end{Verbatim}

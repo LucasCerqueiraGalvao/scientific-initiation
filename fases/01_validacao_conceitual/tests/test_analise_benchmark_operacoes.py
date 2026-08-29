@@ -35,11 +35,13 @@ def test_analysis_validates_reproducibility_and_generates_complete_outputs(tmp_p
     summary = pd.read_csv(outputs.summary)
     comparison_summary = pd.read_csv(outputs.comparison_summary)
     report = outputs.report.read_text(encoding="utf-8")
+    assert outputs.report.suffix == ".tex"
+    assert r"\chapter{Relatório preliminar" in report
     assert set(summary["scenario"]) == {"baseline", "pruning_magnitude", "quantization_int8"}
     assert (summary["independent_runs"] == 2).all()
     assert set(comparison_summary["scenario"]) == {"pruning_magnitude", "quantization_int8"}
     assert "não sustentam conclusão de hardware" in report
-    assert "pergunta → H1" in report
+    assert r"Pergunta $\rightarrow$ H1" in report
 
     with pytest.raises(FileExistsError, match="nao esta vazio"):
         write_operation_analysis(evidence_dir)

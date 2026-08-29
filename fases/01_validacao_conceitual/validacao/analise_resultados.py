@@ -18,6 +18,21 @@ from validacao.protocolo import CSV_COLUMNS, validate_benchmark_record
 CONFIG_COLUMNS = ["model_kind", "batch_size", "seq_len", "d_model", "num_heads", "dtype"]
 
 
+def _latex_escape(value: object) -> str:
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "#": r"\#",
+        "_": r"\_\allowbreak{}",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+    }
+    return "".join(replacements.get(char, char) for char in str(value))
+
+
 @dataclass(frozen=True)
 class AnalysisConclusion:
     research_question_id: str
@@ -128,7 +143,7 @@ def write_article_outputs(csv_path: str | Path, output_dir: str | Path) -> tuple
     output_path.mkdir(parents=True, exist_ok=True)
     summary_path = output_path / "tabela_resumo_cenarios.csv"
     comparison_path = output_path / "comparacao_baseline.csv"
-    conclusions_path = output_path / "conclusoes.md"
+    conclusions_path = output_path / "conclusoes.tex"
     latency_plot_path = output_path / "latencia_por_cenario.png"
     quality_plot_path = output_path / "qualidade_por_cenario.png"
 
@@ -136,8 +151,17 @@ def write_article_outputs(csv_path: str | Path, output_dir: str | Path) -> tuple
     comparisons.to_csv(comparison_path, index=False)
     conclusions_path.write_text(
         "\n".join(
-            f"- {item.conclusion} Evidencia: {item.evidence_source}; matriz: {item.matrix_entry}."
-            for item in conclusions
+            [
+                r"\chapter{Conclusões dos benchmarks controlados}",
+                "",
+                r"\begin{itemize}",
+                *(
+                    rf"\item {_latex_escape(item.conclusion)} Evidência: \texttt{{{_latex_escape(item.evidence_source)}}}; matriz: \texttt{{{_latex_escape(item.matrix_entry)}}}."
+                    for item in conclusions
+                ),
+                r"\end{itemize}",
+                "",
+            ]
         ),
         encoding="utf-8",
     )

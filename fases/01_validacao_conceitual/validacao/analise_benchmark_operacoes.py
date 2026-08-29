@@ -288,6 +288,21 @@ def _format(value: object) -> str:
     return f"{number:.6g}" if math.isfinite(number) else str(number)
 
 
+def _latex_escape(value: object) -> str:
+    replacements = {
+        "\\": r"\textbackslash{}",
+        "&": r"\&",
+        "%": r"\%",
+        "#": r"\#",
+        "_": r"\_\allowbreak{}",
+        "{": r"\{",
+        "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
+    }
+    return "".join(replacements.get(char, char) for char in str(value))
+
+
 def _build_report(
     loaded: LoadedExperiment,
     summary: pd.DataFrame,
@@ -309,37 +324,52 @@ def _build_report(
             "Esta coleta e um smoke test em CPU. Os tempos servem apenas para validar a pipeline e não sustentam conclusão de hardware."
         )
     lines = [
-        f"# Relatório preliminar — {config.experiment_id}",
+        rf"\chapter{{Relatório preliminar - {_latex_escape(config.experiment_id)}}}",
         "",
-        f"> {hardware_warning}",
+        r"\begin{icquote}",
+        hardware_warning,
+        r"\end{icquote}",
         "",
-        "## Pergunta, hipótese e desenho",
+        r"\section{Pergunta, hipótese e desenho}",
         "",
-        "- Pergunta principal: quantização INT8 simulada preserva melhor a saída que pruning por magnitude de 50% nas mesmas operações?",
-        "- Hipótese: a quantização terá MSE/MAE menores e R²/cosseno maiores que o pruning.",
-        "- Amostra: tensores sintéticos de distribuição normal, gerados deterministicamente; não há dataset ou pré-processamento externo.",
-        f"- Seed: `{config.seed}`; lote(s): `{list(config.batch_sizes)}`; sequências: `{list(config.sequence_lengths)}`; dimensões: `{list(config.dimensions)}`.",
-        f"- Dados/pesos: entrada `{config.input_distribution}`, pesos `{config.weight_initialization}` e bias `{config.bias_initialization}`.",
-        f"- Medição: `{config.warmup_iterations}` warm-ups, `{config.measure_iterations}` medições e `{config.independent_runs}` execuções independentes.",
-        f"- Dispositivo observado: `{loaded.environment.get('device', '')}` {device_name}".rstrip(),
-        "- Inclusão: todos os casos válidos da grade e os três cenários registrados; exclusão: qualquer artefato com checksum, shape, dtype ou valor numérico inválido.",
+        r"\begin{itemize}",
+        r"\item Pergunta principal: quantização INT8 simulada preserva melhor a saída que pruning por magnitude de 50\% nas mesmas operações?",
+        r"\item Hipótese: a quantização terá MSE/MAE menores e $R^2$/cosseno maiores que o pruning.",
+        r"\item Amostra: tensores sintéticos de distribuição normal, gerados deterministicamente; não há dataset ou pré-processamento externo.",
+        rf"\item Seed: \texttt{{{config.seed}}}; lotes: \texttt{{{_latex_escape(list(config.batch_sizes))}}}; sequências: \texttt{{{_latex_escape(list(config.sequence_lengths))}}}; dimensões: \texttt{{{_latex_escape(list(config.dimensions))}}}.",
+        rf"\item Dados/pesos: entrada \texttt{{{_latex_escape(config.input_distribution)}}}, pesos \texttt{{{_latex_escape(config.weight_initialization)}}} e bias \texttt{{{_latex_escape(config.bias_initialization)}}}.",
+        rf"\item Medição: \texttt{{{config.warmup_iterations}}} warm-ups, \texttt{{{config.measure_iterations}}} medições e \texttt{{{config.independent_runs}}} execuções independentes.",
+        rf"\item Dispositivo observado: \texttt{{{_latex_escape(loaded.environment.get('device', ''))}}} {_latex_escape(device_name)}.",
+        r"\item Inclusão: todos os casos válidos da grade e os três cenários registrados; exclusão: qualquer artefato com checksum, shape, dtype ou valor numérico inválido.",
+        r"\end{itemize}",
         "",
-        "## Reprodutibilidade",
+        r"\section{Reprodutibilidade}",
         "",
-        f"- Hashes de entrada iguais entre execuções: `{loaded.reproducibility['input_hashes_match_across_runs']}`.",
-        f"- Hashes de saída iguais entre execuções: `{loaded.reproducibility['output_hashes_match_across_runs']}`.",
-        "- As latências não precisam ser idênticas: elas medem ruído e estado do sistema; entradas e saídas determinísticas precisam coincidir.",
+        r"\begin{itemize}",
+        rf"\item Hashes de entrada iguais entre execuções: \texttt{{{_latex_escape(loaded.reproducibility['input_hashes_match_across_runs'])}}}.",
+        rf"\item Hashes de saída iguais entre execuções: \texttt{{{_latex_escape(loaded.reproducibility['output_hashes_match_across_runs'])}}}.",
+        r"\item As latências não precisam ser idênticas: elas medem ruído e estado do sistema; entradas e saídas determinísticas precisam coincidir.",
+        r"\end{itemize}",
         "",
-        "## Resultados por operação e cenário",
+        r"\section{Resultados por operação e cenário}",
         "",
-        "| Operação | Cenário | Latência média (ms) | DP entre execuções | MSE | R² | Cosseno |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: |",
+        r"\begin{landscape}",
+        r"\small",
+        r"\begin{longtable}{@{}p{0.20\linewidth}p{0.20\linewidth}rrrrr@{}}",
+        r"\toprule",
+        r"\textbf{Operação} & \textbf{Cenário} & \textbf{Latência (ms)} & \textbf{DP} & \textbf{MSE} & \textbf{$R^2$} & \textbf{Cosseno} \\",
+        r"\midrule",
+        r"\endfirsthead",
+        r"\toprule",
+        r"\textbf{Operação} & \textbf{Cenário} & \textbf{Latência (ms)} & \textbf{DP} & \textbf{MSE} & \textbf{$R^2$} & \textbf{Cosseno} \\",
+        r"\midrule",
+        r"\endhead",
     ]
     for _, row in summary.sort_values(["model_kind", "scenario"]).iterrows():
         lines.append(
-            "| {operation} | {scenario} | {latency} | {std} | {mse} | {r2} | {cosine} |".format(
-                operation=row["model_kind"],
-                scenario=row["scenario"],
+            "{operation} & {scenario} & {latency} & {std} & {mse} & {r2} & {cosine} \\\\".format(
+                operation=_latex_escape(row["model_kind"]),
+                scenario=_latex_escape(row["scenario"]),
                 latency=_format(row["latency_ms_mean"]),
                 std=_format(row["latency_ms_std"]),
                 mse=_format(row["mse_mean"]),
@@ -348,7 +378,17 @@ def _build_report(
             )
         )
 
-    lines.extend(["", "## Interpretação preliminar", ""])
+    lines.extend(
+        [
+            r"\bottomrule",
+            r"\end{longtable}",
+            r"\end{landscape}",
+            "",
+            r"\section{Interpretação preliminar}",
+            "",
+            r"\begin{itemize}",
+        ]
+    )
     for operation in config.operations:
         operation_rows = comparison_summary[comparison_summary["model_kind"] == operation]
         pruning = operation_rows[operation_rows["scenario"] == "pruning_magnitude"]
@@ -358,25 +398,26 @@ def _build_report(
             quantized_mse = float(quantized["mse_mean"].mean())
             relation = "compatível com" if quantized_mse < pruning_mse else "contrária a"
             lines.append(
-                f"- `{operation}`: MSE da quantização `{_format(quantized_mse)}` e do pruning `{_format(pruning_mse)}`; evidência {relation} H1 nesta amostra."
+                rf"\item \texttt{{{_latex_escape(operation)}}}: MSE da quantização \texttt{{{_format(quantized_mse)}}} e do pruning \texttt{{{_format(pruning_mse)}}}; evidência {relation} H1 nesta amostra."
             )
     lines.extend(
         [
-            "- Pruning usa matriz densa e não usa kernel esparso; quantização é dequantizada para `float32` e não usa kernel INT8.",
-            "- Razões de latência e memória estão nos CSVs de análise, mas só podem sustentar alegação de hardware se o experimento for principal e o caminho executado tiver validade `hardware`.",
-            "- Resultados de smoke ou diagnóstico CPU não são estimativas finais de desempenho no hardware-alvo.",
+            r"\item Pruning usa matriz densa e não usa kernel esparso; quantização é dequantizada para \texttt{float32} e não usa kernel INT8.",
+            r"\item Razões de latência e memória estão nos CSVs de análise, mas só podem sustentar alegação de hardware se o experimento for principal e o caminho executado tiver validade \texttt{hardware}.",
+            r"\item Resultados de smoke ou diagnóstico CPU não são estimativas finais de desempenho no hardware-alvo.",
+            r"\end{itemize}",
             "",
-            "## Cadeia de evidência",
+            r"\section{Cadeia de evidência}",
             "",
-            "`pergunta → H1 → configuração versionada → CSVs por execução → checksums/hashes → resumo com média e DP → interpretação limitada`",
+            r"Pergunta $\rightarrow$ H1 $\rightarrow$ configuração versionada $\rightarrow$ CSVs por execução $\rightarrow$ checksums/hashes $\rightarrow$ resumo com média e DP $\rightarrow$ interpretação limitada.",
             "",
-            "## Reprodução",
+            r"\section{Reprodução}",
             "",
-            "```powershell",
+            r"\begin{Verbatim}[fontsize=\small]",
             "$env:PYTHONPATH = \"fases\\01_validacao_conceitual\"",
             ".\\.venv\\Scripts\\python.exe -m validacao.benchmark_operacoes --config <config.json> --output-dir <diretorio-novo>",
             ".\\.venv\\Scripts\\python.exe -m validacao.analise_benchmark_operacoes --evidence-dir <diretorio-novo>",
-            "```",
+            r"\end{Verbatim}",
             "",
         ]
     )
@@ -437,7 +478,7 @@ def write_operation_analysis(
     summary_path = output_path / "resumo_execucoes.csv"
     comparison_summary_path = output_path / "resumo_comparacao_baseline.csv"
     reproducibility_path = output_path / "reprodutibilidade.json"
-    report_path = output_path / "relatorio_preliminar.md"
+    report_path = output_path / "relatorio_preliminar.tex"
     latency_plot_path = output_path / "latencia_relativa.png"
     quality_plot_path = output_path / "qualidade_saida.png"
 

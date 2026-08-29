@@ -121,7 +121,7 @@ def test_comparison_outputs_are_complete_and_auditable(
     tmp_path: Path,
     comparison_run: FrameworkComparisonRun,
 ) -> None:
-    csv_path, markdown_path, metadata_path = write_comparison_outputs(comparison_run, tmp_path)
+    csv_path, latex_path, metadata_path = write_comparison_outputs(comparison_run, tmp_path)
 
     with csv_path.open(encoding="utf-8", newline="") as csv_file:
         reader = csv.DictReader(csv_file)
@@ -129,7 +129,7 @@ def test_comparison_outputs_are_complete_and_auditable(
         assert reader.fieldnames == COMPARISON_COLUMNS
 
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    markdown = markdown_path.read_text(encoding="utf-8")
+    latex = latex_path.read_text(encoding="utf-8")
 
     assert len(rows) == 9
     assert all(row["passed"] == "True" for row in rows)
@@ -138,8 +138,10 @@ def test_comparison_outputs_are_complete_and_auditable(
     assert metadata["keras_backend"] == "tensorflow"
     assert metadata["tensorflow_version"]
     assert metadata["keras_version"]
-    assert "não compara desempenho" in markdown
-    assert "Todos os casos ficaram dentro" in markdown
+    assert latex_path.suffix == ".tex"
+    assert r"\chapter{Comparação numérica" in latex
+    assert "não compara desempenho" in latex
+    assert "Todos os casos ficaram dentro" in latex
 
 
 def test_cli_returns_dependency_error_without_tensorflow(
