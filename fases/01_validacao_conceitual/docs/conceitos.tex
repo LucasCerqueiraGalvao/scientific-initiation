@@ -1,0 +1,794 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: fases/01_validacao_conceitual/docs/conceitos.txt
+
+
+Validação inicial dos conceitos e scripts do projeto
+
+
+
+\section{Nota metodológica}
+
+
+
+
+
+
+Os artigos nem sempre dão uma definição formal, no estilo 'X significa Y'. Muitas vezes eles usam o conceito dentro da arquitetura, da fórmula ou do procedimento experimental. Por isso, neste documento eu não tratei as definições como definições de dicionário. Tratei como definições operacionais:
+
+
+
+
+
+o que este termo significa no nosso estudo -> por que essa interpretação vem da literatura -> qual comportamento precisa aparecer no código -> como isso foi testado.
+
+
+
+A estrutura usada em cada item foi:
+
+
+
+
+referência científica -> definição/conceito -> propriedade esperada no código -> script Python -> teste determinístico -> limite da conclusão
+
+
+
+
+\section{1. Rede neural}
+
+
+\begin{itemize}
+\item Referência científica:
+Goodfellow, Bengio e Courville, Deep Learning.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, 'rede neural' significa uma função computacional parametrizada,
+composta por operações diferenciáveis organizadas em camadas. A justificativa é
+que o livro trata redes neurais como modelos compostos por camadas e
+parâmetros ajustáveis. No nosso caso, isso aparece como camadas lineares,
+normalização e feed-forward.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+O bloco precisa receber um tensor, aplicar camadas com parâmetros e produzir
+outro tensor como saída.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de módulo neural com camadas lineares, normalização e
+feed-forward.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Verificou-se se o bloco executa uma entrada fixa e gera saída com formato
+esperado. Também foi usada uma rede Linear + ReLU + Linear como controle
+negativo para mostrar que 'ser NN' não basta para ser Transformer.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida que existe uma NN no experimento, mas não valida que ela seja uma
+Transformer.
+\end{itemize}
+
+
+
+\section{2. Deep learning}
+
+
+\begin{itemize}
+\item Referência científica:
+Goodfellow, Bengio e Courville, Deep Learning.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, 'deep learning' não é um resultado que estamos tentando provar.
+Ele serve como contexto: usamos uma rede com várias transformações encadeadas,
+e não uma única fórmula isolada. A justificativa vem do uso de múltiplas
+camadas para compor representações.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+Deve haver uma sequência de transformações: projeções, attention, projeção de
+saída, normalização e feed-forward.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de bloco neural composto por mais de uma etapa
+computacional.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Verificou-se se o bloco completo recebe a entrada, atravessa essas etapas e
+mantém o formato esperado da sequência.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso não valida aprendizado, treinamento ou generalização. Só valida a
+estrutura computacional usada no recorte.
+\end{itemize}
+
+
+
+\section{3. Transformer}
+
+
+\begin{itemize}
+\item Referência científica:
+Vaswani et al., Attention Is All You Need, 2017.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, 'Transformer' é entendido operacionalmente como uma arquitetura
+para sequências baseada em attention, sem recorrência ou convolução como
+mecanismo central. A justificativa vem do artigo de Vaswani, que apresenta o
+Transformer como arquitetura baseada em mecanismos de atenção e descreve blocos
+com self-attention, feed-forward, residual, normalização e informação
+posicional.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+Para pertencer à família Transformer, o bloco precisa ter entrada sequencial,
+Q/K/V, scaled dot-product attention, dependência entre posições, informação
+posicional e componentes de bloco.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de auditoria que procura essas propriedades no bloco e
+classifica o resultado.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+O bloco foi testado contra a checklist arquitetural e classificado como bloco
+Transformer simplificado. Uma NN comum foi rejeitada.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso sustenta dizer que usamos um bloco da família Transformer. Não sustenta
+dizer que implementamos a Transformer completa do artigo.
+\end{itemize}
+
+
+
+\section{4. Bloco Transformer simplificado}
+
+
+\begin{itemize}
+\item Referência científica:
+Vaswani et al., Attention Is All You Need, 2017.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, 'bloco Transformer simplificado' significa um recorte controlado
+com as partes essenciais de um bloco: self-attention multi-head, projeção de
+saída, residual, normalização, feed-forward e informação posicional. A
+justificativa é que o artigo descreve cada camada do encoder como composta por
+multi-head self-attention e uma rede feed-forward, com residual e layer norm.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+O bloco precisa combinar sequência de entrada, Q/K/V, attention, recombinação
+de heads, projeção de saída, residual, normalização e FFN.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de bloco único, pequeno e controlado, em vez de uma pilha
+completa de encoder/decoder.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Verificou-se shape de entrada/saída, presença dos componentes e aprovação na
+auditoria arquitetural.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+O bloco é adequado para estudar trechos centrais da Transformer. Ele não é a
+arquitetura completa.
+\end{itemize}
+
+
+
+\section{5. Projeção linear densa}
+
+
+\begin{itemize}
+\item Referência científica:
+Goodfellow, Bengio e Courville, Deep Learning; Vaswani et al., 2017.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, projeção linear densa é a operação Y = XW\textasciicircum{}T + b. A justificativa
+é que Vaswani usa projeções lineares aprendidas para gerar Q, K, V e também
+para projetar a saída da multi-head attention.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+A saída deve ser exatamente o produto matricial da entrada pelos pesos
+transpostos, com soma de viés quando houver.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica direta de multiplicação matricial e soma opcional de viés.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Comparou-se um caso pequeno com resultado manual conhecido e com cálculo NumPy
+independente.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida a operação usada para projeção. Não valida que os pesos sejam
+treinados ou semanticamente úteis.
+\end{itemize}
+
+
+
+\section{6. Q, K e V}
+
+
+\begin{itemize}
+\item Referência científica:
+Vaswani et al., Attention Is All You Need, 2017.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, Q, K e V significam três projeções lineares da representação de
+entrada usadas pela attention. A justificativa é que Vaswani descreve queries,
+keys e values como matrizes projetadas linearmente antes da attention.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+A mesma sequência precisa gerar três tensores separados: query, key e value.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de três projeções lineares independentes aplicadas antes
+da attention.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+A auditoria verificou se existem as três projeções e se o núcleo de attention
+recebe Q, K e V.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida a estrutura Q/K/V do bloco. Não valida encoder-decoder completo.
+\end{itemize}
+
+
+
+\section{7. Scaled dot-product attention}
+
+
+\begin{itemize}
+\item Referência científica:
+Vaswani et al., Attention Is All You Need, 2017; documentação PyTorch da
+scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, scaled dot-product attention significa exatamente a operação
+softmax(QK\textasciicircum{}T / sqrt(d\_\allowbreak{}k))V. A justificativa é que essa é a fórmula apresentada
+por Vaswani para a attention escalonada e é a mesma lógica documentada na API
+de referência do PyTorch.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+O código precisa calcular QK\textasciicircum{}T, dividir por sqrt(d\_\allowbreak{}k), aplicar softmax e usar
+esses pesos para combinar V.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada a lógica literal da fórmula, sem otimização escondida.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Comparou-se a saída com um valor esperado pequeno, com implementação NumPy
+independente e com a função de referência do PyTorch.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida o núcleo matemático da attention. Attention isolada não é
+Transformer completa.
+\end{itemize}
+
+
+
+\section{8. Self-attention}
+
+
+\begin{itemize}
+\item Referência científica:
+Vaswani et al., Attention Is All You Need, 2017.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, self-attention significa attention em que Q, K e V vêm da mesma
+sequência. A justificativa é que Vaswani descreve self-attention no encoder
+como o caso em que queries, keys e values vêm da saída da camada anterior do
+próprio encoder.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+A alteração de uma posição da sequência deve poder afetar a saída de outra
+posição.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica em que a própria sequência alimenta Q, K e V.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Alterou-se um token e verificou-se se outra posição da saída mudava.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida dependência entre posições. Não valida qualidade linguística ou
+desempenho em tarefa real.
+\end{itemize}
+
+
+
+\section{9. Multi-head attention}
+
+
+\begin{itemize}
+\item Referência científica:
+Vaswani et al., Attention Is All You Need, 2017.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, multi-head attention significa dividir a representação em
+múltiplas cabeças, aplicar scaled dot-product attention em paralelo e
+recombinar os resultados. A justificativa é que Vaswani descreve a projeção de
+Q/K/V em várias heads, seguida de attention paralela, concatenação e nova
+projeção.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+O tensor precisa ser separado em heads, processado por attention e reconstruído
+no formato original.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de split de heads, attention por head e recombinação.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Comparou-se o resultado com a attention do PyTorch aplicada em cada head e
+recombinada manualmente.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida a mecânica multi-head. Não prova que a quantidade de heads
+escolhida seja ótima.
+\end{itemize}
+
+
+
+\section{10. Informação posicional}
+
+
+\begin{itemize}
+\item Referência científica:
+Vaswani et al., Attention Is All You Need, 2017.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, informação posicional significa um sinal somado à sequência para
+representar ordem. A justificativa é que Vaswani explica que, como o modelo não
+usa recorrência nem convolução, precisa injetar informação sobre posição dos
+tokens.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+A entrada sequencial precisa receber informação dependente da posição antes da
+attention.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de positional encoding sinusoidal somado à sequência.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+A auditoria verificou a existência de informação posicional antes das
+projeções.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida a presença de posição. Não prova que esse encoding seja o melhor
+possível.
+\end{itemize}
+
+
+
+\section{11. Inferência}
+
+
+\begin{itemize}
+\item Referência científica:
+Documentação PyTorch sobre modo de avaliação e reprodutibilidade.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, inferência significa executar o bloco para obter saída sem
+treinar, sem atualizar pesos e com comportamento determinístico. Essa definição
+é operacional porque os benchmarks medirão execução, não aprendizado.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+A mesma entrada, no mesmo estado do modelo, deve produzir a mesma saída.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de execução em modo de avaliação e sem atualização de
+parâmetros.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+A mesma entrada foi executada duas vezes e as saídas foram comparadas.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida determinismo do núcleo. Não substitui repetição estatística nos
+benchmarks.
+\end{itemize}
+
+
+
+\section{12. KV cache}
+
+
+\begin{itemize}
+\item Referência científica:
+Literatura de inferência autoregressiva em Transformers e otimizações de KV
+cache.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, KV cache significa armazenar chaves e valores já calculados para
+não recomputá-los a cada novo token. A definição é operacional porque o que
+importa para nós é reaproveitamento de K/V e equivalência de saída.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+A saída com cache deve bater com a saída sem cache, usando menos recomputação
+de K/V.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica token a token que acumula K/V anteriores e reutiliza esse
+cache na attention causal.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Comparou-se a saída com cache contra a saída causal completa e contou-se o
+reaproveitamento de K/V.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida equivalência algorítmica. Não prova ganho de hardware sem medição.
+\end{itemize}
+
+
+
+\section{13. Pruning}
+
+
+\begin{itemize}
+\item Referência científica:
+Tang et al., A Survey on Transformer Compression, 2024; documentação PyTorch
+pruning.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, pruning significa remover ou zerar pesos segundo algum critério,
+como magnitude. A justificativa é que a literatura de compressão usa pruning
+como técnica de reduzir parâmetros/conexões, mas o ganho físico só existe se a
+execução conseguir explorar essa remoção.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+Após pruning, deve existir máscara ou aumento verificável de pesos zerados.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de pruning por magnitude em camada linear pequena.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Mediu-se a quantidade de zeros e verificou-se a máscara gerada.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida pruning conceitual/algorítmico. Não valida ganho de hardware se a
+matriz continuar sendo executada como densa.
+\end{itemize}
+
+
+
+\section{14. Sparsity}
+
+
+\begin{itemize}
+\item Referência científica:
+Literatura de pruning e compressão de redes neurais.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, sparsity significa a razão entre elementos iguais a zero e o
+total de elementos. A justificativa é que essa é a propriedade observável que
+indica se o pruning gerou esparsidade.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+O código deve contar zeros e dividir pelo número total de elementos.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica direta de contagem de zeros.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Comparou-se a taxa calculada com tensor pequeno de esparsidade conhecida.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Sparsity mede zeros. Não mede automaticamente redução de tempo ou memória real.
+\end{itemize}
+
+
+
+\section{15. Quantização}
+
+
+\begin{itemize}
+\item Referência científica:
+Tang et al., A Survey on Transformer Compression, 2024; TurboQuant;
+documentação torchao/PyTorch.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, quantização significa representar valores com menor precisão,
+especialmente int8, mantendo uma escala para aproximar os valores originais. A
+justificativa é que a literatura de compressão trata quantização como mudança
+de representação numérica para reduzir custo/armazenamento, com erro medido em
+relação ao baseline.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+Deve aparecer dtype menor, escala de quantização, armazenamento menor ou
+estimado e erro numérico em relação ao tensor original.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de quantização simétrica int8, seguida de dequantização
+apenas para medir erro.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Verificou-se dtype int8, bytes por elemento, erro após dequantização e uma
+configuração int8 weight-only com torchao.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Isso valida quantização numérica/algorítmica. Ganho de hardware exige kernel
+ou caminho de execução compatível.
+\end{itemize}
+
+
+
+\section{16. Latência}
+
+
+\begin{itemize}
+\item Referência científica:
+Literatura de desempenho computacional e documentação PyTorch/CUDA.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, latência significa tempo por execução do bloco em um cenário
+definido. A definição é operacional porque será medida diretamente no
+benchmark.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+A medição precisa usar warmup, repetições e sincronização quando o dispositivo
+for CUDA.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de aquecimento, medição repetida e sincronização de GPU.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Verificou-se se o protocolo registra média, p50 e p95 de latência no schema de
+saída.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+O protocolo está pronto. A conclusão de desempenho só vem após benchmark.
+\end{itemize}
+
+
+
+\section{17. Throughput}
+
+
+\begin{itemize}
+\item Referência científica:
+Literatura de desempenho computacional.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, throughput significa tokens processados por segundo. A definição
+é operacional porque depende diretamente de batch, sequência e tempo medido.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+Deve calcular tokens/segundo a partir do número de tokens processados e da
+latência.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de batch\_\allowbreak{}size * seq\_\allowbreak{}len dividido pelo tempo médio.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Verificou-se se o schema dos resultados exige registro de throughput.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+O cálculo está definido. A comparação depende da execução experimental.
+\end{itemize}
+
+
+
+\section{18. Memória}
+
+
+\begin{itemize}
+\item Referência científica:
+Literatura de arquitetura de computadores e documentação PyTorch.
+\end{itemize}
+
+\begin{itemize}
+\item Definição/conceito:
+Neste estudo, memória significa armazenamento/alocação associado ao cenário
+executado. A definição é operacional porque será registrada como pico medido ou
+estimativa teórica.
+\end{itemize}
+
+\begin{itemize}
+\item Propriedade esperada no código:
+Deve haver uma medida ou estimativa comparável entre baseline, pruning e
+quantização.
+\end{itemize}
+
+\begin{itemize}
+\item Script Python:
+Foi usada uma lógica de registrar pico de memória quando disponível e estimar
+armazenamento dos tensores.
+\end{itemize}
+
+\begin{itemize}
+\item Teste determinístico:
+Verificou-se se o schema exige coluna de memória.
+\end{itemize}
+
+\begin{itemize}
+\item Limite da conclusão:
+Menor armazenamento teórico não prova automaticamente menor uso real de
+hardware.
+\end{itemize}
+
+
+
+\section{Conclusão geral}
+
+
+
+
+
+
+O documento agora separa definição operacional de definição formal. A ideia não é fingir que todo artigo traz uma frase fechada definindo cada termo. A ideia é mostrar que, quando a literatura usa um conceito, nós extraímos dele uma propriedade testável e verificamos essa propriedade no código.
+
+
+
+Com isso, considero validado neste momento:
+
+\begin{itemize}
+\item que o núcleo experimental implementa trechos centrais do Transformer de
+Vaswani: Q/K/V, scaled dot-product attention, self-attention, multi-head,
+informação posicional, residual, normalização e FFN;
+\item que o núcleo deve ser chamado de bloco Transformer simplificado, não de
+Transformer completa;
+\item que pruning, sparsity, quantização, latência, throughput e memória foram
+definidos de forma operacional e testável;
+\item que ganho real de hardware ainda não foi afirmado, porque isso depende dos
+benchmarks controlados.
+\end{itemize}

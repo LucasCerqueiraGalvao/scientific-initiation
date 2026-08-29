@@ -18,5 +18,13 @@ simposio_2026/
 
 - `gerador/`: conteúdo estruturado, script PowerShell e arquivos gerados.
 - `preview_slides/`: imagens exportadas dos slides para conferência visual.
-- `roteiros/`: roteiro de fala da apresentação.
-- `guias/`: guia de estudo usado na preparação.
+- `roteiros/`: roteiro de fala em LaTeX.
+- `guias/`: guia de estudo em LaTeX.
+
+Fontes textuais:
+
+- [Guia de estudo](guias/guia_estudo.tex)
+- [Roteiro de 10 minutos](roteiros/roteiro_10_minutos.tex)
+
+Os arquivos `.pptx`, previews e o gerador PowerShell são artefatos da
+apresentação; a documentação textual canônica foi migrada para LaTeX.

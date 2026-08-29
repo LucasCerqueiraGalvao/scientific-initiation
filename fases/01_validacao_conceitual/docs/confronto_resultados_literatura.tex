@@ -1,0 +1,146 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: fases/01_validacao_conceitual/docs/confronto_resultados_literatura.md
+
+
+\chapter{Confronto entre resultados observados e literatura}
+
+
+
+
+
+Este documento responde uma pergunta central da validacao: os numeros obtidos nos testes batem com o comportamento esperado pelas definicoes aceitas na literatura?
+
+
+
+
+
+A resposta curta e: sim para os testes matematicos e de aderencia conceitual ja criados; ainda nao para alegacoes de desempenho de hardware, porque essas exigem benchmarks controlados e comparacao experimental equivalente.
+
+
+
+\section{Criterio usado}
+
+
+
+
+
+Os artigos e documentacoes primarias nem sempre fornecem os mesmos tensores pequenos que usamos nos testes. Por isso, a comparacao inicial nao e 'mesmo dataset, mesmo resultado final do artigo'. A comparacao correta nesta fase e:
+
+
+\begin{enumerate}
+\item pegar a definicao publicada;
+\item derivar um caso pequeno e deterministico;
+\item calcular o valor esperado pela formula;
+\item comparar a implementacao local com esse valor;
+\item limitar a conclusao ao nivel que o teste realmente sustenta.
+\end{enumerate}
+
+
+\section{Resultados numericos verificados}
+
+
+
+\begin{landscape}
+\scriptsize
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.137\linewidth}>{\RaggedRight\arraybackslash}p{0.137\linewidth}>{\RaggedRight\arraybackslash}p{0.137\linewidth}>{\RaggedRight\arraybackslash}p{0.137\linewidth}>{\RaggedRight\arraybackslash}p{0.137\linewidth}>{\RaggedRight\arraybackslash}p{0.137\linewidth}@{}}
+\toprule
+Conceito & Fonte usada & Valor esperado pela definicao & Resultado observado & Bate? & Limite da conclusao \\
+\midrule
+\endfirsthead
+\toprule
+Conceito & Fonte usada & Valor esperado pela definicao & Resultado observado & Bate? & Limite da conclusao \\
+\midrule
+\endhead
+Projecao densa & Goodfellow et al.; Vaswani et al. (2017) para projecoes lineares em Q/K/V & Para \texttt{X=[[1,2],[3,4]]}, \texttt{W=[[1,0],[0,2]]}, \texttt{b=[0.\allowbreak{}5,-0.\allowbreak{}5]}, a saida esperada e \texttt{[[1.\allowbreak{}5,3.\allowbreak{}5],[3.\allowbreak{}5,7.\allowbreak{}5]]}. & O teste retornou exatamente \texttt{[[1.\allowbreak{}5, 3.\allowbreak{}5], [3.\allowbreak{}5, 7.\allowbreak{}5]]}. & Sim & Valida a operacao linear \texttt{Y=XW\textasciicircum{}T+b}, nao uma rede completa. \\
+Scaled dot-product attention & Vaswani et al. (2017), formula \texttt{softmax(QK\textasciicircum{}T/\allowbreak{}sqrt(d\_\allowbreak{}k))V} & Para \texttt{Q=K=[[1,0],[0,1]]}, \texttt{V=[[1,2],[3,4]]}, a saida esperada e \texttt{[[1.\allowbreak{}6604769, 2.\allowbreak{}6604769], [2.\allowbreak{}3395231, 3.\allowbreak{}3395231]]}. & O teste retornou \texttt{[[1.\allowbreak{}6604769, 2.\allowbreak{}6604769], [2.\allowbreak{}3395228, 3.\allowbreak{}3395233]]}. & Sim & Valida a operacao matematica de atencao escalonada, nao uma arquitetura Transformer completa. \\
+Attention PyTorch & Documentacao PyTorch + Vaswani et al. (2017) & A API deve produzir a mesma operacao de scaled dot-product attention, com tolerancia numerica. & A saida de \texttt{torch.\allowbreak{}nn.\allowbreak{}functional.\allowbreak{}scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention} bateu com a implementacao manual em \texttt{1e-6}. & Sim & Valida a API como referencia algoritmica para attention pequena e deterministica. \\
+Attention Keras/TensorFlow & Documentacao Keras Ops + Vaswani et al. (2017) & A API publica deve produzir a mesma scaled dot-product attention para os mesmos \texttt{Q}, \texttt{K}, \texttt{V} e mascara. & Os tres casos contra NumPy foram aprovados; o maior erro absoluto Keras/TensorFlow foi \texttt{2.\allowbreak{}38418579e-07}, abaixo de \texttt{atol=1e-6}. & Sim & Valida equivalencia numerica entre frameworks em CPU/float32; nao compara desempenho. \\
+Mascara em attention & Documentacao PyTorch SDPA & Mascara aditiva deve alterar os scores antes do \texttt{softmax} e produzir a mesma saida da API de referencia. & A implementacao manual com mascara bateu com PyTorch em \texttt{1e-6}. & Sim & Valida mascara aditiva no caso pequeno; outros tipos de mascara devem ser testados se usados. \\
+Multi-head attention & Vaswani et al. (2017), divisao da representacao em multiplas heads & A saida apos split, attention por head e combine deve preservar shape \texttt{[batch, seq, d\_\allowbreak{}model]}. & Para entrada \texttt{[2,3,4]} e \texttt{2} heads, a saida preservou \texttt{[2,3,4]} e bateu com PyTorch em \texttt{1e-6}. & Sim & Valida a mecanica multi-head, ainda sem treino ou avaliacao de tarefa. \\
+Dependencia entre posicoes & Vaswani et al. (2017), ideia de self-attention sobre sequencias & Alterar o valor de uma posicao pode alterar a saida calculada em outra posicao. & O teste alterou um token e a saida de outra posicao mudou. & Sim & Valida dependencia sequencial minima; ainda nao prova qualidade de modelagem. \\
+Bloco Transformer simplificado & Vaswani et al. (2017) + criterios do documento teorico & Deve conter entrada sequencial, Q/K/V, attention escalonada, posicao, residual, norm e FFN. & O bloco preservou shape \texttt{[2,3,4]} e foi classificado como \texttt{bloco\_\allowbreak{}transformer\_\allowbreak{}simplificado}. & Sim & Valida um bloco controlado; nao deve ser chamado de Transformer completo. \\
+Auditoria Transformer da NN atual & Vaswani et al. (2017) + protocolo do projeto & Um bloco Transformer deve passar em Q/K/V, attention escalonada, dependencia posicional, informacao posicional, residual, norm e FFN; uma NN comum nao deve passar. & A NN atual passou como \texttt{bloco\_\allowbreak{}transformer\_\allowbreak{}simplificado}; uma NN linear comum foi rejeitada como \texttt{nao\_\allowbreak{}aderente}. & Sim & Valida que o nucleo pertence a familia Transformer, mas nao autoriza chama-lo de Transformer completo. \\
+KV cache & Literatura de inferencia autoregressiva e compressao de KV cache & Saida com cache deve bater com saida causal completa e reduzir recomputacao de K/V. & Para \texttt{4} tokens, cache projetou \texttt{4} K/V contra \texttt{10} no caminho ingenuo; saidas bateram em \texttt{1e-6}. & Sim & Valida equivalencia e reaproveitamento algoritmico; ganho de hardware ainda exige medicao. \\
+FLOPs teoricos & Hennessy e Patterson; analise de complexidade de atencao em Vaswani et al. (2017) & Para o caso pequeno definido, projecao densa \texttt{270}, attention \texttt{288}, bloco \texttt{1992}. & Os testes retornaram \texttt{270}, \texttt{288} e \texttt{1992}. & Sim & Valida contagem teorica do recorte; FLOPs nao equivalem automaticamente a latencia. \\
+MSE & Definicao estatistica e \texttt{sklearn.\allowbreak{}metrics.\allowbreak{}mean\_\allowbreak{}squared\_\allowbreak{}error} & Para \texttt{y=[1,2,3]}, \texttt{y\_\allowbreak{}hat=[1,2,4]}, \texttt{MSE=(0\textasciicircum{}2+0\textasciicircum{}2+1\textasciicircum{}2)/\allowbreak{}3=0.\allowbreak{}3333333}. & \texttt{0.\allowbreak{}3333333333333333}. & Sim & Valida a metrica numerica. \\
+MAE & Definicao estatistica e \texttt{sklearn.\allowbreak{}metrics.\allowbreak{}mean\_\allowbreak{}absolute\_\allowbreak{}error} & Para o mesmo exemplo, \texttt{MAE=(0+0+1)/\allowbreak{}3=0.\allowbreak{}3333333}. & \texttt{0.\allowbreak{}3333333333333333}. & Sim & Valida a metrica numerica. \\
+R2 & Definicao de coeficiente de determinacao e \texttt{sklearn.\allowbreak{}metrics.\allowbreak{}r2\_\allowbreak{}score} & Para o mesmo exemplo, \texttt{R2=1-SS\_\allowbreak{}res/\allowbreak{}SS\_\allowbreak{}tot=1-1/\allowbreak{}2=0.\allowbreak{}5}. & \texttt{0.\allowbreak{}5}. & Sim & Valida a metrica numerica. \\
+Similaridade de cosseno & Manning, Raghavan e Schutze; scikit-learn pairwise metrics & Para \texttt{[1,1,0]} e \texttt{[1,0,0]}, \texttt{cos=1/\allowbreak{}sqrt(2)=0.\allowbreak{}70710678}. & \texttt{0.\allowbreak{}7071067811865475}. & Sim & Valida a metrica numerica. \\
+Pruning L1 PyTorch & Tutorial/API PyTorch pruning & Em matriz \texttt{2x4}, \texttt{amount=0.\allowbreak{}5} deve zerar 4 de 8 pesos e criar mascara. & \texttt{4/\allowbreak{}8} zeros, esparsidade \texttt{0.\allowbreak{}5}, mascara \texttt{weight\_\allowbreak{}mask} presente. & Sim, parcialmente & Valida pruning conceitual/algoritmico; nao valida ganho real de hardware porque o caminho continua denso. \\
+Quantizacao simetrica int8 manual & Literatura de compressao/quantizacao e definicao operacional & Para tensor de 5 valores \texttt{float32}, esperado reduzir de \texttt{20} bytes para \texttt{5} bytes em armazenamento int8; escala \texttt{2/\allowbreak{}127=0.\allowbreak{}015748}. & \texttt{dtype=torch.\allowbreak{}int8}, \texttt{5} bytes contra \texttt{20} bytes; erro maximo \texttt{0.\allowbreak{}007874}, dentro do limite de arredondamento da escala. & Sim & Valida quantizacao numerica; nao valida kernel de inferencia. \\
+torchao int8 weight-only v2 & Documentacao torchao \texttt{Int8WeightOnlyConfig} & Configuracao deve aplicar quantizacao simetrica int8 weight-only em camadas lineares. & Camada executa sem warnings, peso \texttt{Int8Tensor} possui \texttt{qdata} em \texttt{int8}. & Sim, parcialmente & Valida representacao e execucao basica; ainda falta provar kernel/caminho de hardware no recorte final. \\
+\bottomrule
+\end{longtable}
+\end{landscape}
+
+
+
+\section{O que ainda nao esta validado}
+
+
+
+
+
+
+Ainda nao podemos dizer que os resultados batem com artigos de desempenho como compressao, ganho de latencia, throughput, uso de memoria em GPU ou speedup. Os testes atuais validam definicao e comportamento local, nao reproduzem o setup experimental de papers como os de compressao de Transformers ou KV cache.
+
+
+
+Para validar desempenho contra literatura, o proximo protocolo precisa fixar:
+
+
+\begin{enumerate}
+\item modelo ou bloco usado;
+\item tamanho de sequencia;
+\item batch size;
+\item dtype;
+\item hardware;
+\item kernel usado;
+\item metrica medida;
+\item baseline;
+\item tolerancia de erro numerico;
+\item repeticoes e intervalo de confianca.
+\end{enumerate}
+
+
+\section{Conclusao metodologica}
+
+
+
+
+
+
+As ferramentas atuais sao adequadas para iniciar o trabalho porque passam na validacao de definicao: projecao densa, attention, bloco simplificado, KV cache, FLOPs, metricas, pruning conceitual e quantizacao numerica se comportam como esperado pelas formulas e documentacoes primarias.
+
+
+
+
+
+
+Mas ainda nao sao suficientes para afirmar ganho de hardware. Essa conclusao so sera permitida quando pruning usar formato/kernel esparso exploravel, quando quantizacao usar representacao menor durante a execucao real, e quando os benchmarks forem comparaveis aos protocolos dos artigos escolhidos.
+
+
+
+\section{Referencias}
+
+
+\begin{itemize}
+\item Vaswani et al. (2017). \emph{Attention Is All You Need}:
+.
+\item PyTorch. \texttt{scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention}:
+.
+\item Keras. \texttt{keras.\allowbreak{}ops.\allowbreak{}nn.\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention}:
+.
+\item PyTorch. \texttt{torch.\allowbreak{}nn.\allowbreak{}utils.\allowbreak{}prune.\allowbreak{}l1\_\allowbreak{}unstructured}:
+.
+\item PyTorch Tutorials. \emph{Pruning Tutorial}:
+.
+\item PyTorch. \texttt{torchao.\allowbreak{}quantization.\allowbreak{}Int8WeightOnlyConfig}:
+.
+\item scikit-learn. \texttt{mean\_\allowbreak{}squared\_\allowbreak{}error}:
+.
+\item scikit-learn. \texttt{r2\_\allowbreak{}score}:
+.
+\item scikit-learn. \emph{Cosine similarity}:
+.
+\end{itemize}

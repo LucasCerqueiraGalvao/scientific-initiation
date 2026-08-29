@@ -10,4 +10,6 @@ interpretação; smoke e diagnósticos em CPU não são resultados de hardware.
 | [diagnostico_cpu_l64_d128_v2_2026-08-25](diagnostico_cpu_l64_d128_v2_2026-08-25/) | Repetir o ponto após controlar a inicialização | B=1, L=64, D=128; Xavier, bias zero; protocolo completo | Completo, contrato vigente v2 | H1 compatível; hashes aprovados e escala absoluta controlada. |
 
 Cada coleta deve preservar configuração, ambiente, log, manifesto, CSVs por
-execução, metadados e análise. Não sobrescreva uma pasta existente.
+execução, metadados e análise. Não sobrescreva uma pasta existente. O relatório
+gerado pela análise é `analise/relatorio_preliminar.tex`; Markdown é usado
+somente neste README de navegação.

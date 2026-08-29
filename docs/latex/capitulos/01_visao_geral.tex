@@ -1,0 +1,64 @@
+\chapter{Visao geral da pesquisa}
+
+\section{Problema e recorte}
+
+A arquitetura Transformer sustenta grande parte dos sistemas modernos de
+inteligencia artificial, mas suas projecoes lineares densas e o mecanismo de
+self-attention concentram custo de processamento, memoria e movimentacao de
+dados. Esta iniciacao cientifica investiga como configuracoes numericas e
+estruturais alteram esse custo durante a inferencia.
+
+O objeto experimental foi deliberadamente reduzido a duas operacoes centrais:
+projecao linear densa e scaled dot-product attention. O codigo inclui um bloco
+Transformer simplificado para validacao arquitetural, mas nao reivindica uma
+arquitetura Transformer completa. Essa delimitacao permite isolar efeitos,
+repetir os experimentos e relacionar cada resultado ao mecanismo que o produziu.
+
+\section{Objetivo}
+
+Analisar, em cenarios controlados de inferencia, os compromissos entre eficiencia
+computacional e preservacao da saida ao aplicar pruning por magnitude e
+quantizacao linear INT8 sobre operacoes centrais de Transformers.
+
+\section{Estrategia de validacao}
+
+A pesquisa separa quatro niveis de evidencia:
+
+\begin{enumerate}
+  \item \textbf{conceitual}: a definicao e o recorte correspondem a literatura;
+  \item \textbf{matematica}: casos pequenos reproduzem valores calculados;
+  \item \textbf{algoritmica}: implementacoes independentes produzem resultados equivalentes;
+  \item \textbf{hardware}: o caminho executado, o tipo numerico, o formato e o kernel sustentam um ganho fisico mensuravel.
+\end{enumerate}
+
+A aprovacao de um nivel nao promove automaticamente o resultado ao nivel
+seguinte. Em particular, zeros logicos e tensores dequantizados nao bastam para
+afirmar aceleracao em hardware.
+
+\section{Estado comprovado}
+
+\begin{longtable}{@{}p{0.25\linewidth}p{0.18\linewidth}p{0.49\linewidth}@{}}
+\toprule
+\textbf{Componente} & \textbf{Estado} & \textbf{Evidencia principal} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Componente} & \textbf{Estado} & \textbf{Evidencia principal} \\
+\midrule
+\endhead
+Matematica da atencao & \statusok & Casos manuais, NumPy independente e testes deterministas. \\
+Arquitetura do recorte & \statusok & Auditoria do bloco simplificado, dependencia entre posicoes e controle negativo. \\
+Equivalencia entre frameworks & \statusok & Nove comparacoes entre NumPy, PyTorch manual, PyTorch SDPA e Keras/TensorFlow. \\
+Pipeline experimental & \statusok & Configuracao versionada, duas execucoes, hashes, manifesto, metadados, analise e graficos. \\
+Diagnostico em CPU & \statusok & Smoke e duas versoes do ponto $L=64$, $D=128$, sem conclusao de hardware. \\
+Coleta principal em CUDA & \statuspending & Requer a maquina com RTX 4070 Ti Super. \\
+Comparacao pruning versus INT8 & \statuspending & Depende da coleta principal e da auditoria do caminho efetivamente executado. \\
+\bottomrule
+\end{longtable}
+
+\begin{icstatus}[Conclusao permitida neste momento]{icBlue}
+Os scripts implementam e testam operacoes centrais de um bloco Transformer
+simplificado e a atencao local e numericamente equivalente as referencias
+escolhidas. Ainda nao ha evidencia experimental na GPU alvo para concluir que
+pruning ou quantizacao produzam ganho real de hardware.
+\end{icstatus}

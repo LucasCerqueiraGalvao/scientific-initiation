@@ -1,0 +1,204 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: docs/auditoria_estado_2026-08-25.md
+
+
+\chapter{Auditoria do estado da IC - 25/08/2026}
+
+
+
+\section{Objetivo e fontes examinadas}
+
+
+
+
+
+
+
+
+
+Esta auditoria foi feita antes de ampliar a infraestrutura experimental. Foram examinados o histórico Git completo, o código ativo, os testes, a documentação metodológica, o protótipo legado, os materiais-fonte da apresentação, o plano formal de trabalho e a reunião de 31/07/2026. Arquivos binários de apresentação foram confrontados por seus fontes textuais e previews; o \texttt{.\allowbreak{}docx} do plano foi extraído estruturalmente. A renderização visual do \texttt{.\allowbreak{}docx} não pôde ser feita porque o ambiente não possui LibreOffice.
+
+
+
+As fontes não têm o mesmo papel:
+
+
+\begin{enumerate}
+\item o plano formal define objetivo, operações, grade e protocolo submetidos;
+\item a fala do professor delimita a sequência de validação e o foco prático;
+\item a apresentação registra publicamente o desenho pretendido;
+\item o código e os artefatos mostram o que existe de fato;
+\item decisões deste diagnóstico são interpretações metodológicas e são marcadas
+como tais.
+\end{enumerate}
+
+
+\section{Estado comprovado}
+
+
+
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.273\linewidth}>{\RaggedRight\arraybackslash}p{0.273\linewidth}>{\RaggedRight\arraybackslash}p{0.273\linewidth}@{}}
+\toprule
+Área & Evidência observada & Avaliação \\
+\midrule
+\endfirsthead
+\toprule
+Área & Evidência observada & Avaliação \\
+\midrule
+\endhead
+Operações matemáticas & Projeção densa, atenção, máscaras, multi-head, FLOPs, métricas e KV cache possuem testes determinísticos. & Base conceitual sólida no recorte testado. \\
+Arquitetura auxiliar & \texttt{Simplified\allowbreak{}Transformer\allowbreak{}Block} contém Q/K/V, atenção, posição, residual, normalização e FFN. & É bloco simplificado; não é arquitetura Transformer completa. \\
+Validação independente & NumPy manual, PyTorch manual, PyTorch SDPA e Keras/TensorFlow usam os mesmos tensores em três casos. & 9/9 comparações passaram; erro absoluto máximo \texttt{2.\allowbreak{}38418579e-07}. \\
+Suíte & Comando canônico executado em 25/08/2026. & \texttt{32 passed, 1 skipped}; o \texttt{skip} exige CUDA. \\
+Pipeline piloto & Runner de bloco, schema CSV e análise existem e possuem teste curto em CPU. & Útil como protótipo, mas não atende sozinho ao protocolo principal. \\
+Evidências versionadas & A comparação entre frameworks possui CSV, Markdown e metadados. & Adequada para correção numérica, não para desempenho. \\
+Hardware atual & Apenas Intel Iris Xe foi detectada; \texttt{nvidia-smi} ausente e PyTorch reporta zero GPUs CUDA. & A coleta principal na RTX 4070 Ti Super não pode ser feita nesta máquina. \\
+\bottomrule
+\end{longtable}
+
+
+
+\section{Correspondência com a orientação}
+
+
+
+Atendidos:
+
+
+\begin{itemize}
+\item validação antes da otimização;
+\item comparação do mesmo núcleo com cálculo independente, PyTorch e
+TensorFlow/Keras;
+\item produção de uma tabela auditável;
+\item delimitação explícita de que a implementação não é uma Transformer completa;
+\item documentação da reunião e início da redação metodológica.
+\end{itemize}
+
+
+Parcialmente atendidos:
+
+
+\begin{itemize}
+\item o professor indicou self-attention como foco, mas o runner ativo mede um
+bloco inteiro;
+\item existe automação de tabelas e gráficos, mas ainda não há coleta canônica de
+desempenho;
+\item a escrita técnica é extensa, porém faltavam diário, checklist operacional e
+ligação explícita entre auditoria e decisões.
+\end{itemize}
+
+
+Ainda não atendidos:
+
+
+\begin{itemize}
+\item benchmark principal das operações no hardware-alvo;
+\item duas execuções independentes com consolidação de média e desvio-padrão;
+\item relatório de resultados de desempenho produzido durante a coleta.
+\end{itemize}
+
+
+\section{Inconsistências e riscos encontrados}
+
+
+
+\subsection{Escopo experimental}
+
+
+
+
+
+
+O runner atual mede \texttt{Simplified\allowbreak{}Transformer\allowbreak{}Block}, enquanto o plano formal define projeção densa e scaled dot-product attention e a reunião favorece a self-attention isolada. Medir o bloco mistura FFN, normalizações e residuais com o objeto de interesse.
+
+
+
+
+
+
+\textbf{Decisão interpretativa:} o benchmark principal terá duas operações isoladas: projeção densa, preservada por estar no plano formal, e self-attention de cabeça única com projeções Q/K/V/saída, tratada como foco principal da orientação. O bloco completo continuará apenas como evidência arquitetural e piloto.
+
+
+
+\subsection{Parâmetros divergentes}
+
+
+
+
+
+
+
+O plano e os materiais de apresentação registram seed \texttt{42}, lote \texttt{1}, \texttt{L=\{64,128,256\}}, \texttt{D=\{128,256,512\}}, 20 warm-ups, 50 medições e duas execuções. O runner ativo usa por padrão seed \texttt{2026}, \texttt{L=\{4,8\}}, \texttt{D=8}, 5 warm-ups, 20 medições e não identifica duas execuções independentes. Esses defaults são de teste/piloto e não podem ser confundidos com o protocolo principal.
+
+
+
+\subsection{Cenários e alegações de hardware}
+
+
+
+
+
+O plano principal contém baseline, pruning por magnitude de 50\% e quantização linear INT8. O runner adiciona \texttt{torchao\_\allowbreak{}int8} por padrão, embora esse cenário não esteja no primeiro desenho formal. Além disso:
+
+
+\begin{itemize}
+\item a poda atual mantém máscara e armazenamento denso, portanto não prova ganho
+físico;
+\item a quantização manual dequantiza os pesos para \texttt{float32} antes da operação,
+portanto mede fidelidade numérica, não kernel INT8;
+\item latência desses caminhos pode ser registrada como diagnóstico, mas não como
+evidência de aceleração por hardware;
+\item \texttt{max\_\allowbreak{}memory\_\allowbreak{}bytes} em CPU representa apenas uma estimativa incompleta e não
+deve ser chamado de pico real.
+\end{itemize}
+
+
+\subsection{Reprodutibilidade e rastreabilidade}
+
+
+\begin{itemize}
+\item as dependências comuns usam limites mínimos, não versões fixas;
+\item o runner registra poucas informações de Python, sistema e bibliotecas;
+\item resultados padrão vão para \texttt{resultados/\allowbreak{}}, pasta ignorada pelo Git;
+\item não há configuração versionada para smoke e experimento principal;
+\item não há manifesto de execuções, hashes de entradas/saídas ou log persistente;
+\item o schema é verificado por nomes de colunas, mas ainda não rejeita todos os
+campos numéricos não finitos ou semanticamente inválidos;
+\item a análise atual escolhe um único baseline por configuração e não calcula
+incerteza entre execuções independentes.
+\end{itemize}
+
+
+\subsection{Viés de medição}
+
+
+
+
+
+
+Os cenários são medidos sempre na mesma ordem. Aquecimento, frequência, temperatura e carga do sistema podem introduzir viés de ordem. A infraestrutura principal deve registrar e variar deterministicamente essa ordem entre as duas execuções.
+
+
+
+\subsection{Cronograma}
+
+
+
+
+
+
+
+O plano declara vigência de maio a setembro de 2026, mas uma célula do cronograma traz '2º semestre de 2027' para agosto/setembro. A reunião menciona novembro de maneira incerta. Isso parece uma inconsistência documental, mas a data institucional precisa ser confirmada externamente; o arquivo formal não foi alterado.
+
+
+
+\section{Conclusão da auditoria}
+
+
+
+
+
+
+
+
+A base matemática e a validação cruzada permitem sair da validação conceitual. Ainda não permitem iniciar a coleta principal com o runner atual. Antes disso é obrigatório alinhar o objeto medido, versionar configurações e evidências, representar as duas execuções, fortalecer validações e provar a pipeline em um smoke test. A coleta de GPU permanece condicionada à disponibilidade do hardware-alvo.

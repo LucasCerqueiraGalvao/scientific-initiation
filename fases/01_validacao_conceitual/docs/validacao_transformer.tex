@@ -1,0 +1,249 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: fases/01_validacao_conceitual/docs/validacao_transformer.md
+
+
+\chapter{Validacao arquitetural da NN usada no estudo}
+
+
+
+
+Este documento registra se a rede neural usada no estudo pode ser chamada de Transformer.
+
+
+
+Ele tambem registra a ponte metodologica entre:
+
+
+
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=text]
+Vaswani et al. (2017) -> propriedade esperada -> script Python -> teste deterministico -> limite da conclusao
+\end{Verbatim}
+
+
+
+
+
+
+Essa ponte e importante porque o estudo nao deve depender do nome de uma classe ou de uma afirmacao informal. Para dizer que um trecho e de Transformer, precisamos mostrar que ele possui a propriedade descrita no artigo e que essa propriedade foi testada.
+
+
+
+\section{Resultado atual}
+
+
+
+
+A implementacao \texttt{validacao.\allowbreak{}transformer.\allowbreak{}Simplified\allowbreak{}Transformer\allowbreak{}Block} esta validada como:
+
+
+
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=text]
+bloco_transformer_simplificado
+\end{Verbatim}
+
+
+
+
+Ela pertence a familia Transformer porque passa nos criterios essenciais de um bloco:
+
+
+\begin{itemize}
+\item recebe entrada sequencial \texttt{[batch, seq\_\allowbreak{}len, d\_\allowbreak{}model]};
+\item preserva shape sequencial na saida;
+\item projeta a entrada em Q, K e V;
+\item usa atencao escalonada compativel com \texttt{softmax(QK\textasciicircum{}T /\allowbreak{} sqrt(d\_\allowbreak{}k))V};
+\item usa multi-head attention;
+\item mistura informacao entre posicoes;
+\item usa informacao posicional sinusoidal;
+\item possui residual, normalizacao e feed-forward;
+\item e deterministica em modo de avaliacao.
+\end{itemize}
+
+
+
+
+Ela nao deve ser chamada de 'Transformer completo' no artigo, porque o recorte experimental usa um bloco controlado, nao uma arquitetura completa com pilha de camadas, cabeca de tarefa, treinamento e protocolo de modelo final.
+
+
+
+\section{Criterio de rastreabilidade}
+
+
+
+Cada componente aceito no estudo precisa passar por cinco perguntas:
+
+
+\begin{enumerate}
+\item O componente existe no Transformer de Vaswani et al.?
+\item Qual propriedade observavel esse componente deve ter?
+\item Onde essa propriedade aparece no nosso codigo?
+\item Qual teste deterministico verifica essa propriedade?
+\item O que esse teste ainda nao permite concluir?
+\end{enumerate}
+
+
+
+Assim, a validacao nao diz apenas 'o codigo roda'. Ela diz 'esta operacao corresponde a este trecho definido pela literatura, dentro destes limites'.
+
+
+
+\section{Matriz Vaswani -> codigo -> teste}
+
+
+
+\begin{landscape}
+\scriptsize
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}@{}}
+\toprule
+Trecho no Transformer de Vaswani & Propriedade esperada & Onde esta no codigo & Teste deterministico & Comparacao usada & O que o teste prova & Limite metodologico \\
+\midrule
+\endfirsthead
+\toprule
+Trecho no Transformer de Vaswani & Propriedade esperada & Onde esta no codigo & Teste deterministico & Comparacao usada & O que o teste prova & Limite metodologico \\
+\midrule
+\endhead
+Entrada sequencial & O modulo recebe tensores organizados como sequencia, com dimensao de lote, posicao e representacao. & \texttt{Simplified\allowbreak{}Transformer\allowbreak{}Block.\allowbreak{}forward}, em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}transformer.\allowbreak{}py}. & \texttt{test\_\allowbreak{}simplified\_\allowbreak{}transformer\_\allowbreak{}block\_\allowbreak{}has\_\allowbreak{}expected\_\allowbreak{}components\_\allowbreak{}and\_\allowbreak{}shape}. & Shape esperado \texttt{[batch, seq\_\allowbreak{}len, d\_\allowbreak{}model]}. & O bloco recebe e devolve uma representacao sequencial. & Nao prova tokenizacao, embedding real ou tarefa de linguagem. \\
+Projecoes lineares densas & Entradas sao transformadas por matrizes aprendidas; no attention original essas projecoes geram Q, K, V e saida. & \texttt{q\_\allowbreak{}proj}, \texttt{k\_\allowbreak{}proj}, \texttt{v\_\allowbreak{}proj}, \texttt{out\_\allowbreak{}proj} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}transformer.\allowbreak{}py}; \texttt{dense\_\allowbreak{}projection\_\allowbreak{}torch} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}dense.\allowbreak{}py}. & \texttt{test\_\allowbreak{}dense\_\allowbreak{}projection\_\allowbreak{}matches\_\allowbreak{}manual\_\allowbreak{}definition}; auditoria de Q/K/V. & Formula \texttt{Y = XW\textasciicircum{}T + b} calculada manualmente. & A operacao linear usada no bloco segue a definicao matematica esperada. & Nao prova que os pesos treinados sao bons; os pesos do bloco controlado sao fixos/iniciais. \\
+Projecoes Q, K e V & A mesma sequencia gera consultas, chaves e valores para self-attention. & \texttt{project\_\allowbreak{}qkv} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}transformer.\allowbreak{}py}. & \texttt{test\_\allowbreak{}transformer\_\allowbreak{}audit\_\allowbreak{}validates\_\allowbreak{}current\_\allowbreak{}nn\_\allowbreak{}as\_\allowbreak{}simplified\_\allowbreak{}transformer\_\allowbreak{}block}. & Inspecao estrutural: existencia de \texttt{q\_\allowbreak{}proj}, \texttt{k\_\allowbreak{}proj}, \texttt{v\_\allowbreak{}proj}. & O bloco tem as tres projecoes exigidas para attention de Transformer. & Nao prova arquitetura completa encoder-decoder. \\
+Scaled dot-product attention & O nucleo de atencao deve calcular \texttt{softmax(QK\textasciicircum{}T /\allowbreak{} sqrt(d\_\allowbreak{}k))V}. & \texttt{scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention\_\allowbreak{}torch} e \texttt{scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention\_\allowbreak{}numpy} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}attention.\allowbreak{}py}; adaptador em \texttt{validacao/\allowbreak{}comparacao\_\allowbreak{}frameworks.\allowbreak{}py}. & Testes de referencia NumPy/PyTorch e \texttt{test\_\allowbreak{}all\_\allowbreak{}frameworks\_\allowbreak{}match\_\allowbreak{}in\_\allowbreak{}every\_\allowbreak{}case}. & Valor manual pequeno, NumPy independente, \texttt{torch.\allowbreak{}nn.\allowbreak{}functional.\allowbreak{}scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention} e \texttt{keras.\allowbreak{}ops.\allowbreak{}nn.\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention} com backend TensorFlow. & O algoritmo bate com a formula e com APIs publicas de dois frameworks nos mesmos tensores. & Nao prova por si so que existe um bloco completo nem compara desempenho; prova o nucleo de attention. \\
+Mascara de atencao & A atencao pode receber restricoes aditivas, como ocorre em variantes mascaradas. & Parametro \texttt{additive\_\allowbreak{}attention\_\allowbreak{}mask} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}attention.\allowbreak{}py}. & \texttt{test\_\allowbreak{}scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention\_\allowbreak{}additive\_\allowbreak{}mask\_\allowbreak{}matches\_\allowbreak{}pytorch\_\allowbreak{}reference}. & \texttt{torch.\allowbreak{}nn.\allowbreak{}functional.\allowbreak{}scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention} com \texttt{attn\_\allowbreak{}mask}. & A mascara usada no nosso nucleo e compativel com a referencia do PyTorch. & O bloco experimental padrao nao usa mascara causal por padrao. \\
+Dependencia entre posicoes & A saida de uma posicao pode depender de outra posicao da sequencia. & Self-attention em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}attention.\allowbreak{}py} e auditoria em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}auditoria\_\allowbreak{}transformer.\allowbreak{}py}. & \texttt{test\_\allowbreak{}attention\_\allowbreak{}output\_\allowbreak{}depends\_\allowbreak{}on\_\allowbreak{}other\_\allowbreak{}sequence\_\allowbreak{}positions}; \texttt{test\_\allowbreak{}transformer\_\allowbreak{}audit\_\allowbreak{}validates\_\allowbreak{}current\_\allowbreak{}nn\_\allowbreak{}as\_\allowbreak{}simplified\_\allowbreak{}transformer\_\allowbreak{}block}. & Alteracao controlada de um token e observacao de mudanca em outra posicao. & A operacao nao trata cada posicao de forma isolada; ha mistura de informacao sequencial. & Nao mede qualidade semantica dessa dependencia em uma tarefa real. \\
+Multi-head attention & A representacao e dividida em cabecas, cada cabeca aplica attention, e depois as cabecas sao recombinadas. & \texttt{split\_\allowbreak{}heads}, \texttt{combine\_\allowbreak{}heads} e \texttt{multi\_\allowbreak{}head\_\allowbreak{}attention\_\allowbreak{}from\_\allowbreak{}qkv} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}attention.\allowbreak{}py}. & \texttt{test\_\allowbreak{}multi\_\allowbreak{}head\_\allowbreak{}attention\_\allowbreak{}preserves\_\allowbreak{}shape\_\allowbreak{}and\_\allowbreak{}matches\_\allowbreak{}split\_\allowbreak{}reference}. & Aplicacao da SDPA do PyTorch em cada head e recombinacao manual. & A mecanica de separar/aplicar/recombinar heads esta correta. & Nao prova que o numero de heads escolhido e otimo. \\
+Informacao posicional & Como attention pura nao conhece ordem por si so, o bloco precisa receber algum sinal de posicao. & \texttt{sinusoidal\_\allowbreak{}position\_\allowbreak{}encoding} e \texttt{add\_\allowbreak{}positional\_\allowbreak{}information} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}transformer.\allowbreak{}py}. & Auditoria: \texttt{report.\allowbreak{}has\_\allowbreak{}positional\_\allowbreak{}information\_\allowbreak{}or\_\allowbreak{}justification}. & Criterio arquitetural derivado de Vaswani et al. & O bloco adiciona informacao posicional antes das projecoes. & Nao prova que essa codificacao e a melhor para todas as tarefas. \\
+Residual, normalizacao e FFN & O bloco Transformer usa subcamadas com conexoes residuais, normalizacao e rede feed-forward. & \texttt{norm1}, \texttt{norm2}, \texttt{ffn} e \texttt{out\_\allowbreak{}proj} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}transformer.\allowbreak{}py}. & \texttt{test\_\allowbreak{}simplified\_\allowbreak{}transformer\_\allowbreak{}block\_\allowbreak{}has\_\allowbreak{}expected\_\allowbreak{}components\_\allowbreak{}and\_\allowbreak{}shape}; auditoria estrutural. & Checklist arquitetural do bloco. & O bloco tem os componentes essenciais para ser classificado como bloco Transformer simplificado. & Ainda falta pilha completa de camadas e cabeca de tarefa para chamar de Transformer completo. \\
+Inferencia deterministica & Em avaliacao, a mesma entrada deve produzir a mesma saida, evitando ruido experimental. & \texttt{audit\_\allowbreak{}transformer\_\allowbreak{}module} em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}validacao/\allowbreak{}auditoria\_\allowbreak{}transformer.\allowbreak{}py}. & \texttt{test\_\allowbreak{}transformer\_\allowbreak{}audit\_\allowbreak{}validates\_\allowbreak{}current\_\allowbreak{}nn\_\allowbreak{}as\_\allowbreak{}simplified\_\allowbreak{}transformer\_\allowbreak{}block}. & Duas execucoes em \texttt{eval()} com a mesma entrada. & O nucleo pode ser usado em benchmarks controlados. & Nao substitui avaliacao estatistica de desempenho em varias repeticoes. \\
+Controle negativo & Uma NN comum nao deve ser aceita como Transformer so por ser rede neural. & Auditoria aplicada a \texttt{torch.\allowbreak{}nn.\allowbreak{}Sequential(Linear, ReLU, Linear)}. & \texttt{test\_\allowbreak{}transformer\_\allowbreak{}audit\_\allowbreak{}rejects\_\allowbreak{}plain\_\allowbreak{}neural\_\allowbreak{}network\_\allowbreak{}as\_\allowbreak{}transformer}. & Ausencia de Q/K/V e de scaled attention. & O validador distingue uma NN generica de um bloco da familia Transformer. & Nao classifica todos os tipos possiveis de arquitetura; classifica o recorte do estudo. \\
+\bottomrule
+\end{longtable}
+\end{landscape}
+
+
+
+\section{O que esta comprovado}
+
+
+
+
+
+Os testes comprovam que os scripts Python implementam deterministicamente os trechos centrais escolhidos do Transformer de Vaswani et al. para o escopo do projeto:
+
+
+\begin{itemize}
+\item projecao linear densa;
+\item geracao de Q, K e V;
+\item scaled dot-product attention;
+\item mascara aditiva de attention;
+\item dependencia entre posicoes da sequencia;
+\item multi-head attention;
+\item informacao posicional sinusoidal;
+\item subcamadas residual, normalizacao e FFN;
+\item comportamento deterministico em inferencia;
+\item rejeicao de uma NN comum como controle negativo.
+\end{itemize}
+
+
+Portanto, o objeto experimental atual e valido para estudar:
+
+
+
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=text]
+operacoes centrais de Transformer
+\end{Verbatim}
+
+
+
+e tambem:
+
+
+
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=text]
+bloco Transformer simplificado
+\end{Verbatim}
+
+
+
+\section{O que nao esta comprovado}
+
+
+
+
+
+Os testes nao comprovam que temos a arquitetura completa do artigo \emph{Attention Is All You Need}. Para isso, seria necessario incluir e validar elementos fora do recorte atual, como:
+
+
+\begin{itemize}
+\item pilha completa de blocos;
+\item organizacao completa de encoder e/ou decoder;
+\item embeddings de entrada e saida;
+\item cabeca de tarefa;
+\item treinamento ou carregamento de pesos de um modelo real;
+\item avaliacao em tarefa ou dataset.
+\end{itemize}
+
+
+Por conta disso, a frase metodologicamente correta e:
+
+
+
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=text]
+O estudo avalia trechos computacionalmente centrais de um bloco Transformer
+simplificado, derivados da arquitetura de Vaswani et al. (2017), com foco em
+inferencia controlada.
+\end{Verbatim}
+
+
+
+E a frase que deve ser evitada neste momento e:
+
+
+
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=text]
+O estudo avalia uma Transformer completa.
+\end{Verbatim}
+
+
+
+\section{Como a verificacao e feita}
+
+
+
+
+A auditoria esta implementada em \texttt{validacao.\allowbreak{}auditoria\_\allowbreak{}transformer}. Ela executa testes comportamentais e estruturais:
+
+
+\begin{enumerate}
+\item passa uma sequencia pelo modulo;
+\item verifica se a saida preserva \texttt{[batch, seq\_\allowbreak{}len, d\_\allowbreak{}model]};
+\item inspeciona Q/K/V, output projection, norm e FFN;
+\item compara a atencao interna com \texttt{torch.\allowbreak{}nn.\allowbreak{}functional.\allowbreak{}scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention};
+\item altera um token e verifica se outra posicao pode mudar;
+\item roda a mesma entrada duas vezes em \texttt{eval()} para testar determinismo;
+\item aplica a classificacao \texttt{nao\_\allowbreak{}aderente}, \texttt{operacao\_\allowbreak{}inspirada\_\allowbreak{}em\_\allowbreak{}transformer},
+\texttt{bloco\_\allowbreak{}transformer\_\allowbreak{}simplificado} ou \texttt{transformer}.
+\end{enumerate}
+
+
+\section{Controle negativo}
+
+
+
+
+
+A mesma auditoria rejeita uma rede neural comum composta por camadas lineares e ReLU. Esse controle e importante: ele mostra que o teste nao aceita qualquer NN como Transformer.
+
+
+
+\section{Regra para o texto final}
+
+
+
+No artigo, usar:
+
+
+\begin{itemize}
+\item 'bloco Transformer simplificado' para o nucleo experimental atual;
+\item 'operacao inspirada em Transformer' quando o teste isolar attention,
+projecao densa ou KV cache;
+\item 'Transformer' apenas se houver arquitetura completa ou justificativa formal
+para todos os componentes ausentes.
+\end{itemize}

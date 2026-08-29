@@ -1,30 +1,49 @@
-# Docs
+# Documentação
 
-Documentação geral e materiais acadêmicos da IC.
+Este README é o índice de navegação no GitHub. A fonte acadêmica canônica é
+LaTeX e o volume completo está disponível no
+[PDF compilado](../output/pdf/relatorio_ic_transformers.pdf).
 
-## Estrutura
+## Organização
 
 ```text
 docs/
-  plano_trabalho/
-  apresentacoes/
-    simposio_2026/
-  reunioes/
+  latex/                 documento mestre, preâmbulo e capítulos executivos
+  reunioes/              registros interpretados em LaTeX e fontes brutas
+  apresentacoes/         slides, roteiro e guia de estudo
+  plano_trabalho/        formulário institucional submetido
 ```
 
-- `plano_trabalho/`: plano formal submetido para a iniciação científica.
-- `apresentacoes/`: materiais de apresentação, separados por evento.
-- `reunioes/`: atas, transcrições integrais e encaminhamentos das reuniões.
+Textos de acompanhamento:
 
-Registros operacionais da pesquisa:
+- [Diário da IC](diario_ic.tex)
+- [Auditoria de 25/08/2026](auditoria_estado_2026-08-25.tex)
+- [Checklist pré-benchmark](checklist_pre_benchmark.tex)
+- [Relatório da execução autônoma](relatorio_execucao_autonoma_2026-08-25.tex)
+- [Registro da reunião de 31/07/2026](reunioes/2026-07-31/registro.tex)
 
-- [Diário da IC](diario_ic.md);
-- [Auditoria do estado em 25/08/2026](auditoria_estado_2026-08-25.md);
-- [Checklist pré-benchmark](checklist_pre_benchmark.md);
-- [Relatório da execução autônoma de 25/08/2026](relatorio_execucao_autonoma_2026-08-25.md).
+Documentos técnicos da fase ativa:
 
-Os documentos técnicos da fase ativa de validação ficam dentro da própria fase:
+- [Base teórica](../fases/01_validacao_conceitual/docs/base_teorica_validacao.tex)
+- [Validação arquitetural](../fases/01_validacao_conceitual/docs/validacao_transformer.tex)
+- [Protocolo experimental](../fases/01_validacao_conceitual/docs/protocolo_experimental.tex)
+- [Matriz de ferramentas](../fases/01_validacao_conceitual/docs/matriz_validacao_ferramentas.tex)
+- [Decisão sobre inicialização](../fases/01_validacao_conceitual/docs/decisao_inicializacao_benchmark.tex)
 
-```text
-fases/01_validacao_conceitual/docs/
+## Política de formatos
+
+- `.tex`: documentação acadêmica editável;
+- `.md`: somente READMEs e a transcrição original preservada;
+- `.csv`, `.json`, `.log`, `.png`: evidência experimental;
+- `.docx`: formulário institucional original;
+- `.pptx`: apresentação original.
+
+## Build
+
+Na raiz do repositório, com MiKTeX/XeLaTeX:
+
+```powershell
+.\scripts\build_docs.ps1
 ```
+
+O resultado é `output/pdf/relatorio_ic_transformers.pdf`.

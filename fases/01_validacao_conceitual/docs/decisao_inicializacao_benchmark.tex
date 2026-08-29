@@ -1,0 +1,106 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: fases/01_validacao_conceitual/docs/decisao_inicializacao_benchmark.md
+
+
+\chapter{Decisão metodológica: inicialização dos pesos do benchmark}
+
+
+
+\section{Problema observado}
+
+
+
+
+
+
+O diagnóstico CPU v1 usou entradas e pesos independentes com distribuição \texttt{N(0,1)}. Para uma projeção com dimensão \texttt{D}, somar \texttt{D} produtos com pesos de variância 1 faz a variância da saída crescer com a dimensão. Na self-attention, esse efeito se repete nas projeções Q/K/V, nos scores e na projeção de saída.
+
+
+
+
+
+
+O caso \texttt{B=1}, \texttt{L=64}, \texttt{D=128} mostrou o risco: a quantização ainda foi melhor que o pruning nas métricas relativas, mas o MSE absoluto da self-attention foi \texttt{732.\allowbreak{}65}. Esse valor não era comparável de forma limpa com dimensões menores, porque misturava erro da técnica e aumento da escala do baseline.
+
+
+
+\section{Alternativas consideradas}
+
+
+\begin{enumerate}
+\item \textbf{Manter \texttt{N(0,1)} e interpretar cada dimensão separadamente.} Preservaria o
+primeiro gerador, mas enfraqueceria MSE/MAE como métricas da grade.
+\item \textbf{Normalizar apenas MSE/MAE.} Acrescentaria novas métricas e mudaria o schema
+do benchmark, contrariando a decisão de preservar a interface.
+\item \textbf{Escalar os pesos-base pela dimensão.} Mantém as métricas, controla a
+variância das projeções e continua usando exatamente os mesmos pesos entre
+cenários da mesma configuração.
+\end{enumerate}
+
+
+
+A alternativa 3 foi escolhida. É uma decisão metodológica posterior à reunião, não um pedido literal do professor.
+
+
+
+\section{Regra operacional adotada}
+
+
+\begin{itemize}
+\item entradas sintéticas: \texttt{N(0,1)};
+\item matrizes quadradas: Xavier normal, com
+\texttt{desvio = sqrt(2 /\allowbreak{} (fan\_\allowbreak{}in + fan\_\allowbreak{}out)) = 1/\allowbreak{}sqrt(D)};
+\item bias da projeção densa: zero;
+\item mesma seed \texttt{42}, dados e pesos-base para baseline, pruning e quantização;
+\item parâmetros registrados no schema de configuração v2 e nos metadados;
+\item evidências de schema v1 permanecem legíveis e versionadas.
+\end{itemize}
+
+
+\section{Confronto v1 versus v2}
+
+
+
+
+
+As duas coletas abaixo usam \texttt{B=1}, \texttt{L=64}, \texttt{D=128}, 20 warm-ups, 50 medições e duas execuções. A única mudança metodológica relevante para a qualidade é a inicialização.
+
+
+
+\begin{landscape}
+\scriptsize
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.164\linewidth}>{\RaggedRight\arraybackslash}p{0.164\linewidth}>{\RaggedRight\arraybackslash}p{0.164\linewidth}>{\RaggedRight\arraybackslash}p{0.164\linewidth}>{\RaggedRight\arraybackslash}p{0.164\linewidth}@{}}
+\toprule
+Operação/cenário & Métrica & v1 - pesos N(0,1) & v2 - Xavier & Leitura \\
+\midrule
+\endfirsthead
+\toprule
+Operação/cenário & Métrica & v1 - pesos N(0,1) & v2 - Xavier & Leitura \\
+\midrule
+\endhead
+Projeção/quantização & MSE & 0.00995697 & 0.000077789 & Escala absoluta controlada. \\
+Projeção/pruning & MSE & 9.30825 & 0.0727207 & Escala absoluta controlada. \\
+Self-attention/quantização & MSE & 732.65 & 0.0000163925 & O caso deixa de ser dominado pela explosão de escala. \\
+Self-attention/quantização & R² & 0.95428 & 0.999647 & Fidelidade relativa também melhora com scores não saturados. \\
+Self-attention/quantização & Cosseno & 0.977141 & 0.999824 & Direção da saída quase preservada em v2. \\
+Self-attention/pruning & MSE & 12144.35 & 0.0110127 & Pruning continua claramente mais destrutivo. \\
+\bottomrule
+\end{longtable}
+\end{landscape}
+
+
+
+
+
+Não se comparam as latências de v1 e v2 para concluir desempenho: foram coletas CPU separadas, os caminhos não usam kernels esparsos/INT8 e a variabilidade observada foi alta.
+
+
+
+\section{Decisão para a coleta principal}
+
+
+
+
+
+
+O schema v2 com Xavier/bias zero é o contrato vigente. A v1 não foi apagada nem reclassificada; ela documenta a ameaça à validade que motivou a correção. A conclusão sobre H1 continua preliminar até a grade completa, mas agora MSE/MAE têm uma escala experimental mais controlada entre dimensões.

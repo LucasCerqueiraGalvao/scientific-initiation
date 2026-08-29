@@ -1,0 +1,303 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: docs/reunioes/2026-07-31/README.md
+
+
+\chapter{Reunião de 31 de julho de 2026}
+
+
+
+\section{Identificação}
+
+
+\begin{itemize}
+\item \textbf{Tema:} validação da implementação, definição do recorte experimental e
+preparação dos benchmarks;
+\item \textbf{Participantes identificados na transcrição:} Lucas Galvão e Walter Silva
+Oliveira;
+\item \textbf{Horário registrado:} início às 16:01 (GMT-03:00);
+\item \textbf{Duração da transcrição:} 30 min e 7 s;
+\item \textbf{Registro integral compilável:} \href{transcricao-completa.tex}{transcricao-completa.tex};
+\item \textbf{Fonte no Google Docs:} \href{https://docs.google.com/document/d/1WBgwj1gDAWh_7VGckHvPhRfSlcRzFIwL2JlnIDhRYbQ/edit?usp=drive_web&tab=t.v1ze8hoqd423}{anotações e transcrição};
+\item \textbf{Gravação indicada na ata:} \href{https://drive.google.com/file/d/1-FFyxhkpgkhlesSqULSIaujRSiDnT1UN/view?usp=drive_web}{Google Drive}.
+\end{itemize}
+
+
+
+
+A transcrição foi gerada automaticamente e pode conter erros de reconhecimento. A cópia integral foi preservada sem correções; esta página concentra apenas a leitura útil para o projeto.
+
+
+
+\section{Leitura executiva}
+
+
+
+
+
+
+
+
+
+A reunião definiu uma sequência de trabalho: primeiro demonstrar que a implementação local da atenção reproduz referências conhecidas usando as mesmas entradas, pesos e sementes; depois aplicar uma ou duas técnicas de otimização e compará-las por benchmarks controlados. O recorte recomendado foi o mecanismo de autoatenção, sobretudo suas operações matriciais mais custosas, e não uma Transformer completa. Tabelas, gráficos e texto acadêmico devem ser produzidos junto com os experimentos, em vez de ficarem para o final.
+
+
+
+\section{Decisões e direcionamentos}
+
+
+\begin{enumerate}
+\item \textbf{Validar antes de otimizar.} Confrontar a implementação local com cálculo
+manual e bibliotecas consolidadas, mantendo entrada, pesos, semente e
+tolerância comparáveis.
+\item \textbf{Isolar o objeto de estudo.} Priorizar a autoatenção e explicitar que o
+projeto não pretende implementar nem otimizar toda a arquitetura Transformer.
+\item \textbf{Transformar testes em evidência.} Registrar resultados em tabelas e
+gráficos, acompanhados do passo a passo e da fundamentação teórica.
+\item \textbf{Comparar poucas técnicas de forma controlada.} Depois do portão de
+validação, selecionar uma ou duas otimizações e medi-las contra o mesmo
+baseline.
+\item \textbf{Começar a redação imediatamente.} Conectar conceitos, método, resultados e
+limitações enquanto os experimentos são executados.
+\item \textbf{Manter modelos pré-treinados como extensão.} Uma inferência com modelo do
+Hugging Face pode enriquecer o trabalho, mas somente se houver tempo depois do
+núcleo experimental.
+\item \textbf{Confirmar as datas oficiais.} A conversa mencionou novembro como referência
+provável para entrega/apresentação, mas sem confirmação institucional.
+\end{enumerate}
+
+
+\section{Reconstrução classificada da orientação}
+
+
+
+
+Esta seção distingue o que aparece na fala do orientador das decisões e interpretações feitas depois. Os intervalos remetem à transcrição integral.
+
+
+
+\subsection{Pedidos explícitos do professor}
+
+
+\begin{itemize}
+\item comparar a implementação local com uma biblioteca consolidada, citando
+TensorFlow ou Keras, com a mesma entrada e a mesma semente (\texttt{00:00:00-04:12});
+\item validar passo a passo antes de aplicar técnicas de otimização (\texttt{00:02:53-05:35});
+\item materializar a validação em tabela ou gráfico, comparando cálculo/equação,
+implementação manual, PyTorch e TensorFlow (\texttt{00:05:35-08:01});
+\item depois da validação, escolher uma ou duas técnicas da metodologia e comparar
+os resultados (\texttt{00:08:01-09:18});
+\item concentrar o estudo no mecanismo de self-attention e em suas operações de
+maior custo, em vez de otimizar uma Transformer inteira (\texttt{00:09:18-14:09});
+\item começar a escrever texto corrido imediatamente e fechar as avaliações com
+resultados e tabelas (\texttt{00:23:13-24:34}).
+\end{itemize}
+
+
+\subsection{Decisões tomadas durante a reunião}
+
+
+\begin{itemize}
+\item a ordem de trabalho ficou como validação da implementação, seleção das
+técnicas, aplicação controlada e comparação;
+\item o recorte principal ficou na self-attention, com a limitação de escopo e de
+tempo usada como justificativa;
+\item se uma camada completa de TensorFlow ocultasse o núcleo, bastaria comparar
+uma operação/interação equivalente da atenção (\texttt{00:14:09-15:21});
+\item uma demonstração com modelo pré-treinado poderia ser feita somente se
+houvesse tempo (\texttt{00:15:21} em diante).
+\end{itemize}
+
+
+\subsection{Dúvidas levantadas na reunião}
+
+
+\begin{itemize}
+\item como garantir que a implementação própria está correta;
+\item como definir formalmente o que pode ser chamado de Transformer;
+\item até onde é necessário validar a arquitetura, além das operações matemáticas;
+\item se TensorFlow expõe o núcleo interno de atenção de forma comparável;
+\item se haverá tempo para uma inferência com modelo do Hugging Face;
+\item quais são as datas institucionais efetivas de entrega e apresentação.
+\end{itemize}
+
+
+\subsection{Sugestões metodológicas, sem caráter de requisito adicional}
+
+
+\begin{itemize}
+\item usar resultados pequenos e palpáveis para sustentar cada avanço;
+\item justificar o recorte pela relevância computacional do mecanismo escolhido e
+pelo tempo disponível;
+\item usar literatura para selecionar técnicas já conhecidas, sem exigir uma nova
+técnica de otimização;
+\item escrever durante o desenvolvimento para explicitar como os conceitos se
+encadeiam.
+\end{itemize}
+
+
+\subsection{Implementações e validações necessárias derivadas diretamente da reunião}
+
+
+\begin{itemize}
+\item adaptador de layout e execução do mesmo núcleo de atenção em
+NumPy/manual, PyTorch e TensorFlow/Keras;
+\item casos determinísticos com entradas compartilhadas e tolerância explícita;
+\item artefato tabular com resultados e erros;
+\item benchmark controlado da self-attention com baseline comum e uma ou duas
+técnicas, depois da validação numérica;
+\item documentação em prosa de método, resultados e limites.
+\end{itemize}
+
+
+\subsection{Tarefas que podem ficar para depois dos primeiros benchmarks}
+
+
+\begin{itemize}
+\item demonstração de inferência com modelo pré-treinado;
+\item ampliação para outros componentes ou para uma arquitetura Transformer
+completa;
+\item técnicas adicionais além do primeiro conjunto controlado.
+\end{itemize}
+
+
+\subsection{Interpretações posteriores - não são pedidos literais do professor}
+
+
+\begin{itemize}
+\item usar NumPy como referência matemática independente;
+\item escolher \texttt{keras.\allowbreak{}ops.\allowbreak{}nn.\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention} como API TensorFlow/Keras;
+\item fixar \texttt{float32}, CPU, \texttt{atol=1e-6}, \texttt{rtol=1e-5} e seed \texttt{2026} na validação
+cruzada;
+\item manter CSV e JSON de metadados versionados;
+\item classificar evidências como conceituais, numéricas, algorítmicas ou de
+hardware;
+\item tratar a RTX 4070 Ti Super, seed \texttt{42}, grade, aquecimento e repetições como
+requisitos do plano formal de trabalho, não desta reunião.
+\end{itemize}
+
+
+\section{Situação no repositório em 24/08/2026}
+
+
+
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.273\linewidth}>{\RaggedRight\arraybackslash}p{0.273\linewidth}>{\RaggedRight\arraybackslash}p{0.273\linewidth}@{}}
+\toprule
+Encaminhamento da reunião & Situação atual & Evidência ou lacuna \\
+\midrule
+\endfirsthead
+\toprule
+Encaminhamento da reunião & Situação atual & Evidência ou lacuna \\
+\midrule
+\endhead
+Validar a matemática da atenção & Implementado no código e nos testes & Há comparação da atenção local com NumPy independente, valores controlados e \texttt{torch.\allowbreak{}nn.\allowbreak{}functional.\allowbreak{}scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention} em \href{../../../fases/01_validacao_conceitual/tests/test_validacao_conceitual.py}{test\_\allowbreak{}validacao\_\allowbreak{}conceitual.py}. \\
+Comparar com bibliotecas consolidadas & Concluído para o núcleo da atenção & NumPy manual, PyTorch manual, PyTorch SDPA e Keras SDPA com backend TensorFlow foram comparados nos mesmos casos. As 9 comparações passaram; veja a \href{../../../fases/01_validacao_conceitual/evidencias/comparacao_frameworks/comparacao_atencao.tex}{evidência versionada}. \\
+Restringir o escopo à autoatenção & Parcialmente alinhado & A validação isola a atenção, mas o executor principal mede um \texttt{Simplified\allowbreak{}Transformer\allowbreak{}Block}; é preciso decidir se o benchmark final será da atenção isolada ou do bloco simplificado. Ver \href{../../../fases/01_validacao_conceitual/README.md}{README da fase}. \\
+Preparar benchmarks controlados & Infraestrutura pronta; execução canônica pendente & O executor, o esquema do CSV e os testes de contrato existem em \href{../../../fases/01_validacao_conceitual/validacao/benchmark_controlado.py}{benchmark\_\allowbreak{}controlado.py}, mas não há resultados experimentais versionados. \\
+Produzir tabelas, gráficos e conclusões & Automação pronta; artefatos pendentes & \href{../../../fases/01_validacao_conceitual/validacao/analise_resultados.py}{analise\_\allowbreak{}resultados.py} processa os CSVs, mas depende da coleta real. \\
+Formalizar a metodologia & Em andamento avançado & A fase já possui protocolo, matriz de ferramentas, perguntas de pesquisa e documentação de validação em \href{../../../fases/01_validacao_conceitual/docs/}{docs da fase}. \\
+Usar modelo pré-treinado & Não iniciado e não obrigatório & Deve continuar fora do caminho crítico até que validação, benchmarks e relatório estejam fechados. \\
+\bottomrule
+\end{longtable}
+
+
+
+
+Essa tabela descreve o que está implementado e documentado; ela não afirma que a bateria final de benchmarks já foi executada no ambiente-alvo.
+
+
+
+\section{Próximos passos priorizados}
+
+
+
+\subsection{P0 - Fechar o contrato experimental}
+
+
+\begin{enumerate}
+\item Escolher explicitamente o objeto medido no resultado principal: atenção
+isolada, como favorecido pela reunião, ou bloco Transformer simplificado.
+\item Fixar baseline, técnicas de otimização, shapes, lotes, tamanhos de sequência,
+\texttt{dtype}, dispositivo, sementes, aquecimento, repetições e tolerâncias.
+\item Preservar TensorFlow/Keras como portão de correção já concluído e reexecutar a
+comparação somente quando mudar a atenção, as versões dos frameworks ou as
+tolerâncias.
+\item Confirmar com a orientação as datas institucionais de submissão, entrega e
+apresentação.
+\end{enumerate}
+
+
+\subsection{P1 - Concluir a validação e coletar evidências}
+
+
+\begin{enumerate}
+\item Reexecutar a suíte no ambiente fixado e guardar versão das dependências,
+hardware e resultado dos testes.
+\item Fazer um piloto curto em CPU para validar o fluxo de ponta a ponta.
+\item Executar a grade final no dispositivo-alvo, salvando CSV e metadados. Como
+\texttt{resultados/\allowbreak{}} está ignorado pelo Git, definir antes quais artefatos finais
+serão versionados ou publicados em outro local reprodutível.
+\item Distinguir claramente simulação numérica de ganho efetivo de hardware; só usar
+esse último rótulo quando armazenamento, tipo numérico e kernel executado
+sustentarem a afirmação.
+\end{enumerate}
+
+
+\subsection{P1 - Escrever o relatório junto com a análise}
+
+
+\begin{enumerate}
+\item Gerar uma tabela de validação com entrada, saída esperada, saída local, saída
+da referência, erro máximo, tolerância e status.
+\item Gerar tabelas e gráficos de latência, throughput, memória, erro e redução de
+operações para cada cenário contra o mesmo baseline.
+\item Responder às perguntas de pesquisa com os resultados observados e registrar
+ameaças à validade, limitações e casos em que uma técnica não trouxe ganho.
+\item Incorporar método, resultados e discussão ao texto acadêmico sem esperar o
+encerramento de toda a coleta.
+\end{enumerate}
+
+
+\subsection{P2 - Extensão opcional}
+
+
+
+
+
+Depois de concluir o núcleo, avaliar uma demonstração de inferência com um modelo pré-treinado do Hugging Face. A extensão não deve alterar o baseline nem atrasar as entregas principais.
+
+
+
+\section{Critério de conclusão desta etapa}
+
+
+
+A etapa pode ser considerada fechada quando houver:
+
+
+\begin{itemize}
+\item validação reproduzível da atenção contra as referências escolhidas;
+\item decisão documentada sobre o escopo e sobre TensorFlow/Keras;
+\item benchmarks comparáveis, com configuração e ambiente registrados;
+\item CSVs, tabelas e gráficos rastreáveis até a execução;
+\item conclusões compatíveis com o nível real de evidência, sem extrapolação para
+hardware ou Transformer completa;
+\item seção correspondente já integrada ao relatório do projeto.
+\end{itemize}
+
+
+\section{Trechos da reunião que sustentam os encaminhamentos}
+
+
+\begin{itemize}
+\item \textbf{00:00-04:12:} necessidade de validar a implementação contra bibliotecas
+consolidadas antes de avançar;
+\item \textbf{05:35-08:01:} sugestão de tabelas e gráficos comparando cálculo manual,
+PyTorch e TensorFlow, além de iniciar o relatório;
+\item \textbf{08:01-14:09:} sequência validação → otimização → comparação e delimitação do
+escopo na autoatenção;
+\item \textbf{15:21-16:15:} modelo pré-treinado como possibilidade condicionada ao tempo e
+incerteza sobre o calendário de novembro;
+\item \textbf{23:13 em diante:} recomendação de redigir em prosa desde já e fechar cada
+avaliação com resultados e tabelas;
+\item \textbf{29:30-30:07:} compromisso de avançar nos benchmarks após a reunião.
+\end{itemize}

@@ -1,0 +1,107 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: fases/01_validacao_conceitual/docs/matriz_validacao_ferramentas.md
+
+
+\chapter{Matriz de validacao de ferramentas}
+
+
+
+
+
+Esta matriz registra se cada ferramenta candidata implementa, de forma observavel, o conceito que afirma implementar. Ela deve ser atualizada sempre que novos testes forem executados.
+
+
+
+
+Os valores numericos derivados das definicoes e a comparacao com as fontes primarias estao registrados em \texttt{fases/\allowbreak{}01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}docs/\allowbreak{}confronto\_\allowbreak{}resultados\_\allowbreak{}literatura.\allowbreak{}md}.
+
+
+
+Status possiveis:
+
+
+\begin{itemize}
+\item Aderente: o comportamento observado bate com a definicao e com o teste.
+\item Parcialmente aderente: a ferramenta implementa parte do conceito, mas nao
+sustenta todas as conclusoes desejadas.
+\item Nao aderente: o comportamento observado nao sustenta o uso do conceito.
+\item Pendente: ainda nao foi possivel executar ou completar a verificacao.
+\item Fora do pipeline: ferramenta conhecida, mas excluida do fluxo atual por
+depreciacao, incompatibilidade ou falta de evidencia adequada.
+\end{itemize}
+
+
+Niveis de validade:
+
+
+\begin{itemize}
+\item Conceitual: serve para demonstrar a ideia.
+\item Numerico: permite medir erro ou fidelidade da saida.
+\item Algoritmico: implementa de fato o algoritmo esperado.
+\item Hardware: usa representacao, kernel ou estrutura capaz de sustentar alegacao
+de ganho fisico.
+\item Fora do pipeline: nao participa dos benchmarks ou testes automatizados.
+\end{itemize}
+
+
+Niveis de certeza usados no metodo:
+
+
+\begin{itemize}
+\item Definicao: termo sustentado por fonte cientifica ou primaria.
+\item Matematica: formula local bate com caso pequeno derivado.
+\item Algoritmo: ferramenta bate com implementacao transparente ou referencia.
+\item Hardware: execucao usa representacao, formato ou kernel compativel com ganho
+fisico mensuravel.
+\end{itemize}
+
+
+\begin{landscape}
+\scriptsize
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}>{\RaggedRight\arraybackslash}p{0.117\linewidth}@{}}
+\toprule
+Ferramenta/algoritmo & Conceito declarado & Fonte cientifica ou primaria & Teste aplicado & Resultado observado & Status & Nivel de validade \\
+\midrule
+\endfirsthead
+\toprule
+Ferramenta/algoritmo & Conceito declarado & Fonte cientifica ou primaria & Teste aplicado & Resultado observado & Status & Nivel de validade \\
+\midrule
+\endhead
+Implementacao manual em \texttt{validacao.\allowbreak{}dense} & Projecao densa & Goodfellow et al. + Vaswani et al. (2017) & Comparar \texttt{Y=XW\textasciicircum{}T+b} com calculo manual e NumPy. & Passou em \texttt{pytest}: saida \texttt{[[1.\allowbreak{}5, 3.\allowbreak{}5], [3.\allowbreak{}5, 7.\allowbreak{}5]]} bate com a formula. & Aderente & Numerico/algoritmico \\
+Implementacao manual em \texttt{validacao.\allowbreak{}attention} & Scaled dot-product attention & Vaswani et al. (2017), \texttt{Attention\allowbreak{}(Q,K,V)\allowbreak{}=softmax\allowbreak{}(QK\textasciicircum{}T/\allowbreak{}sqrt(d\_\allowbreak{}k))V} & Comparar tensores pequenos contra calculo NumPy independente. & Passou em \texttt{pytest}: saida PyTorch manual igual ao calculo NumPy independente dentro de tolerancia \texttt{1e-6}. & Aderente & Conceitual/\allowbreak{}algoritmico \\
+\texttt{torch.\allowbreak{}nn.\allowbreak{}functional.\allowbreak{}scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention} & Scaled dot-product attention & Documentacao PyTorch + Vaswani et al. (2017) & Comparar saida PyTorch com implementacao manual transparente. & Passou em \texttt{pytest}: saida da API PyTorch igual a implementacao manual transparente dentro de tolerancia \texttt{1e-6}. & Aderente & Algoritmico \\
+\texttt{keras.\allowbreak{}ops.\allowbreak{}nn.\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention} com backend TensorFlow & Scaled dot-product attention em framework independente & Documentacao Keras Ops + Vaswani et al. (2017) & Reutilizar os mesmos \texttt{Q}, \texttt{K}, \texttt{V} e mascara dos caminhos NumPy/PyTorch em tres casos deterministas. & Passou em \texttt{pytest} e na execucao canônica: 9/9 comparacoes aprovadas; maior erro absoluto \texttt{2.\allowbreak{}38418579e-07} para \texttt{atol=1e-6} e \texttt{rtol=1e-5}. & Aderente & Numerico/algoritmico \\
+\texttt{validacao.\allowbreak{}attention} com mascara e multi-head & Multi-head/self-attention & Vaswani et al. (2017) + documentacao PyTorch SDPA & Validar split/combine de heads, shape e mascara aditiva contra PyTorch. & Passou em \texttt{pytest}: saida multi-head preserva shape \texttt{[batch, seq, d\_\allowbreak{}model]} e bate com referencia por heads em \texttt{1e-6}. & Aderente & Algoritmico \\
+\texttt{validacao.\allowbreak{}transformer.\allowbreak{}Simplified\allowbreak{}Transformer\allowbreak{}Block} & Bloco Transformer simplificado & Vaswani et al. (2017) + criterios do documento teorico & Verificar entrada sequencial, Q/K/V, atencao, posicao, residual, norm e FFN. & Passou em \texttt{pytest}: saida preserva shape e checklist classifica como \texttt{bloco\_\allowbreak{}transformer\_\allowbreak{}simplificado}. & Aderente & Conceitual/\allowbreak{}algoritmico \\
+\texttt{validacao.\allowbreak{}auditoria\_\allowbreak{}transformer} & Auditoria arquitetural de NN Transformer & Vaswani et al. (2017) + criterios do protocolo & Auditar componentes, comportamento sequencial, attention interna e controle negativo. & Passou em \texttt{pytest}: o bloco atual e classificado como \texttt{bloco\_\allowbreak{}transformer\_\allowbreak{}simplificado}; uma NN linear comum e rejeitada como \texttt{nao\_\allowbreak{}aderente}. & Aderente & Conceitual/\allowbreak{}algoritmico \\
+\texttt{validacao.\allowbreak{}kv\_\allowbreak{}cache} & KV cache & Literatura/\allowbreak{}documentacao de inferencia autoregressiva e compressao de KV cache & Comparar atencao causal completa com versao incremental usando cache. & Passou em \texttt{pytest}: saida com cache bate com saida completa em \texttt{1e-6}; para 4 tokens, projeta 4 K/V contra 10 no caminho ingenuo. & Aderente & Algoritmico; hardware pendente \\
+\texttt{validacao.\allowbreak{}flops} & FLOPs teoricos & Hennessy e Patterson + analise de complexidade em Vaswani et al. (2017) & Calcular casos pequenos para projecao densa, attention e bloco. & Passou em \texttt{pytest}: projecao densa \texttt{270}, attention \texttt{288}, bloco \texttt{1992} FLOPs no caso definido. & Aderente & Numerico \\
+\texttt{validacao.\allowbreak{}protocolo} & Schema experimental CSV & Protocolo metodologico do projeto & Validar colunas fixas e nivel de validade permitido. & Passou em \texttt{pytest}: schema preserva 24 colunas e rejeita nivel sem evidencia. & Aderente & Conceitual \\
+\texttt{validacao.\allowbreak{}pesquisa} & Perguntas de pesquisa e hipoteses & Metodo experimental do projeto & Verificar se toda pergunta tem metrica, evidencia e hipotese vinculada. & Passou em \texttt{pytest}: contrato de pesquisa nao apresenta inconsistencias. & Aderente & Conceitual \\
+\texttt{validacao.\allowbreak{}benchmark\_\allowbreak{}controlado} & Runner experimental controlado & Protocolo experimental do projeto + PyTorch & Rejeitar cenario sem matriz, registrar ambiente/seed, medir com repeticoes e validar CSV. & Passou em \texttt{pytest}: registros de benchmark sao validos, baseline tem erro zero e cenarios nao sao promovidos indevidamente a hardware. & Aderente & Algoritmico \\
+\texttt{validacao.\allowbreak{}analise\_\allowbreak{}resultados} & Analise final e evidencias do artigo & Protocolo experimental do projeto & Comparar cenarios contra baseline, gerar tabelas/graficos e conclusoes com fonte. & Passou em \texttt{pytest}: tabelas, graficos e conclusoes apontam para CSV e matriz. & Aderente & Algoritmico \\
+Checklist em \texttt{validacao.\allowbreak{}classificacao} & Classificacao de operacao/bloco/Transformer & Vaswani et al. (2017) + criterios do documento teorico & Verificar casos de operacao inspirada, bloco simplificado e Transformer. & Passou em \texttt{pytest}: os casos minimos sao classificados corretamente. & Aderente & Conceitual \\
+Metricas manuais em \texttt{validacao.\allowbreak{}metrics} & MSE, MAE, R2 e similaridade de cosseno & Hastie, Tibshirani e Friedman; Manning, Raghavan e Schutze; scikit-learn & Comparar exemplos pequenos contra resultados conhecidos e scikit-learn. & Passou em \texttt{pytest}: metricas manuais batem com valores conhecidos e com scikit-learn. & Aderente & Numerico \\
+\texttt{torch.\allowbreak{}nn.\allowbreak{}utils.\allowbreak{}prune} & Pruning/esparsificacao & Tang et al. (2024) + tutorial oficial PyTorch pruning & Aplicar poda L1 em camada linear pequena e medir proporcao de zeros. & Passou em \texttt{pytest}: poda L1 produziu 50\% de zeros e mascara \texttt{weight\_\allowbreak{}mask}; nao usa armazenamento/kernel esparso no teste. & Parcialmente aderente & Conceitual/\allowbreak{}algoritmico; hardware pendente \\
+Quantizacao simetrica \texttt{int8} em \texttt{validacao.\allowbreak{}quantization} & Quantizacao numerica & Tang et al. (2024), Zandieh et al. (2025) & Verificar dtype \texttt{int8}, reducao de bytes e erro de dequantizacao. & Passou em \texttt{pytest}: tensor quantizado usa \texttt{int8}, reduz bytes e erro de dequantizacao fica limitado pela escala. & Aderente & Numerico \\
+\texttt{torch.\allowbreak{}ao.\allowbreak{}quantization.\allowbreak{}quantize\_\allowbreak{}dynamic} & Quantizacao dinamica de camada linear & Documentacao PyTorch quantization & Avaliar manutencao da ferramenta no pipeline. & Removida da suite automatizada: API depreciada no ambiente atual e substituida por \texttt{torchao} v2. & Fora do pipeline & Fora do pipeline \\
+\texttt{torchao} v2 & Quantizacao e otimizacao nativa PyTorch & Documentacao oficial torchao & Quantizar camada linear pequena com \texttt{Int8\allowbreak{}Weight\allowbreak{}Only\allowbreak{}Config(version=2)} e verificar armazenamento interno. & Passou em \texttt{pytest}: camada roda sem warnings, peso e \texttt{Int8Tensor} e dados internos \texttt{qdata} usam \texttt{int8}. & Aderente & Numerico/algoritmico; hardware pendente \\
+\bottomrule
+\end{longtable}
+\end{landscape}
+
+
+
+\section{Regras para atualizar a matriz}
+
+
+\begin{enumerate}
+\item Nenhuma ferramenta deve ser promovida para nivel hardware apenas por ter
+menor erro numerico.
+\item Quantizacao so recebe nivel hardware se houver representacao menor e caminho
+de execucao compativel com essa representacao.
+\item Pruning so recebe nivel hardware se a esparsidade for explorada por formato
+ou kernel adequado.
+\item Se uma ferramenta passar apenas em testes pequenos, registrar validade
+conceitual/algoritmica e deixar a validade de hardware como pendente.
+\end{enumerate}

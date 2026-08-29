@@ -1,0 +1,404 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: docs/diario_ic.md
+
+
+\chapter{Diário da iniciação científica}
+
+
+
+
+
+Este diário registra a evolução da pesquisa, as razões das decisões e as evidências produzidas. Entradas anteriores à criação do arquivo são marcadas como reconstruídas a partir de fontes versionadas.
+
+
+
+\section{31/07/2026 - Reunião de orientação (entrada reconstruída)}
+
+
+
+
+\textbf{Objetivo e contexto.} Revisar como validar o código já desenvolvido e definir o caminho até os experimentos.
+
+
+
+
+
+
+
+
+\textbf{Análises e decisões.} O orientador pediu comparação com TensorFlow/Keras e PyTorch usando entradas e sementes equivalentes antes de qualquer otimização. Ficou definido que resultados pequenos deveriam virar tabelas/gráficos e que a self-attention seria o foco, evitando o custo de otimizar a arquitetura inteira. Uma ou duas técnicas seriam escolhidas apenas após esse portão. A escrita do relatório deveria começar imediatamente.
+
+
+
+
+
+
+\textbf{Hipótese metodológica.} Se o mesmo núcleo produzir saídas equivalentes na implementação manual e em bibliotecas consolidadas, diferenças posteriores podem ser atribuídas com mais segurança às técnicas, e não a um erro básico da atenção.
+
+
+
+
+\textbf{Pendências deixadas.} Comparação independente, definição detalhada dos benchmarks, tabelas de resultados, redação e confirmação das datas oficiais.
+
+
+
+\textbf{Fonte.} Ata e transcrição em \texttt{docs/\allowbreak{}reunioes/\allowbreak{}2026-07-31/\allowbreak{}}.
+
+
+
+\section{24/08/2026 - Validação cruzada da atenção (entrada reconstruída)}
+
+
+
+\textbf{Objetivo.} Fechar o portão numérico solicitado na reunião.
+
+
+
+
+
+
+
+\textbf{Implementação.} Foi criado \texttt{validacao.\allowbreak{}comparacao\_\allowbreak{}frameworks} com três casos determinísticos e os mesmos tensores NumPy compartilhados entre NumPy manual, PyTorch manual, PyTorch SDPA e Keras/TensorFlow. O adaptador trata os layouts \texttt{[B,H,T,D]} e \texttt{[B,T,H,D]}. TensorFlow é importado tardiamente e executado em CPU, \texttt{float32}, sem dropout ou flash attention.
+
+
+
+
+
+
+\textbf{Testes e resultados.} As nove comparações passaram com \texttt{atol=1e-6} e \texttt{rtol=1e-5}; erro absoluto máximo \texttt{2.\allowbreak{}38418579e-07}. A suíte completa retornou \texttt{32 passed, 1 skipped}; o teste ignorado exige CUDA. CSV, tabela Markdown e JSON de metadados foram versionados em \texttt{evidencias/\allowbreak{}comparacao\_\allowbreak{}frameworks/\allowbreak{}}.
+
+
+
+
+
+\textbf{Interpretação.} A evidência sustenta equivalência numérica do núcleo nos casos testados. Não sustenta velocidade, economia de memória ou superioridade entre frameworks.
+
+
+
+
+\textbf{Próximo passo.} Auditar e alinhar o runner de desempenho ao plano formal e ao recorte da reunião antes de executar benchmarks principais.
+
+
+
+\section{25/08/2026 - Auditoria integral e portões pré-benchmark}
+
+
+
+
+\textbf{Objetivo.} Revisar criticamente repositório, histórico, código, documentação, plano formal, apresentação, reunião e ambiente antes de implementar nova coleta.
+
+
+
+
+
+
+
+\textbf{O que foi analisado.} Cinco commits preexistentes, código ativo e legado, testes, requisitos, schemas, análise de resultados, materiais textuais da apresentação, plano de trabalho e transcrição. O plano foi extraído estruturalmente; a verificação visual do \texttt{.\allowbreak{}docx} ficou indisponível pela ausência de LibreOffice.
+
+
+
+
+
+
+
+\textbf{Problemas encontrados.} O runner ativo mede bloco inteiro; usa parâmetros de piloto diferentes do plano; não representa duas execuções; grava por padrão em pasta ignorada; registra ambiente insuficiente; usa ordem fixa de cenários; tem semântica ambígua de memória; e inclui TorchAO por padrão fora do primeiro desenho formal. A análise atual não estima variabilidade entre execuções.
+
+
+
+
+
+
+
+\textbf{Decisões metodológicas.} O benchmark principal medirá projeção densa e self-attention isoladas. A primeira preserva o plano formal; a segunda é o foco explicitado pelo professor. O bloco simplificado continuará como validação arquitetural/piloto. O schema CSV atual será preservado, e informações adicionais irão para configuração, manifesto, log e metadados.
+
+
+
+
+
+\textbf{Ambiente.} Python \texttt{3.\allowbreak{}11.\allowbreak{}9}, PyTorch \texttt{2.\allowbreak{}11.\allowbreak{}0+cu128} e build CUDA \texttt{12.\allowbreak{}8}, mas \texttt{torch.\allowbreak{}cuda.\allowbreak{}is\_\allowbreak{}available()} retornou falso, com zero dispositivos. O Windows só expôs Intel Iris Xe; \texttt{nvidia-smi} não está instalado/disponível.
+
+
+
+
+\textbf{Testes.} Suíte completa: \texttt{32 passed, 1 skipped}. Comparação canônica: \texttt{9/\allowbreak{}9} aprovada. \texttt{pip check}: nenhuma dependência quebrada.
+
+
+
+
+
+
+
+\textbf{Correção do runner piloto.} A evidência de armazenamento de baixa precisão da quantização manual foi removida: o \texttt{int8} é intermediário e o peso executado permanece \texttt{float32}. TorchAO também saiu dos cenários padrão, permanecendo como extensão explícita. O metadado agora diferencia pico CUDA de estimativa de armazenamento em CPU. Teste direcionado: \texttt{7 passed, 1 skipped} (CUDA).
+
+
+
+
+
+\textbf{Resultados e interpretação.} A validação conceitual está madura, mas o benchmark principal ainda não está liberado. A indisponibilidade da GPU é externa; os demais portões controláveis serão tratados antes do smoke test.
+
+
+
+
+
+\textbf{Arquivos criados/alterados nesta etapa.} \texttt{docs/\allowbreak{}diario\_\allowbreak{}ic.\allowbreak{}md}, \texttt{docs/\allowbreak{}auditoria\_\allowbreak{}estado\_\allowbreak{}2026-08-25.\allowbreak{}md}, \texttt{docs/\allowbreak{}checklist\_\allowbreak{}pre\_\allowbreak{}benchmark.\allowbreak{}md}, índice de documentação e reconstrução classificada da reunião.
+
+
+
+
+
+\textbf{Próximos passos.} Implementar configuração e runner das operações isoladas, fortalecer validações, persistir evidências, executar smoke reprodutível e então reavaliar a liberação da coleta principal.
+
+
+
+\subsection{Continuação - infraestrutura das operações isoladas}
+
+
+
+
+
+
+
+
+\textbf{Implementação.} Foram adicionadas configurações JSON separadas para smoke em CPU e experimento principal em CUDA. \texttt{validacao.\allowbreak{}benchmark\_\allowbreak{}operacoes} carrega e valida o contrato, gera dados sintéticos determinísticos, mede projeção densa e self-attention de cabeça única e executa baseline, poda de 50\% e quantização INT8 simulada. Cada execução independente grava seu próprio CSV e metadados; um manifesto com checksums e um log permitem preservar resultados parciais.
+
+
+
+
+
+
+
+
+\textbf{Controles metodológicos.} O dispositivo não usa \texttt{auto}; o benchmark principal falha se CUDA ou a GPU nominal estiverem ausentes. As duas execuções reutilizam os mesmos dados/pesos e rotacionam deterministicamente a ordem dos cenários. Os hashes confirmam entradas e saídas determinísticas. A poda continua densa e a quantização executa pesos dequantizados em \texttt{float32}, fato registrado nos metadados para impedir alegações de kernel otimizado.
+
+
+
+
+
+\textbf{Teste.} \texttt{test\_\allowbreak{}benchmark\_\allowbreak{}operacoes.\allowbreak{}py}: \texttt{6 passed}. O teste verifica o contrato formal, o portão de GPU, a poda exata, a semântica da quantização, a reprodutibilidade entre execuções e todos os artefatos persistidos.
+
+
+
+
+\textbf{Pendência imediata.} Consolidar execuções com média/desvio-padrão, integrar a análise à pipeline e só então produzir a evidência canônica do smoke test.
+
+
+
+\subsection{Continuação - análise entre execuções}
+
+
+
+
+
+
+
+\textbf{Implementação.} \texttt{validacao.\allowbreak{}analise\_\allowbreak{}benchmark\_\allowbreak{}operacoes} verifica os SHA-256 do manifesto, valida a completude da grade, confere hashes determinísticos e associa cada candidato ao baseline da mesma execução. A análise preserva os registros individuais, calcula média e desvio-padrão entre execuções e gera comparações, relatório e gráficos.
+
+
+
+
+
+
+
+\textbf{Proteção contra interpretação indevida.} O relatório identifica o propósito do experimento. Para smoke em CPU, tempos e memória são rotulados como diagnóstico da pipeline. A cadeia pergunta → hipótese → configuração → execução → resultado → interpretação fica explícita, e caminhos densos/dequantizados não são promovidos a hardware.
+
+
+
+
+\textbf{Testes.} Dois testes direcionados passaram: geração completa dos oito artefatos de análise e rejeição de CSV adulterado por divergência de checksum.
+
+
+
+
+\textbf{Próximo passo.} Fazer commit desta infraestrutura, executar o smoke canônico em diretório versionável novo, inspecionar seus artefatos e repetir a análise.
+
+
+
+\subsection{Continuação - smoke canônico e portão da GPU}
+
+
+
+
+
+\textbf{Objetivo.} Validar ponta a ponta leitura da configuração, geração dos dados, execução, métricas, persistência, logs, integridade, análise e visualização antes de qualquer grade maior.
+
+
+
+
+
+
+\textbf{Configuração.} CPU, seed 42, \texttt{B=1}, \texttt{L=4}, \texttt{D=8}, projeção densa e self-attention, três cenários, 2 warm-ups, 5 medições e 2 execuções independentes. Evidência em \texttt{evidencias/\allowbreak{}benchmarks/\allowbreak{}smoke\_\allowbreak{}cpu\_\allowbreak{}2026-08-25/\allowbreak{}}.
+
+
+
+
+
+
+\textbf{Resultados da pipeline.} Manifesto \texttt{complete}; 6 registros por execução e 12 no total; CSVs e metadados passaram nos checksums; hashes de entrada e saída coincidiram entre execuções; oito artefatos de análise foram gerados; os dois gráficos foram inspecionados e estão legíveis.
+
+
+
+
+
+
+\textbf{Qualidade da saída.} Na projeção densa, MSE de \texttt{7.\allowbreak{}28672e-05} para quantização contra \texttt{0.\allowbreak{}352201} para pruning. Na self-attention, MSE de \texttt{0.\allowbreak{}00503124} contra \texttt{25.\allowbreak{}8574}. O sinal é compatível com H1 nesta amostra sintética: a quantização simulada preservou melhor a saída que a poda de 50\%.
+
+
+
+
+
+
+\textbf{Latência e limitação.} Os casos minúsculos apresentaram grande variabilidade entre as duas execuções. A quantização simulada também executa dequantização em \texttt{float32}, e a poda usa matriz densa. Portanto, razões de latência do smoke não são evidência de aceleração nem de hardware.
+
+
+
+
+
+
+\textbf{Portão negativo da GPU.} A tentativa controlada com a configuração principal terminou com código 2 e mensagem de CUDA indisponível, antes de criar qualquer diretório de saída. Isso confirma que o runner não fará coleta principal acidental em CPU.
+
+
+
+
+
+
+\textbf{Decisão.} O smoke está aprovado. A grade principal continua bloqueada apenas pela ausência da RTX/CUDA neste ambiente. Como trabalho independente, será executado um diagnóstico CPU em um ponto representativo da grade formal, sem promovê-lo a resultado de hardware.
+
+
+
+\subsection{Continuação - diagnóstico CPU v1 em L=64, D=128}
+
+
+
+
+
+
+\textbf{Objetivo e configuração.} Exercitar o primeiro ponto da grade formal com o protocolo completo de 20 warm-ups, 50 medições e duas execuções, preservando seed 42 e os mesmos cenários. A coleta terminou em aproximadamente dois segundos de tempo registrado pelo log e gerou 12 registros analisáveis.
+
+
+
+
+
+\textbf{Integridade e reprodutibilidade.} Manifesto completo, checksums válidos e hashes de entradas/saídas idênticos entre execuções. Os gráficos foram inspecionados e estão legíveis.
+
+
+
+
+
+
+\textbf{Resultado de qualidade.} Na projeção densa, MSE \texttt{0.\allowbreak{}00995697} da quantização contra \texttt{9.\allowbreak{}30825} do pruning. Na self-attention, MSE \texttt{732.\allowbreak{}65} contra \texttt{12144.\allowbreak{}35}; R² da quantização \texttt{0.\allowbreak{}95428} e cosseno \texttt{0.\allowbreak{}97714}. H1 continua compatível, mas o erro absoluto chamou atenção.
+
+
+
+
+
+
+
+\textbf{Investigação do resultado inesperado.} O gerador v1 usa pesos independentes \texttt{N(0,1)}. Em matrizes maiores, essa variância faz projeções e saída da atenção crescerem com \texttt{D}. Assim, MSE/MAE aumentam também pela escala do baseline e não podem ser comparados diretamente entre dimensões. Não se trata de adulterar um resultado ruim: a coleta v1 foi preservada e identificou uma ameaça à validade.
+
+
+
+
+
+
+
+\textbf{Decisão metodológica.} Antes do benchmark principal, tornar a distribuição dos dados explícita na configuração e usar inicialização de pesos escalada pela dimensão (Xavier para matrizes quadradas), mantendo entradas \texttt{N(0,1)} e bias zero. O diagnóstico será repetido como v2; v1 continuará versionado como evidência da correção.
+
+
+
+
+
+\textbf{Latência.} As razões em CPU sugeriram valores abaixo do baseline em alguns cenários, mas com desvio alto e sem kernel esparso/INT8. Nenhuma aceleração foi concluída.
+
+
+
+\subsection{Continuação - correção metodológica da inicialização}
+
+
+
+
+
+
+
+\textbf{Mudança.} O schema de configuração passou à versão 2 e agora registra explicitamente distribuição das entradas, inicialização dos pesos e bias. As entradas continuam \texttt{N(0,1)}; matrizes quadradas usam Xavier normal com desvio \texttt{1/\allowbreak{}sqrt(D)}; o bias da projeção densa é zero. Evidências de schema v1 continuam legíveis para preservar o histórico.
+
+
+
+
+
+\textbf{Justificativa.} A mudança não foi escolhida para melhorar uma métrica observada, mas para controlar a variância das projeções ao comparar diferentes dimensões. A coleta v1 permanece intacta e será confrontada com v2.
+
+
+
+
+
+\textbf{Testes.} A suíte passou com \texttt{45 passed, 1 skipped}. Um teste novo verifica a escala empírica dos pesos e o bias zero; as evidências v1 foram reabertas e mantiveram checksums e reprodutibilidade válidos.
+
+
+
+
+\textbf{Próximo passo.} Commit da correção e repetição do diagnóstico em nova pasta v2, sem sobrescrever o resultado anterior.
+
+
+
+\subsection{Continuação - diagnóstico CPU v2 e confronto com v1}
+
+
+
+
+
+
+\textbf{Execução.} A configuração v2 repetiu \texttt{B=1}, \texttt{L=64}, \texttt{D=128}, 20 warm-ups, 50 medições e duas execuções com pesos Xavier e bias zero. Manifesto, checksums, hashes determinísticos, relatório e gráficos passaram. O ambiente foi capturado com worktree limpo no commit da correção.
+
+
+
+
+
+
+\textbf{Resultado.} Na projeção densa, MSE da quantização \texttt{7.\allowbreak{}7789e-05} contra \texttt{0.\allowbreak{}0727207} do pruning. Na self-attention, \texttt{1.\allowbreak{}63925e-05} contra \texttt{0.\allowbreak{}0110127}; R²/cosseno da quantização ficaram em \texttt{0.\allowbreak{}999647}/\texttt{0.\allowbreak{}999824}. H1 foi novamente compatível neste ponto da grade.
+
+
+
+
+
+
+\textbf{Confronto.} A queda do MSE da self-attention quantizada de \texttt{732.\allowbreak{}65} (v1) para \texttt{1.\allowbreak{}63925e-05} (v2) confirma que a escala anterior dominava o erro absoluto. O resultado v1 foi preservado. A decisão, alternativas e limites foram registrados em \texttt{docs/\allowbreak{}decisao\_\allowbreak{}inicializacao\_\allowbreak{}benchmark.\allowbreak{}tex}.
+
+
+
+
+
+\textbf{Latência.} As barras ficaram abaixo do baseline em CPU, mas com grande variabilidade e sem caminhos físicos otimizados. Esses números permanecem sem interpretação de aceleração.
+
+
+
+
+
+\textbf{Estado do portão.} Todas as pendências obrigatórias controláveis pelo código estão concluídas. Resta a condição externa: executar a grade principal na RTX 4070 Ti Super/CUDA e confirmar o calendário institucional.
+
+\section{29/08/2026 - Migração integral da documentação para LaTeX}
+
+\textbf{Objetivo.} Tornar LaTeX a fonte canônica de toda a documentação
+acadêmica, personalizar o volume final e preparar o repositório para ser clonado
+na máquina com a GPU alvo.
+
+\textbf{Reorganização.} Fundamentação, método, matriz, auditoria, checklist,
+diário, reunião, guia de estudo, roteiro e relatórios de evidência foram migrados
+para arquivos \texttt{.tex}. READMEs permaneceram em Markdown apenas como
+índices do GitHub. CSV, JSON, logs e imagens continuam como evidência bruta; a
+transcrição original e o formulário Word foram preservados como fontes.
+
+\textbf{Volume compilado.} Foi criado um documento mestre com capa, identidade
+visual, sumário, relatório executivo, plano consolidado, estado atual, roteiro
+da coleta CUDA, documentação técnica, evidências e anexos. O build usa XeLaTeX
+em três passagens e publica o PDF em
+\texttt{output/pdf/relatorio\_\allowbreak{}ic\_\allowbreak{}transformers.pdf}.
+
+\textbf{Geradores.} A comparação entre frameworks, a análise das operações
+isoladas e a análise do benchmark controlado passaram a emitir relatórios LaTeX
+em vez de Markdown. Os testes de contrato foram atualizados para verificar a
+extensão e a estrutura dos novos artefatos.
+
+\textbf{Próximo passo.} Clonar a versão publicada na máquina com a RTX 4070 Ti
+Super, instalar o ambiente fixado, confirmar CUDA, executar toda a suíte,
+revalidar a atenção e coletar a grade de
+\texttt{experimentos/benchmark\_\allowbreak{}principal\_\allowbreak{}gpu.json} em uma pasta nova.

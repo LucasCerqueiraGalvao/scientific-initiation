@@ -1,219 +1,226 @@
 # Scientific Initiation
 
-Repositório da iniciação científica sobre eficiência computacional em operações
-de Transformers, com foco em validação metodológica, quantização, pruning e
-benchmarks controlados.
+Iniciação científica sobre eficiência computacional de operações centrais de
+Transformers em inferência, com comparação controlada entre baseline, pruning
+por magnitude e quantização linear INT8.
 
-Este repositório é da IC inteira. A fase ativa no momento é a validação
-conceitual/metodológica dos scripts que serão usados antes dos benchmarks.
+O repositório está pronto para a coleta principal na máquina com uma NVIDIA
+GeForce RTX 4070 Ti Super de 16 GB. A matemática da atenção, a arquitetura do
+recorte, a equivalência NumPy/PyTorch/TensorFlow e a pipeline de benchmark já
+foram validadas. O que falta é executar a grade CUDA e analisar a evidência do
+hardware-alvo.
 
-## Estrutura
+## Estado atual
+
+| Frente | Estado | Evidência |
+| --- | --- | --- |
+| Scaled dot-product attention manual | Validada | Casos conhecidos, NumPy independente e PyTorch SDPA. |
+| Bloco Transformer simplificado | Validado no recorte | Auditoria estrutural, dependência entre posições e controle negativo. |
+| Comparação entre frameworks | Validada | 9/9 comparações NumPy, PyTorch manual, PyTorch SDPA e Keras/TensorFlow aprovadas. |
+| Pipeline de benchmark | Validada em CPU | Configuração, duas execuções, hashes, manifesto, análise e gráficos. |
+| Inicialização dos pesos | Corrigida | Contrato v2 com Xavier normal e bias zero. |
+| Benchmark principal em CUDA | Pendente | Deve ser executado na RTX 4070 Ti Super. |
+| Ganho real de pruning/INT8 | Não afirmado | Depende do caminho e do kernel efetivamente executados na GPU. |
+
+A posição científica correta é: o projeto implementa e testa operações de um
+**bloco Transformer simplificado**. Ele ainda não demonstra uma Transformer
+completa nem superioridade de uma técnica de otimização em hardware.
+
+## Documentação LaTeX
+
+Toda a documentação acadêmica tem fonte canônica em LaTeX. Markdown é mantido
+somente nos READMEs, porque eles funcionam como navegação operacional no GitHub.
+CSV, JSON, logs e imagens são evidências; a transcrição original em Markdown e
+o formulário institucional em Word são preservados como fontes brutas.
+
+- [Relatório compilado](output/pdf/relatorio_ic_transformers.pdf)
+- [Fonte principal](docs/latex/relatorio_ic.tex)
+- [Como compilar](docs/latex/README.md)
+- [Índice dos documentos](docs/README.md)
+- [Fase de validação](fases/01_validacao_conceitual/README.md)
+- [Registro da reunião de 31/07/2026](docs/reunioes/2026-07-31/registro.tex)
+
+O PDF reúne relatório executivo, plano de trabalho, fundamentação, protocolo,
+validações, evidências preliminares, diário, reunião, material de estudo e a
+transcrição integral.
+
+## Estrutura do repositório
 
 ```text
 docs/
-  plano_trabalho/
-  apresentacoes/
-    simposio_2026/
+  latex/                       fonte principal e identidade visual
+  reunioes/                    registros em LaTeX e transcrições brutas
+  apresentacoes/               slides e apoio em LaTeX
+  plano_trabalho/              formulário institucional original
 
-fases/
-  01_validacao_conceitual/
-
-legado/
-  prototipo_inicial/
-```
-
-## Fase Ativa
-
-A fase atual está em:
-
-```text
 fases/01_validacao_conceitual/
+  docs/                        fundamentação e método em LaTeX
+  experimentos/                configurações JSON versionadas
+  validacao/                   implementações e runners auditáveis
+  tests/                       testes determinísticos e de contrato
+  evidencias/                  CSV, JSON, logs, figuras e relatórios LaTeX
+
+output/pdf/                    relatório acadêmico compilado
+scripts/                       build da documentação
+legado/                        protótipo inicial preservado
 ```
 
-Ela valida se os conceitos e scripts Python usados no estudo correspondem ao que
-a literatura descreve. O núcleo experimental atual deve ser chamado de **bloco
-Transformer simplificado**, não de Transformer completa.
+## Rodar na máquina com a placa de vídeo
 
-Documentação da fase:
+As instruções abaixo assumem Windows, PowerShell, Git, Python 3.11, driver
+NVIDIA compatível e a RTX 4070 Ti Super disponível.
 
-- [README da validação](fases/01_validacao_conceitual/README.md)
-- [Base teórica](fases/01_validacao_conceitual/docs/base_teorica_validacao.md)
-- [Validação arquitetural](fases/01_validacao_conceitual/docs/validacao_transformer.md)
-- [Matriz de ferramentas](fases/01_validacao_conceitual/docs/matriz_validacao_ferramentas.md)
-- [Protocolo experimental](fases/01_validacao_conceitual/docs/protocolo_experimental.md)
-- [Resumo operacional dos conceitos](fases/01_validacao_conceitual/docs/conceitos.txt)
-
-## Como A Validação Está Organizada
-
-A validação não foi estruturada como "um arquivo Python por conceito". Alguns
-conceitos fazem parte da mesma operação técnica e, por isso, ficam juntos. Por
-exemplo, scaled dot-product attention, self-attention e multi-head attention
-ficam no módulo de atenção.
-
-O fluxo usado na fase atual é:
-
-```text
-conceito científico
--> propriedade que deve aparecer no código
--> função/classe Python pequena e auditável
--> teste determinístico
--> evidência registrada na documentação
-```
-
-```mermaid
-flowchart LR
-    A["Conceitos e referências"] --> B["Módulos Python agrupados por domínio"]
-    B --> C["Testes determinísticos"]
-    C --> D["Matriz de validação"]
-    D --> E["Benchmark controlado posterior"]
-```
-
-Em termos práticos:
-
-- `fases/01_validacao_conceitual/docs/` explica os conceitos, referências e limites.
-- `fases/01_validacao_conceitual/validacao/` implementa operações pequenas e rastreáveis.
-- `fases/01_validacao_conceitual/tests/` importa essas operações e compara com fórmulas, valores esperados, NumPy, PyTorch, TensorFlow/Keras, scikit-learn ou checklists.
-
-Essa organização serve para responder três perguntas importantes: o que a
-literatura diz, como isso foi traduzido para código e como sabemos que o código
-está aderente ao comportamento esperado.
-
-## O Que Cada Arquivo Valida
-
-A parte mais importante da fase atual está em:
-
-```text
-fases/01_validacao_conceitual/
-  validacao/
-  tests/
-  docs/
-  evidencias/
-```
-
-A pasta `validacao/` contém os scripts Python que implementam as operações. A
-pasta `tests/` contém os testes que chamam esses scripts e conferem se o
-comportamento observado bate com fórmulas, valores esperados ou bibliotecas de
-referência.
-
-Por isso, a leitura correta é: primeiro entendemos o conceito na documentação,
-depois vemos a implementação pequena em Python, então usamos o teste para
-verificar se aquilo se comporta como esperado.
-
-| Arquivo | O que ele representa | O que é validado |
-| --- | --- | --- |
-| `validacao/attention.py` | Operações de atenção usadas em Transformers. | Valida scaled dot-product attention, self-attention, multi-head attention, divisão em cabeças, recombinação das cabeças e uso de máscara. A saída é comparada com cálculo manual/NumPy e com `torch.nn.functional.scaled_dot_product_attention`. |
-| `validacao/comparacao_frameworks.py` | Validação cruzada do núcleo da atenção. | Compara os mesmos `Q`, `K`, `V` e máscara em NumPy manual, PyTorch manual, PyTorch SDPA e Keras SDPA com backend TensorFlow. |
-| `validacao/transformer.py` | Um bloco Transformer simplificado. | Valida se o bloco tem entrada sequencial, projeções `Q`, `K`, `V`, atenção, projeção de saída, residual, normalização, FFN e informação posicional. Ele é classificado como bloco Transformer simplificado, não como Transformer completa. |
-| `validacao/auditoria_transformer.py` | Auditoria para responder se a NN usada realmente pertence ao recorte Transformer. | Verifica componentes internos do bloco, testa dependência entre posições da sequência, compara a atenção interna com PyTorch e rejeita uma rede comum `Linear + ReLU + Linear` como controle negativo. |
-| `validacao/dense.py` | Projeção linear densa. | Valida a operação `Y = XW^T + b`, que aparece nas projeções `Q`, `K`, `V`, na projeção de saída e na FFN. O teste compara a função com cálculo manual e NumPy. |
-| `validacao/kv_cache.py` | Reaproveitamento de chaves e valores na inferência autoregressiva. | Valida se calcular token por token com cache produz resultado compatível com a atenção causal completa e se `K` e `V` anteriores são reaproveitados. |
-| `validacao/sparsity.py` | Medição de esparsidade. | Conta quantos elementos são zero em um tensor e separa pruning conceitual de ganho real de hardware. Zerar pesos em matriz densa não é tratado automaticamente como ganho físico. |
-| `validacao/quantization.py` | Quantização simétrica `int8`. | Verifica se os valores foram representados em `int8`, calcula escala, dequantização, erro numérico e bytes estimados. Isso valida representação numérica, não aceleração de hardware por si só. |
-| `validacao/flops.py` | Custo computacional teórico. | Calcula FLOPs teóricos de projeções densas, atenção e FFN para permitir comparação controlada entre cenários. |
-| `validacao/metrics.py` | Métricas para comparar saída do baseline com saída modificada. | Valida MSE, MAE, R2 e similaridade de cosseno com exemplos pequenos e comparação com `scikit-learn`. |
-| `validacao/classificacao.py` | Regras de classificação conceitual. | Define se uma implementação é `nao_aderente`, `operacao_inspirada_em_transformer`, `bloco_transformer_simplificado` ou `transformer`. |
-| `validacao/protocolo.py` | Schema obrigatório dos resultados. | Garante que CSVs futuros tenham todas as colunas necessárias: ambiente, configuração, método, métricas, validade e resultados. |
-| `validacao/pesquisa.py` | Perguntas de pesquisa e hipóteses. | Registra RQs, hipóteses e métricas associadas para impedir que os benchmarks sejam interpretados sem critério científico. |
-| `validacao/benchmark_controlado.py` | Runner de benchmark piloto. | Executa cenários pequenos e reprodutíveis, registra ambiente/seed, mede latência/throughput/memória quando possível e impede chamar algo de `hardware` sem evidência suficiente. |
-| `validacao/analise_resultados.py` | Análise dos CSVs gerados. | Compara cenários contra baseline, calcula degradação numérica e organiza conclusões por nível de validade. |
-| `validacao/benchmark_operacoes.py` | Runner das operações isoladas. | Executa projeção densa e self-attention com configurações versionadas, lotes independentes, hashes, manifesto e log. |
-| `validacao/analise_benchmark_operacoes.py` | Análise entre execuções. | Valida checksums e reprodutibilidade, compara cada candidato com seu baseline e consolida média/desvio-padrão. |
-
-Os testes principais ficam em cinco arquivos:
-
-| Arquivo de teste | Função metodológica |
-| --- | --- |
-| `tests/test_validacao_conceitual.py` | Testa as definições matemáticas e conceituais: atenção, projeção densa, bloco Transformer simplificado, KV cache, pruning, sparsity, quantização, métricas e FLOPs. |
-| `tests/test_benchmark_controlado.py` | Testa se o protocolo experimental está protegido: schema do CSV, ambiente, seed, cenários permitidos, perguntas de pesquisa e impedimento de conclusões de hardware sem evidência. |
-| `tests/test_comparacao_frameworks.py` | Testa layouts, dependências e equivalência numérica entre NumPy, PyTorch e TensorFlow/Keras, além dos artefatos auditáveis. |
-| `tests/test_benchmark_operacoes.py` | Testa configurações, portão da GPU, cenários, reprodutibilidade e persistência do runner principal. |
-| `tests/test_analise_benchmark_operacoes.py` | Testa checksums, consolidação das execuções, relatório e gráficos. |
-
-Em resumo: os arquivos em `validacao/` são as implementações auditáveis; os
-arquivos em `tests/` são a prova determinística de que essas implementações
-seguem o comportamento esperado dentro do recorte definido.
-
-## Materiais Acadêmicos
-
-O plano de trabalho fica em:
-
-```text
-docs/plano_trabalho/
-```
-
-Os materiais do simpósio de 2026 ficam reunidos em:
-
-```text
-docs/apresentacoes/simposio_2026/
-```
-
-Essa pasta contém os slides, previews, roteiro, guia de estudo, gráficos e o
-script PowerShell usado para gerar a apresentação. Eles são materiais de
-apresentação, não parte da fase de validação atual.
-
-Índice da pasta:
-
-- [Documentação geral](docs/README.md)
-- [Materiais do simpósio 2026](docs/apresentacoes/simposio_2026/README.md)
-
-## Código Legado
-
-O protótipo inicial foi preservado em:
-
-```text
-legado/prototipo_inicial/
-```
-
-Ele não é usado como base da fase validada atual. Está mantido apenas como
-histórico do desenvolvimento da IC.
-
-## Rodar A Validação Atual
-
-No Windows, usando o `.venv` do repositório:
+### 1. Clonar e criar o ambiente
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest fases\01_validacao_conceitual\tests -q -W error
+git clone https://github.com/LucasCerqueiraGalvao/scientific-initiation.git
+cd scientific-initiation
+
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
 ```
 
-Resultado observado em 25/08/2026 após a infraestrutura de benchmark:
+Instale primeiro a build CUDA fixada do PyTorch:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install `
+  torch==2.11.0+cu128 torchvision==0.26.0+cu128 torchaudio==2.11.0+cu128 `
+  --index-url https://download.pytorch.org/whl/cu128
+```
+
+Depois instale as dependências comuns e a comparação TensorFlow/Keras:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install `
+  -r fases\01_validacao_conceitual\requirements-comparacao.txt
+```
+
+TensorFlow/Keras é usado em CPU apenas para equivalência numérica. O benchmark
+de desempenho continua no caminho PyTorch/CUDA.
+
+### 2. Confirmar o ambiente antes da coleta
+
+```powershell
+nvidia-smi
+
+.\.venv\Scripts\python.exe -c `
+  "import torch; print('torch:', torch.__version__); print('cuda:', torch.version.cuda); print('available:', torch.cuda.is_available()); print('device:', torch.cuda.get_device_name(0))"
+
+.\.venv\Scripts\python.exe -m pip check
+```
+
+Não avance se `torch.cuda.is_available()` retornar `False`, se o nome da GPU não
+for o esperado ou se `pip check` apontar conflito.
+
+### 3. Executar a suíte completa
+
+```powershell
+$env:PYTHONPATH = "fases\01_validacao_conceitual"
+.\.venv\Scripts\python.exe -m pytest `
+  fases\01_validacao_conceitual\tests -q -W error
+```
+
+No ambiente local sem NVIDIA, o resultado registrado é `45 passed, 1 skipped`.
+Na máquina CUDA, o teste protegido pelo portão da GPU deve executar em vez de
+ser ignorado. TensorFlow/Keras não pode ser `skip` em nenhum dos ambientes.
+
+### 4. Revalidar a atenção no clone novo
+
+Use uma pasta nova em `resultados/`, que é ignorada pelo Git durante testes
+locais:
+
+```powershell
+.\.venv\Scripts\python.exe -m validacao.comparacao_frameworks `
+  --output-dir resultados\comparacao_frameworks_gpu_host `
+  --seed 2026 --atol 1e-6 --rtol 1e-5
+```
+
+Aceite somente se as nove linhas do CSV tiverem `passed=True`. Essa execução
+não mede velocidade entre frameworks.
+
+### 5. Executar o benchmark principal
+
+A configuração formal já está versionada em
+`fases/01_validacao_conceitual/experimentos/benchmark_principal_gpu.json`. Ela
+usa seed 42, lote 1, `L={64,128,256}`, `D={128,256,512}`, 20 warm-ups, 50
+medições e duas execuções independentes.
+
+O diretório de saída precisa ser novo e vazio:
+
+```powershell
+$env:PYTHONPATH = "fases\01_validacao_conceitual"
+$evidenceDir = "resultados\benchmark_gpu_4070ti_super_YYYY-MM-DD"
+
+.\.venv\Scripts\python.exe -m validacao.benchmark_operacoes `
+  --config fases\01_validacao_conceitual\experimentos\benchmark_principal_gpu.json `
+  --output-dir $evidenceDir
+
+.\.venv\Scripts\python.exe -m validacao.analise_benchmark_operacoes `
+  --evidence-dir $evidenceDir
+```
+
+Não reutilize uma pasta anterior e não edite CSVs manualmente: a análise valida
+os checksums do manifesto e deve recusar evidência alterada.
+
+### 6. Conferir a coleta
+
+Antes de interpretar os números, confirme:
+
+- duas execuções completas para todas as combinações e cenários;
+- ausência de NaN e infinito;
+- `manifest.json` e hashes aprovados;
+- GPU, driver, CUDA, PyTorch, seed e configuração registrados;
+- comparação de cada técnica contra o baseline da mesma execução e shape;
+- relatório `relatorio_preliminar.tex`, CSVs consolidados e dois gráficos;
+- distinção entre memória medida, memória teórica, latência e FLOPs analíticos.
+
+### 7. Versionar a evidência aprovada
+
+Depois de revisar a coleta, copie a pasta de `resultados/` para:
 
 ```text
-45 passed, 1 skipped
+fases/01_validacao_conceitual/evidencias/benchmarks/
 ```
 
-O único teste ignorado exige CUDA; nenhum teste da comparação entre frameworks
-foi ignorado. Consulte a [evidência numérica](fases/01_validacao_conceitual/evidencias/comparacao_frameworks/comparacao_atencao.md)
-e o [smoke da pipeline](fases/01_validacao_conceitual/evidencias/benchmarks/smoke_cpu_2026-08-25/).
+Use um nome imutável com data e hardware. Em seguida, atualize o relatório
+LaTeX, recompile o PDF, rode a suíte novamente e faça um commit que mantenha
+configuração, ambiente, CSVs, manifesto, análise e texto juntos.
 
-## Mapa Do Projeto
+## Compilar o relatório
 
-```mermaid
-flowchart TD
-    A["IC: eficiência em operações de Transformers"] --> B["Fase 01: validação conceitual"]
-    A --> C["Materiais acadêmicos"]
-    A --> D["Código legado"]
+Com MiKTeX e XeLaTeX instalados:
 
-    B --> B1["Scripts Python validados"]
-    B --> B2["Testes determinísticos"]
-    B --> B3["Documentação metodológica"]
-
-    C --> C1["Plano de trabalho"]
-    C --> C2["Apresentação do simpósio"]
-
-    D --> D1["Protótipo inicial preservado"]
+```powershell
+.\scripts\build_docs.ps1
 ```
 
-## Posição Científica Atual
+O build faz três passagens e grava:
 
-O repositório sustenta esta afirmação:
+```text
+output/pdf/relatorio_ic_transformers.pdf
+```
 
-> Os scripts atuais implementam e testam, de forma determinística, operações
-> centrais de um bloco Transformer simplificado, permitindo avançar para
-> benchmarks controlados de pruning e quantização com uma base conceitual
-> rastreável.
+Arquivos auxiliares ficam em `tmp/pdfs/latex/` e não são versionados.
 
-O repositório ainda **não** afirma:
+## Próximos passos
 
-- implementação de uma Transformer completa;
-- ganho real de hardware;
-- superioridade de pruning ou quantização antes dos benchmarks controlados.
+1. executar o clone e a validação CUDA na máquina alvo;
+2. coletar a grade principal sem alterar a configuração versionada;
+3. auditar se pruning usa caminho esparso e se INT8 usa kernel/representação
+   realmente quantizados antes de falar em ganho de hardware;
+4. analisar separadamente projeção densa e self-attention por shape;
+5. incorporar tabelas, gráficos, dispersão entre execuções, limitações e ameaças
+   à validade no relatório LaTeX;
+6. publicar a evidência e o PDF atualizados no GitHub;
+7. somente depois avaliar uma demonstração opcional com modelo pré-treinado.
+
+## Cuidados de interpretação
+
+- pruning não estruturado em uma matriz densa pode aumentar a esparsidade sem
+  reduzir a latência;
+- quantizar e dequantizar para `float32` valida erro numérico, não um kernel
+  INT8;
+- resultados CPU são diagnósticos da pipeline, não estimativas da RTX;
+- FLOPs analíticos e tempo medido respondem perguntas diferentes;
+- nenhuma conclusão deve ser promovida de algorítmica para hardware sem
+  evidência do caminho físico executado.

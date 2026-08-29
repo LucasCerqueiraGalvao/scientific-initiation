@@ -1,0 +1,274 @@
+% Gerado por scripts/migrate_markdown_to_latex.py.
+% Fonte migrada: docs/relatorio_execucao_autonoma_2026-08-25.md
+
+
+\chapter{Relatório da execução autônoma - 25/08/2026}
+
+
+
+\section{Resumo executivo}
+
+
+
+
+
+
+
+A validação numérica da atenção está concluída, a metodologia pré-benchmark foi auditada e o pipeline de operações isoladas foi implementado, testado e usado em três coletas CPU versionadas. Todos os portões controláveis pelo repositório estão fechados. A coleta principal está corretamente bloqueada porque esta máquina não possui CUDA nem a RTX 4070 Ti Super prevista no plano.
+
+
+
+
+
+
+
+O diagnóstico maior revelou uma ameaça à validade - pesos \texttt{N(0,1)} faziam a escala da saída crescer com \texttt{D}. O resultado original foi preservado, o gerador foi corrigido para Xavier/bias zero e a coleta foi repetida. A hipótese H1 (quantização preserva melhor a saída que pruning de 50\%) foi compatível nos casos executados, mas ainda é preliminar e não equivale a ganho de hardware.
+
+
+
+\section{O que foi feito}
+
+
+\begin{enumerate}
+\item Auditoria do repositório, cinco commits preexistentes, código ativo/legado,
+documentação, plano formal, apresentação, reunião e ambiente.
+\item Arquivamento da transcrição integral e reconstrução classificada da
+orientação, separando pedidos, decisões, dúvidas e interpretações.
+\item Validação NumPy/PyTorch/TensorFlow-Keras do núcleo da atenção: 9/9 aprovada.
+\item Criação do diário, checklist pré-benchmark e diagnóstico metodológico.
+\item Correção da semântica de hardware do runner piloto.
+\item Novo runner de projeção densa/self-attention com configuração versionada,
+lotes independentes, logs, hashes, manifesto e recusa de GPU incorreta.
+\item Análise com checksums, baseline por execução, média, desvio-padrão, relatório
+e gráficos.
+\item Smoke CPU ponta a ponta.
+\item Diagnóstico CPU \texttt{L=64}, \texttt{D=128} v1, investigação da escala dos pesos,
+correção metodológica e repetição v2.
+\item Suíte final observada: \texttt{45 passed, 1 skipped}; \texttt{pip check} sem problemas.
+\end{enumerate}
+
+
+\section{Commits criados nesta execução}
+
+
+
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.410\linewidth}>{\RaggedRight\arraybackslash}p{0.410\linewidth}@{}}
+\toprule
+Commit & Etapa lógica \\
+\midrule
+\endfirsthead
+\toprule
+Commit & Etapa lógica \\
+\midrule
+\endhead
+\texttt{6e10da0} & Reunião, transcrição e direcionamentos do professor. \\
+\texttt{2a42a5e} & Validação da atenção entre PyTorch e TensorFlow/Keras. \\
+\texttt{49f081f} & Auditoria, diário e portões pré-benchmark. \\
+\texttt{cedbeb2} & Correção das alegações de hardware do piloto. \\
+\texttt{7113fa5} & Runner reproduzível das operações isoladas. \\
+\texttt{bcea919} & Captura do ambiente antes de escrever artefatos. \\
+\texttt{a0aebe5} & Análise entre execuções e validação de integridade. \\
+\texttt{1474fb5} & Smoke CPU versionado. \\
+\texttt{df061d8} & Configuração do diagnóstico CPU representativo. \\
+\texttt{cc03231} & Diagnóstico v1 e registro do risco de inicialização. \\
+\texttt{bf7b4bd} & Pesos Xavier e schema de configuração v2. \\
+\texttt{4cd1ebf} & Diagnóstico v2 e confronto metodológico v1/v2. \\
+\bottomrule
+\end{longtable}
+
+
+
+
+Este relatório constitui a etapa final de handoff e será versionado em commit separado após a verificação final.
+
+
+
+\section{Orientações recuperadas do professor}
+
+
+
+Pedidos explícitos:
+
+
+\begin{itemize}
+\item validar a implementação contra TensorFlow/Keras usando a mesma entrada e
+semente antes de otimizar;
+\item comparar equação/manual, PyTorch e TensorFlow em tabela ou gráfico;
+\item só depois escolher uma ou duas técnicas e comparar os resultados;
+\item concentrar o trabalho na self-attention e nas matrizes de maior custo, não em
+uma Transformer completa;
+\item escrever texto corrido e fechar avaliações com resultados/tabelas desde já.
+\end{itemize}
+
+
+Decisões ou sugestões condicionais:
+
+
+\begin{itemize}
+\item uma operação interna equivalente basta se a camada completa ocultar detalhes;
+\item inferência com modelo do Hugging Face é extensão dependente de tempo;
+\item novembro foi citado de forma incerta e não substitui a data institucional.
+\end{itemize}
+
+
+Interpretações posteriores, não atribuídas ao professor:
+
+
+\begin{itemize}
+\item manter projeção densa junto da self-attention por constar no plano formal;
+\item usar NumPy como referência matemática;
+\item escolher Keras Ops, tolerâncias, schema de artefatos e níveis de validade;
+\item usar Xavier/bias zero para controlar a escala entre dimensões.
+\end{itemize}
+
+
+\section{Pré-benchmark}
+
+
+
+\begin{longtable}{@{}>{\RaggedRight\arraybackslash}p{0.273\linewidth}>{\RaggedRight\arraybackslash}p{0.273\linewidth}>{\RaggedRight\arraybackslash}p{0.273\linewidth}@{}}
+\toprule
+Portão & Status & Evidência \\
+\midrule
+\endfirsthead
+\toprule
+Portão & Status & Evidência \\
+\midrule
+\endhead
+Reunião reconstruída sem inventar requisitos & Concluído & \texttt{docs/\allowbreak{}reunioes/\allowbreak{}2026-07-31/\allowbreak{}}. \\
+Atenção validada entre referências & Concluído & 9/9 em \texttt{evidencias/\allowbreak{}comparacao\_\allowbreak{}frameworks/\allowbreak{}}. \\
+Recorte e cenários fixados & Concluído & Projeção densa, self-attention, baseline/\allowbreak{}pruning/\allowbreak{}quantização. \\
+Configuração formal codificada & Concluído & Seed 42, grade, 20/50, duas execuções. \\
+Rastreabilidade e integridade & Concluído & Config, ambiente, log, manifesto, SHA-256 e fingerprints. \\
+Análise entre execuções & Concluído & Baseline da mesma execução, média e DP. \\
+Inicialização controlada & Concluído & Schema v2, Xavier e confronto v1/v2. \\
+Smoke ponta a ponta & Concluído & 12 registros e reprodutibilidade aprovada. \\
+GPU-alvo disponível & Bloqueado externamente & Intel Iris Xe; \texttt{nvidia-smi} ausente; CUDA count 0. \\
+\bottomrule
+\end{longtable}
+
+
+
+\section{Benchmarks e validações executados}
+
+
+
+\subsection{Comparação da atenção entre frameworks}
+
+
+\begin{itemize}
+\item Objetivo: provar correção do núcleo antes de otimizar.
+\item Configuração: três casos, CPU/float32, seed 2026, \texttt{atol=1e-6}, \texttt{rtol=1e-5}.
+\item Resultado: 9/9; erro absoluto máximo \texttt{2.\allowbreak{}38418579e-07}.
+\item Interpretação: equivalência numérica nos casos testados; nenhuma comparação de
+desempenho.
+\end{itemize}
+
+
+\subsection{Smoke CPU}
+
+
+\begin{itemize}
+\item Objetivo: validar pipeline completa.
+\item Configuração: \texttt{B=1}, \texttt{L=4}, \texttt{D=8}, 2 warm-ups, 5 medições, 2 execuções.
+\item Resultado: 12 registros, checksums e hashes aprovados; gráficos legíveis.
+\item Interpretação: infraestrutura aprovada; tempos muito variáveis e sem valor de
+hardware. Quantização teve MSE menor que pruning nas duas operações.
+\end{itemize}
+
+
+\subsection{Diagnóstico CPU v1}
+
+
+\begin{itemize}
+\item Objetivo: executar um ponto formal com 20/50 e duas execuções.
+\item Configuração: \texttt{B=1}, \texttt{L=64}, \texttt{D=128}, pesos \texttt{N(0,1)}.
+\item Resultado: H1 compatível, mas MSE da atenção quantizada \texttt{732.\allowbreak{}65}.
+\item Interpretação: resultado legítimo que revelou escala inadequada do baseline;
+não foi descartado nem 'melhorado'.
+\end{itemize}
+
+
+\subsection{Diagnóstico CPU v2}
+
+
+\begin{itemize}
+\item Objetivo: repetir o mesmo ponto após controlar a inicialização.
+\item Configuração: mesmos parâmetros, pesos Xavier e bias zero.
+\item Resultado: na projeção, MSE \texttt{7.\allowbreak{}7789e-05} (quantização) contra \texttt{0.\allowbreak{}0727207}
+(pruning); na atenção, \texttt{1.\allowbreak{}63925e-05} contra \texttt{0.\allowbreak{}0110127}. R²/cosseno da atenção
+quantizada: \texttt{0.\allowbreak{}999647}/\texttt{0.\allowbreak{}999824}.
+\item Interpretação: H1 compatível nesse ponto; escala absoluta controlada. Latência
+CPU abaixo do baseline em algumas barras não autoriza aceleração devido ao
+ruído e à ausência de kernels especializados.
+\end{itemize}
+
+
+\section{Problemas e riscos encontrados}
+
+
+\begin{itemize}
+\item GPU-alvo indisponível nesta máquina.
+\item Runner anterior media bloco inteiro, divergindo do recorte de operações.
+\item Defaults anteriores divergiam da seed/grade/20/50/duas execuções do plano.
+\item Quantização manual executa pesos dequantizados \texttt{float32}; pruning permanece
+denso. Nenhum dos dois sustenta hoje alegação de kernel INT8/esparso.
+\item Memória em CPU é estimativa de armazenamento dos tensores, não pico real.
+\item Latências pequenas apresentaram alta variabilidade; duas execuções são o
+mínimo formal, não uma amostra estatística ampla.
+\item Requisitos comuns têm versões mínimas; cada coleta registra o snapshot exato.
+\item O plano declara maio-setembro de 2026, mas o cronograma contém uma célula com
+'2º semestre de 2027'; a reunião menciona novembro sem confirmação.
+\item O \texttt{.\allowbreak{}docx} formal foi extraído estruturalmente, mas não renderizado visualmente
+porque LibreOffice não está disponível.
+\end{itemize}
+
+
+\section{Pendências}
+
+
+
+\subsection{Críticas}
+
+
+\begin{itemize}
+\item executar a grade principal na RTX 4070 Ti Super com CUDA;
+\item antes de alegar ganho físico, adotar e validar formato/kernel realmente INT8
+e/ou esparso; os cenários simulados atuais só sustentam validade numérica ou
+algorítmica.
+\end{itemize}
+
+
+\subsection{Importantes}
+
+
+\begin{itemize}
+\item confirmar o calendário institucional e a inconsistência 2026/2027;
+\item incorporar tabelas e discussão v1/v2 ao texto acadêmico;
+\item após a coleta GPU, revisar ruído, outliers e suficiência de duas execuções;
+\item decidir, com o orientador, se a entrega formal manterá quantização/pruning
+simulados ou incluirá uma extensão de kernel real.
+\end{itemize}
+
+
+\subsection{Melhorias futuras}
+
+
+\begin{itemize}
+\item modelo pré-treinado do Hugging Face;
+\item TorchAO/kernel INT8 e esparsidade estruturada em etapa própria;
+\item mais seeds/lotes/heads e intervalos de confiança;
+\item benchmark do bloco completo somente como extensão;
+\item comparação de desempenho entre frameworks, separada da validação numérica.
+\end{itemize}
+
+
+\section{Próximo passo recomendado}
+
+
+
+
+
+
+
+Mover o repositório para a máquina com RTX 4070 Ti Super, instalar o mesmo ambiente, rodar primeiro a suíte e o smoke v2, confirmar o nome da GPU e então executar \texttt{experimentos/\allowbreak{}benchmark\_\allowbreak{}principal\_\allowbreak{}gpu.\allowbreak{}json} em pasta nova. A coleta deve ser analisada imediatamente e não pode ser chamada de ganho INT8/esparso sem uma segunda etapa que comprove armazenamento e kernel compatíveis.

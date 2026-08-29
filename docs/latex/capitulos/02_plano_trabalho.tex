@@ -1,0 +1,69 @@
+\chapter{Plano de trabalho consolidado}
+
+\section{Identificacao}
+
+\begin{longtable}{@{}p{0.31\linewidth}p{0.61\linewidth}@{}}
+\toprule
+\textbf{Campo} & \textbf{Valor} \\
+\midrule
+Titulo & Estudo de eficiencia computacional de operacoes de Transformers sob diferentes configuracoes numericas e estruturais \\
+Estudante & Lucas Cerqueira Galvao \\
+Curso & Ciencia da Computacao \\
+Grupo de pesquisa & LPCIAD - Laboratorio de Projetos de Circuitos Integrados Analogicos e Digitais \\
+Orientacao & Prof. Me. Walter Silva Oliveira \\
+Vigencia original & Maio a setembro de 2026 \\
+Dedicacao registrada & 8 horas por semana, 4 meses, 80 horas-aula de atividade curricular de pesquisa \\
+Projeto vinculado & Registro Ipeci 20240004 - Projeto e Otimizacao de Circuitos Integrados utilizando Inteligencia Artificial \\
+\bottomrule
+\end{longtable}
+
+O formulario institucional submetido permanece preservado em
+\sourcepath{docs/plano_trabalho/PlanoTrabalhoEP_LucasGalvao.docx}. Esta secao e
+a versao academica editavel em LaTeX e omite instrucoes de preenchimento,
+assinaturas e dados pessoais que nao interferem no metodo cientifico.
+
+\section{Resumo}
+
+A arquitetura Transformer consolidou-se como alicerce de sistemas contemporaneos
+de inteligencia artificial, mas impoe custo significativo de execucao, memoria e
+operacoes aritmeticas durante a inferencia. O estudo analisa como configuracoes
+numericas e estruturais afetam operacoes de autoatencao e projecoes lineares
+densas. Um baseline sem otimizacao e comparado com pruning por magnitude e
+quantizacao linear INT8. A avaliacao combina latencia, pico de memoria e FLOPs
+analiticos com MSE, MAE, coeficiente de determinacao e similaridade de cosseno,
+buscando caracterizar o compromisso entre reducao de custo e preservacao da
+saida.
+
+\section{Objetivo geral}
+
+Analisar como diferentes configuracoes numericas e estruturais afetam a
+eficiencia computacional de operacoes centrais da arquitetura Transformer em
+cenarios controlados de inferencia.
+
+\section{Objetivos especificos}
+
+\begin{enumerate}
+  \item implementar, em Python, um modelo computacional simplificado com foco em autoatencao e projecao linear densa;
+  \item construir cenarios comparaveis de baseline, pruning por magnitude e quantizacao linear;
+  \item mensurar latencia, memoria e estimativas analiticas de operacoes;
+  \item avaliar as saidas por MSE, MAE, $R^2$ e similaridade de cosseno;
+  \item interpretar os compromissos entre reducao de complexidade e preservacao da acuracia numerica.
+\end{enumerate}
+
+\section{Contrato experimental}
+
+O protocolo principal usa Python 3.11, PyTorch/CUDA, NumPy, Pandas,
+scikit-learn e Matplotlib. A grade formal tem lote 1, comprimentos de sequencia
+$L \in \{64,128,256\}$ e dimensoes $D \in \{128,256,512\}$. Cada combinacao
+mede baseline, pruning de 50\% e quantizacao INT8, com 20 iteracoes de
+aquecimento, 50 medicoes validas e duas execucoes independentes. A semente
+principal e 42; entradas seguem $\mathcal{N}(0,1)$, pesos usam inicializacao
+Xavier normal ajustada a dimensao e o bias e zero.
+
+\section{Infraestrutura}
+
+A coleta principal foi planejada para uma NVIDIA GeForce RTX 4070 Ti Super de
+16 GB. TensorFlow/Keras participa apenas do portao de equivalencia numerica em
+CPU; o benchmark de desempenho permanece no caminho PyTorch/CUDA. A pesquisa
+nao requer laboratorio especifico nem material de consumo, alem da infraestrutura
+computacional ja disponivel.

@@ -1,0 +1,133 @@
+% Sistema visual e tipografico do relatorio da IC.
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=3cm,right=2.3cm,headheight=16pt]{geometry}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Consolas}[Scale=0.82]
+
+\usepackage[brazilian]{babel}
+\shorthandoff{"}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{ragged2e}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{pdflscape}
+\usepackage{fvextra}
+\usepackage[most]{tcolorbox}
+\usepackage{lastpage}
+\usepackage{hyperref}
+\usepackage{bookmark}
+
+\definecolor{icNavy}{HTML}{102A43}
+\definecolor{icBlue}{HTML}{1473E6}
+\definecolor{icCyan}{HTML}{00A6A6}
+\definecolor{icInk}{HTML}{243B53}
+\definecolor{icMuted}{HTML}{627D98}
+\definecolor{icPale}{HTML}{EAF4FF}
+\definecolor{icGreen}{HTML}{167D58}
+\definecolor{icAmber}{HTML}{B7791F}
+\definecolor{icRed}{HTML}{B8323A}
+\definecolor{icRule}{HTML}{D9E2EC}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=icBlue,
+  urlcolor=icCyan,
+  citecolor=icGreen,
+  pdftitle={Estudo de eficiencia computacional de operacoes de Transformers},
+  pdfauthor={Lucas Cerqueira Galvao},
+  pdfsubject={Relatorio tecnico e caderno de pesquisa da iniciacao cientifica},
+  pdfkeywords={Transformer, self-attention, quantizacao, pruning, benchmark, PyTorch, TensorFlow}
+}
+
+\setstretch{1.18}
+\sloppy
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0.35em}
+\setlist{topsep=0.35em,itemsep=0.2em,parsep=0pt,leftmargin=1.8em}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+\titleformat{\chapter}[display]
+  {\normalfont\sffamily\bfseries\color{icNavy}}
+  {\filleft\fontsize{42}{44}\selectfont\color{icBlue}\thechapter}
+  {-0.7ex}
+  {\titlerule[1.1pt]\vspace{1ex}\LARGE}
+\titlespacing*{\chapter}{0pt}{-24pt}{26pt}
+\titleformat{\section}{\Large\sffamily\bfseries\color{icNavy}}{\thesection}{0.65em}{}
+\titleformat{\subsection}{\large\sffamily\bfseries\color{icBlue}}{\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}{\normalsize\sffamily\bfseries\color{icInk}}{\thesubsubsection}{0.65em}{}
+
+\pagestyle{fancy}
+\setlength{\headheight}{25pt}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily\color{icMuted}Iniciacao cientifica - eficiencia em Transformers}
+\fancyhead[R]{\small\sffamily\color{icMuted}\nouppercase{\leftmark}}
+\fancyfoot[L]{\small\sffamily\color{icMuted}Lucas Cerqueira Galvao}
+\fancyfoot[R]{\small\sffamily\color{icMuted}\thepage\ de \pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{icRule}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+\captionsetup{font=small,labelfont={bf,sf,color=icNavy},textfont={color=icInk}}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\LTpre}{0.7em}
+\setlength{\LTpost}{0.7em}
+\setlength{\tabcolsep}{4pt}
+\AtBeginEnvironment{longtable}{\sffamily}
+
+\DefineVerbatimEnvironment{Verbatim}{Verbatim}{
+  fontsize=\small,
+  breaklines=true,
+  breakanywhere=true,
+  frame=single,
+  framesep=3mm,
+  rulecolor=\color{icRule}
+}
+
+\newtcolorbox{icquote}{
+  enhanced,
+  breakable,
+  colback=icPale,
+  colframe=icBlue,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=1mm,
+  left=4mm,
+  right=4mm,
+  top=2mm,
+  bottom=2mm
+}
+
+\newtcolorbox{icstatus}[2][]{
+  enhanced,
+  breakable,
+  colback=#2!5!white,
+  colframe=#2,
+  coltitle=white,
+  fonttitle=\sffamily\bfseries,
+  title=#1,
+  boxrule=0.6pt,
+  arc=1.2mm,
+  left=4mm,
+  right=4mm,
+  top=3mm,
+  bottom=3mm
+}
+
+\newcommand{\icdivider}{\par\noindent{\color{icRule}\rule{\linewidth}{0.6pt}}\par}
+\newcommand{\sourcepath}[1]{\nolinkurl{#1}}
+\newcommand{\statusok}{\textcolor{icGreen}{\textbf{validado}}}
+\newcommand{\statuspending}{\textcolor{icAmber}{\textbf{pendente}}}
+\newcommand{\statusblocked}{\textcolor{icRed}{\textbf{bloqueado no ambiente local}}}
