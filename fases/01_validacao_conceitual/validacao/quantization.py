@@ -36,6 +36,20 @@ def symmetric_int8_quantize(tensor: torch.Tensor) -> tuple[torch.Tensor, torch.T
     return quantized, scale, dequantized
 
 
+def symmetric_int8_quantize_per_row(
+    tensor: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Quantiza cada linha independentemente e devolve simulacao em float32."""
+    if tensor.ndim < 2:
+        raise ValueError("quantizacao por linha exige tensor com pelo menos duas dimensoes")
+    source = tensor.to(torch.float32)
+    max_abs = source.abs().amax(dim=-1, keepdim=True)
+    scale = torch.where(max_abs == 0, torch.ones_like(max_abs), max_abs / 127.0)
+    quantized = torch.clamp(torch.round(source / scale), -127, 127).to(torch.int8)
+    dequantized = quantized.to(torch.float32) * scale
+    return quantized, scale, dequantized
+
+
 def observe_quantization_storage(tensor: torch.Tensor, original_dtype: torch.dtype = torch.float32) -> QuantizationObservation:
     dtype_name = str(tensor.dtype).replace("torch.", "")
     storage_bytes = tensor_storage_bytes(tensor)

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "evidence_id": "comparacao_frameworks_v2_2026-09-13",
+  "result": "18/18 passed",
+  "artifacts": {
+    "comparacao_atencao.csv": "654f87fd19d30ac7b0e79512608243c843b9c1dd025e5d40040742c520821f2d",
+    "comparacao_atencao.metadata.json": "02abf2ac04c25f023d166f11f24e6f58237bb4afe7398cc31cfb04a0bb0033f6",
+    "comparacao_atencao.tex": "c8bf4d57b06bcf84d4003cda137530685f9b9fe0dc633b5657a8bce236374d49"
+  }
+}

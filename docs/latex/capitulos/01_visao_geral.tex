@@ -8,11 +8,11 @@ self-attention concentram custo de processamento, memoria e movimentacao de
 dados. Esta iniciacao cientifica investiga como configuracoes numericas e
 estruturais alteram esse custo durante a inferencia.
 
-O objeto experimental foi deliberadamente reduzido a duas operacoes centrais:
-projecao linear densa e scaled dot-product attention. O codigo inclui um bloco
-Transformer simplificado para validacao arquitetural, mas nao reivindica uma
-arquitetura Transformer completa. Essa delimitacao permite isolar efeitos,
-repetir os experimentos e relacionar cada resultado ao mecanismo que o produziu.
+O objeto experimental principal e a self-attention multi-head completa, formada
+pelas projecoes Q, K, V e O, separacao em cabecas, SDPA e recombinacao. A
+projecao linear densa permanece como controle das operacoes dominantes, e tres
+modelos OPT pre-treinados permitem verificar se as tendencias sinteticas se
+mantem em inferencia real, sem treinamento ou fine-tuning.
 
 \section{Objetivo}
 
@@ -48,17 +48,19 @@ afirmar aceleracao em hardware.
 \endhead
 Matematica da atencao & \statusok & Casos manuais, NumPy independente e testes deterministas. \\
 Arquitetura do recorte & \statusok & Auditoria do bloco simplificado, dependencia entre posicoes e controle negativo. \\
-Equivalencia entre frameworks & \statusok & Nove comparacoes entre NumPy, PyTorch manual, PyTorch SDPA e Keras/TensorFlow. \\
+Equivalencia entre frameworks & \statusok & Dezoito comparacoes entre NumPy, PyTorch manual, PyTorch SDPA e Keras/TensorFlow, incluindo Q/K/V/O e multi-head. \\
 Pipeline experimental & \statusok & Configuracao versionada, duas execucoes, hashes, manifesto, metadados, analise e graficos. \\
 Diagnostico em CPU & \statusok & Smoke e duas versoes do ponto $L=64$, $D=128$, sem conclusao de hardware. \\
-Coleta principal em CUDA & \statuspending & Requer a maquina com RTX 4070 Ti Super. \\
-Comparacao pruning versus INT8 & \statuspending & Depende da coleta principal e da auditoria do caminho efetivamente executado. \\
+Benchmark GPU v1 & \statusok & Duas execucoes, 108 registros, hashes, analise e graficos na RTX 4070 Ti SUPER. \\
+Infraestrutura v3 & \statusok & Cinco seeds, 13 perfis, timings brutos, bootstrap, Docker, TorchAO, 2:4 e runners OPT. \\
+Benchmark sintetico v3 & \statusok & 2.340 registros completos, 1.950 comparacoes pareadas e 117 mil amostras de latencia na GPU. \\
+Caminhos fisicos e OPT & \statuspending & Requerem restaurar o daemon Docker, passar probe e smoke e executar as baterias fixadas no container Linux. \\
 \bottomrule
 \end{longtable}
 
 \begin{icstatus}[Conclusao permitida neste momento]{icBlue}
-Os scripts implementam e testam operacoes centrais de um bloco Transformer
-simplificado e a atencao local e numericamente equivalente as referencias
-escolhidas. Ainda nao ha evidencia experimental na GPU alvo para concluir que
-pruning ou quantizacao produzam ganho real de hardware.
+As implementacoes local, multi-head e com projecoes completas sao numericamente
+equivalentes as referencias escolhidas. A bateria v3 sustenta que a fidelidade
+do INT8 fake foi superior a do pruning nos casos sinteticos pareados, mas nao
+prova aceleracao fisica; essa conclusao depende de kernels confirmados.
 \end{icstatus}

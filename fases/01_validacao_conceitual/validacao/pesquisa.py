@@ -45,6 +45,30 @@ RESEARCH_QUESTIONS = (
         metrics=("validity_level",),
         evidence_required=("matriz_de_validacao", "dtype_ou_formato", "kernel_ou_caminho_de_execucao"),
     ),
+    ResearchQuestion(
+        identifier="RQ5",
+        question="Os resultados permanecem consistentes entre seeds, distribuicoes e configuracoes arquiteturais?",
+        metrics=("paired_effect_rate", "bootstrap_ci95", "mse", "latency_ms_mean"),
+        evidence_required=("cinco_seeds", "tres_repeticoes", "perfis_e_distribuicoes", "pareamento"),
+    ),
+    ResearchQuestion(
+        identifier="RQ6",
+        question="Como a degradacao varia com sparsity de 10%, 25%, 50% e 75%?",
+        metrics=("pruning_sparsity", "mse", "cosine_similarity", "perplexity"),
+        evidence_required=("curva_qualidade_sparsity", "casos_pareados", "intervalo_bootstrap"),
+    ),
+    ResearchQuestion(
+        identifier="RQ7",
+        question="As tendencias observadas em pesos sinteticos aparecem tambem em modelos pre-treinados?",
+        metrics=("perplexity", "logits_kl_divergence", "top1_agreement", "generated_token_agreement"),
+        evidence_required=("revisoes_opt_fixadas", "wikitext_versionado", "subconjunto_hasheado"),
+    ),
+    ResearchQuestion(
+        identifier="RQ8",
+        question="Quais tecnicas reduzem armazenamento, memoria ou latencia usando caminhos fisicos compativeis?",
+        metrics=("parameter_storage_bytes", "peak_memory_allocated_bytes", "speedup", "kernel_confirmed"),
+        evidence_required=("profiler", "kernel_int8_ou_2to4", "baseline_do_mesmo_dtype", "intervalo_bootstrap"),
+    ),
 )
 
 HYPOTHESES = (
@@ -75,6 +99,34 @@ HYPOTHESES = (
         statement="A matriz de validacao separa corretamente conclusoes conceituais, numericas, algoritmicas e de hardware.",
         confirmation_criterion="Toda conclusao aponta para registro CSV e linha conceitual da matriz.",
         rejection_criterion="Alguma conclusao exige evidencia que nao esta registrada.",
+    ),
+    Hypothesis(
+        identifier="H5",
+        research_question_id="RQ5",
+        statement="As tendencias principais persistem na maioria dos casos pareados entre seeds, distribuicoes e perfis.",
+        confirmation_criterion="A direcao ocorre em pelo menos 80% dos pares e o intervalo bootstrap de 95% nao cruza o efeito nulo.",
+        rejection_criterion="A direcao oposta predomina com intervalo bootstrap consistente; variacao sem predominio e classificada como mista.",
+    ),
+    Hypothesis(
+        identifier="H6",
+        research_question_id="RQ6",
+        statement="A degradacao de qualidade cresce conforme aumenta a sparsity do pruning por magnitude.",
+        confirmation_criterion="As metricas pareadas formam tendencia monotona entre 10%, 25%, 50% e 75% na maioria dos casos.",
+        rejection_criterion="Niveis maiores de sparsity reduzem a degradacao de modo predominante e estatisticamente consistente.",
+    ),
+    Hypothesis(
+        identifier="H7",
+        research_question_id="RQ7",
+        statement="As tendencias sinteticas de qualidade aparecem nos modelos OPT pre-treinados.",
+        confirmation_criterion="A direcao das comparacoes coincide nos tres modelos para perplexidade e metricas de logits.",
+        rejection_criterion="Os modelos pre-treinados apresentam direcao oposta predominante; divergencias por modelo sao classificadas como mistas.",
+    ),
+    Hypothesis(
+        identifier="H8",
+        research_question_id="RQ8",
+        statement="Apenas representacoes compactas e kernels confirmados sustentam ganhos fisicos.",
+        confirmation_criterion="Speedup mediano >= 1,05, IC95% acima de 1 e kernel correto confirmado pelo profiler.",
+        rejection_criterion="O candidato nao reduz armazenamento/memoria ou nao satisfaz simultaneamente speedup, intervalo e kernel.",
     ),
 )
 

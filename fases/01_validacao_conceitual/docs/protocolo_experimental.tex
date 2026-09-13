@@ -254,6 +254,34 @@ A configuracao \texttt{experimentos/\allowbreak{}benchmark\_\allowbreak{}princip
 
 Cada lote independente grava CSV e JSON de metadados imediatamente. O diretorio tambem recebe snapshot da configuracao, ambiente, log e manifesto com SHA-256. O runner recusa diretorio nao vazio, \texttt{device=auto}, campos nao finitos e benchmark principal sem CUDA/GPU nominal. Assim, uma interrupcao posterior nao apaga o lote ja concluido.
 
+\section{Extensao v3 e modelos pre-treinados}
+
+O schema v3 preserva a leitura integral das evidencias v1/v2 e acrescenta
+\texttt{data\_seeds}, perfis com batch, sequencia, dimensao e cabecas,
+distribuicoes de entrada, cenarios parametrizados, grupos de comparacao e blocos
+de medicao, execucao e requisitos de hardware. O CSV agregado registra a
+identidade do caso, baseline associado, repeticao, memoria alocada e reservada,
+armazenamento, hashes, status e confirmacao dos kernels. As amostras individuais
+ficam em \texttt{timings.csv}.
+
+A bateria de robustez usa cinco seeds, tres repeticoes, 13 perfis/distribuicoes,
+duas operacoes e seis cenarios. Toda comparacao e pareada pela mesma entrada,
+peso, seed, perfil e repeticao. A analise calcula media, mediana, desvio padrao e
+intervalo bootstrap de 95\% com 10 mil reamostragens e seed 2026.
+
+Os cenarios fisicos usam BF16/FP16 compilados, TorchAO INT8 weight-only,
+TorchAO INT8 dinamico e pruning semiestruturado 2:4. Compilacao e transformacao
+ficam fora da regiao medida. O profiler precisa confirmar operacao inteira ou
+cuSPARSELt; caso contrario, o resultado permanece \texttt{unsupported} ou sem
+validade fisica.
+
+Nos modelos OPT, os pesos sao recarregados da revisao original para cada
+variante e nunca sao treinados. A avaliacao de qualidade usa WikiText-2 e
+prompts locais; a de desempenho separa prefill, TTFT e decode com KV cache.
+Embeddings e \texttt{lm\_head} sao excluidos das transformacoes. A retomada so
+e aceita quando configuracao, codigo, ambiente e artefatos preservados possuem
+os mesmos hashes.
+
 
 
 

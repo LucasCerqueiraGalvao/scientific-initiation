@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "evidence_id": "benchmark_gpu_4070ti_super_2026-08-29",
+  "source": "resultados/benchmark_gpu_4070ti_super_2026-08-29",
+  "verification": "byte_for_byte_sha256",
+  "verified_on": "2026-09-13",
+  "artifacts": {
+    "config.snapshot.json": "cc3751216444e8b0c933298f7103ffa7bf70e21f7b60d9ec31a1c8af0b557865",
+    "environment.json": "ed64a6d4dec978a8ce116b85574552255d38095f96604943d7e70c29d4a1615f",
+    "execution.log": "9dae9cc6218649827bbc85b0ab79601717b94c8958a2ed3faf6b2c14d24392de",
+    "manifest.json": "e98a691022e4dffad34db82a72fbffc47371688fbf6271bafb34b09b4788efef",
+    "run_01.csv": "4d2d6e0c44306526f2a88cd7a52476d65d00d4247aa1ab05f640604db54bef91",
+    "run_01.metadata.json": "a1423be684aa66457d730d2ba654b8c94dead7404dc18333b92c27fe70a61d39",
+    "run_02.csv": "445cebb2c70aaa6a96a2a0f6732f027d0afb4ab001324172c11e2361f3bb8d3d",
+    "run_02.metadata.json": "8623388acb2ab1234152a41fd1aebc62d4e8f3689644ac9199e0c26f8763986f",
+    "analise/comparacao_baseline_por_execucao.csv": "6936c04c0118e51178c599fec20a35dba707224daa46215229903d4e8b550ba2",
+    "analise/latencia_relativa.png": "53ae18e132d9f0c1542c380e50b11ee259705a3f6f89bc554b9bb9ffc5e7aaaa",
+    "analise/qualidade_saida.png": "3a1c5a757c738d9d255de0a7d94f5a724d4ba7b821b4305cc112f7f164d3856b",
+    "analise/relatorio_preliminar.tex": "cacf344f9c6ff24c1e7b34e47b19c60287352678667b206c2216f5d417a9addc",
+    "analise/reprodutibilidade.json": "4d4c094e15d4d02f90b7c768671cc57157005558900a7399c599191e157fda51",
+    "analise/resultados_com_execucao.csv": "b31843cb7a041ac6b570d676425b850dd80dffdab539ad38c282568706fad410",
+    "analise/resumo_comparacao_baseline.csv": "c2e944f963dfd6b8d2594f6a140e05d82a4aad9a98234ddb05e1084155b56aa3",
+    "analise/resumo_execucoes.csv": "bf24fec8f8554be235846a9e275351fed49eef38613a41873ad60bc50466c103"
+  }
+}

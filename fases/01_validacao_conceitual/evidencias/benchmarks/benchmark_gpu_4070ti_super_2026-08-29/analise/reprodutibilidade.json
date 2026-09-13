@@ -1,0 +1,8 @@
+{
+  "independent_runs": 2,
+  "fingerprinted_cases_per_run": 54,
+  "input_hashes_match_across_runs": true,
+  "output_hashes_match_across_runs": true,
+  "timings_expected_to_differ": true,
+  "passed": true
+}

@@ -1,0 +1,52 @@
+\chapter{Comparação numérica da attention local e multi-head}
+
+\begin{icquote}
+Esta evidência valida correção numérica. Ela não compara desempenho e não sustenta alegações de hardware.
+\end{icquote}
+
+\begin{itemize}
+\item Referência: \texttt{numpy\_\allowbreak{}manual}.
+\item Seed: \texttt{2026}.
+\item Dtype e dispositivo: \texttt{float32} em \texttt{cpu}.
+\item Tolerâncias: \texttt{atol=1e-06} e \texttt{rtol=1e-05}.
+\item Backend Keras: \texttt{tensorflow}.
+\end{itemize}
+
+\begin{landscape}
+\scriptsize
+\begin{longtable}{@{}p{0.18\linewidth}p{0.16\linewidth}p{0.12\linewidth}rrrrc@{}}
+\toprule
+\textbf{Caso} & \textbf{Candidato} & \textbf{Máscara} & \textbf{Erro máximo} & \textbf{Erro médio} & \textbf{MSE} & \textbf{Cosseno} & \textbf{Passou} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Caso} & \textbf{Candidato} & \textbf{Máscara} & \textbf{Erro máximo} & \textbf{Erro médio} & \textbf{MSE} & \textbf{Cosseno} & \textbf{Passou} \\
+\midrule
+\endhead
+tiny\_\allowbreak{}manual\_\allowbreak{}unmasked & pytorch\_\allowbreak{}manual & none & 2.38418579e-07 & 5.96046448e-08 & 1.42108547e-14 & 1.00000000e+00 & sim \\
+tiny\_\allowbreak{}manual\_\allowbreak{}unmasked & pytorch\_\allowbreak{}sdpa & none & 0.00000000e+00 & 0.00000000e+00 & 0.00000000e+00 & 1.00000000e+00 & sim \\
+tiny\_\allowbreak{}manual\_\allowbreak{}unmasked & keras\_\allowbreak{}tensorflow\_\allowbreak{}sdpa & none & 2.38418579e-07 & 5.96046448e-08 & 1.42108547e-14 & 1.00000000e+00 & sim \\
+seeded\_\allowbreak{}multihead\_\allowbreak{}unmasked & pytorch\_\allowbreak{}manual & none & 1.19209290e-07 & 2.45636329e-08 & 1.77382703e-15 & 1.00000000e+00 & sim \\
+seeded\_\allowbreak{}multihead\_\allowbreak{}unmasked & pytorch\_\allowbreak{}sdpa & none & 1.19209290e-07 & 2.79008721e-08 & 1.74115641e-15 & 1.00000000e+00 & sim \\
+seeded\_\allowbreak{}multihead\_\allowbreak{}unmasked & keras\_\allowbreak{}tensorflow\_\allowbreak{}sdpa & none & 1.19209290e-07 & 2.33218695e-08 & 1.57491208e-15 & 1.00000000e+00 & sim \\
+seeded\_\allowbreak{}multihead\_\allowbreak{}additive\_\allowbreak{}mask & pytorch\_\allowbreak{}manual & additive\_\allowbreak{}bias & 5.96046448e-08 & 6.20881716e-09 & 3.33066907e-16 & 1.00000000e+00 & sim \\
+seeded\_\allowbreak{}multihead\_\allowbreak{}additive\_\allowbreak{}mask & pytorch\_\allowbreak{}sdpa & additive\_\allowbreak{}bias & 5.96046448e-08 & 1.67638063e-08 & 9.34437712e-16 & 1.00000000e+00 & sim \\
+seeded\_\allowbreak{}multihead\_\allowbreak{}additive\_\allowbreak{}mask & keras\_\allowbreak{}tensorflow\_\allowbreak{}sdpa & additive\_\allowbreak{}bias & 1.19209290e-07 & 2.73187955e-08 & 2.09092003e-15 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h1 & pytorch\_\allowbreak{}manual & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 3.57627869e-07 & 1.22934580e-07 & 2.38512913e-14 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h1 & pytorch\_\allowbreak{}sdpa & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 2.38418579e-07 & 1.31626924e-07 & 2.19454085e-14 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h1 & keras\_\allowbreak{}tensorflow\_\allowbreak{}sdpa & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 1.19209290e-07 & 3.10440858e-08 & 2.53500924e-15 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h4 & pytorch\_\allowbreak{}manual & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 4.17232513e-07 & 9.80993112e-08 & 1.71754971e-14 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h4 & pytorch\_\allowbreak{}sdpa & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 4.17232513e-07 & 8.76995424e-08 & 1.52950569e-14 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h4 & keras\_\allowbreak{}tensorflow\_\allowbreak{}sdpa & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 3.57627869e-07 & 8.81652037e-08 & 1.47145028e-14 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h8 & pytorch\_\allowbreak{}manual & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 4.76837158e-07 & 1.08993845e-07 & 1.99298269e-14 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h8 & pytorch\_\allowbreak{}sdpa & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 4.76837158e-07 & 1.11787813e-07 & 2.04438833e-14 & 1.00000000e+00 & sim \\
+projected\_\allowbreak{}multihead\_\allowbreak{}h8 & keras\_\allowbreak{}tensorflow\_\allowbreak{}sdpa & none\_\allowbreak{}projected\_\allowbreak{}qkvo & 3.57627869e-07 & 1.07528952e-07 & 1.89554906e-14 & 1.00000000e+00 & sim \\
+\bottomrule
+\end{longtable}
+\end{landscape}
+
+\section{Conclusão}
+
+Todos os casos ficaram dentro das tolerâncias definidas.
+
+As versões completas do ambiente estão em \texttt{comparacao\_atencao.metadata.json} e os valores auditáveis em \texttt{comparacao\_atencao.csv}.

@@ -1,0 +1,52 @@
+{
+  "schema_version": 3,
+  "experiment_id": "robustez_sintetica_gpu_v3",
+  "purpose": "robustness_benchmark",
+  "stage": "synthetic_numerical",
+  "device": "cuda",
+  "required_gpu_name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "data_seeds": [11, 23, 42, 101, 2026],
+  "input_distributions": ["standard_normal", "uniform_unit_variance", "outlier_normal"],
+  "profiles": [
+    {"identifier": "seq_l64", "batch_size": 1, "seq_len": 64, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "seq_l128", "batch_size": 1, "seq_len": 128, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "seq_l256", "batch_size": 1, "seq_len": 256, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "seq_l512", "batch_size": 1, "seq_len": 512, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "seq_l1024", "batch_size": 1, "seq_len": 1024, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "batch_b4", "batch_size": 4, "seq_len": 128, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "batch_b8", "batch_size": 8, "seq_len": 128, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "width_d128_h4", "batch_size": 1, "seq_len": 128, "d_model": 128, "num_heads": 4, "input_distribution": "standard_normal"},
+    {"identifier": "width_d256_h4", "batch_size": 1, "seq_len": 128, "d_model": 256, "num_heads": 4, "input_distribution": "standard_normal"},
+    {"identifier": "width_d768_h12", "batch_size": 1, "seq_len": 128, "d_model": 768, "num_heads": 12, "input_distribution": "standard_normal"},
+    {"identifier": "width_d1024_h16", "batch_size": 1, "seq_len": 128, "d_model": 1024, "num_heads": 16, "input_distribution": "standard_normal"},
+    {"identifier": "stress_uniform", "batch_size": 1, "seq_len": 256, "d_model": 512, "num_heads": 8, "input_distribution": "uniform_unit_variance"},
+    {"identifier": "stress_outlier", "batch_size": 1, "seq_len": 256, "d_model": 512, "num_heads": 8, "input_distribution": "outlier_normal"}
+  ],
+  "operations": ["dense_projection", "multi_head_self_attention"],
+  "scenarios": [
+    {"identifier": "baseline_fp32", "kind": "baseline", "comparison_group": "fp32_dense", "dtype": "float32"},
+    {"identifier": "pruning_10", "kind": "pruning_magnitude", "comparison_group": "fp32_dense", "dtype": "float32", "pruning_sparsity": 0.1},
+    {"identifier": "pruning_25", "kind": "pruning_magnitude", "comparison_group": "fp32_dense", "dtype": "float32", "pruning_sparsity": 0.25},
+    {"identifier": "pruning_50", "kind": "pruning_magnitude", "comparison_group": "fp32_dense", "dtype": "float32", "pruning_sparsity": 0.5},
+    {"identifier": "pruning_75", "kind": "pruning_magnitude", "comparison_group": "fp32_dense", "dtype": "float32", "pruning_sparsity": 0.75},
+    {"identifier": "int8_fake_per_row", "kind": "quantization_int8_fake_per_row", "comparison_group": "fp32_dense", "dtype": "float32"}
+  ],
+  "weight_initialization": "xavier_normal",
+  "bias_initialization": "zeros",
+  "measurement": {"warmup_iterations": 20, "measure_iterations": 50, "repetitions": 3},
+  "execution": {
+    "scenario_order": "deterministic_shuffle",
+    "compile": false,
+    "compile_mode": "eager",
+    "save_raw_timings": true,
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 2026,
+    "capabilities_file": ""
+  },
+  "hardware_requirements": {
+    "compute_capability": "8.9",
+    "require_triton": false,
+    "require_cusparselt": false,
+    "temperature_abort_c": 85
+  }
+}

@@ -518,8 +518,17 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
+        manifest_path = Path(args.evidence_dir) / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if isinstance(manifest, dict) and manifest.get("schema_version") == 3:
+            from validacao.analise_benchmark_operacoes_v3 import write_analysis_v3
+
+            outputs_v3 = write_analysis_v3(args.evidence_dir, args.output_dir)
+            for path in outputs_v3.paths():
+                print(path)
+            return 0
         outputs = write_operation_analysis(args.evidence_dir, args.output_dir)
-    except (OperationAnalysisError, FileExistsError, ValueError) as exc:
+    except (OperationAnalysisError, FileExistsError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(f"erro: {exc}", file=sys.stderr)
         return 2
     for path in outputs.paths():

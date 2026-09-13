@@ -28,6 +28,10 @@ RQ1 & Quantizacao int8 preserva melhor a saida do bloco Transformer simplificado
 RQ2 & Quantizacao e pruning reduzem memoria teorica ou real no ambiente do estudo? & \texttt{max\_\allowbreak{}memory\_\allowbreak{}bytes} & Ambiente registrado, medicao ou estimativa de memoria e nivel de validade. \\
 RQ3 & Alguma tecnica reduz latencia ou aumenta throughput sem degradacao excessiva da saida? & Latencia media, p50, p95, throughput, MSE e cosseno & Warmup, repeticoes, sincronizacao em CUDA e baseline comparavel. \\
 RQ4 & Quando uma tecnica e apenas conceitual/numerica e quando pode ser chamada de hardware? & \texttt{validity\_\allowbreak{}level} & Matriz de validacao, dtype/formato e kernel/caminho de execucao. \\
+RQ5 & Os resultados permanecem consistentes entre seeds, distribuicoes e configuracoes arquiteturais? & Taxa de efeito pareado, IC bootstrap, MSE e latencia & Cinco seeds, tres repeticoes, perfis, distribuicoes e pareamento. \\
+RQ6 & Como a degradacao varia com sparsity de 10\%, 25\%, 50\% e 75\%? & Sparsity, MSE, cosseno e perplexidade & Curvas qualidade por sparsity, pares e intervalos bootstrap. \\
+RQ7 & As tendencias sinteticas aparecem tambem em modelos pre-treinados? & Perplexidade, KL dos logits, top-1 e concordancia de geracao & Revisoes OPT fixadas, WikiText versionado e subconjunto hasheado. \\
+RQ8 & Quais tecnicas reduzem armazenamento, memoria ou latencia com caminhos fisicos compativeis? & Armazenamento, pico de memoria, speedup e kernel & Profiler, kernel INT8 ou 2:4 e baseline do mesmo dtype. \\
 \bottomrule
 \end{longtable}
 
@@ -52,6 +56,10 @@ H1 & RQ1 & Quantizacao int8 tera menor erro numerico do que pruning por magnitud
 H2 & RQ2 & Quantizacao int8 reduz memoria representacional; pruning por mascara densa nao prova reducao real de hardware. & Quantizacao apresenta menor armazenamento observado/estimado e pruning sem sparse kernel fica sem nivel hardware. & Quantizacao nao reduz armazenamento ou pruning demonstra formato/kernel esparso exploravel. \\
 H3 & RQ3 & Ganhos de latencia/throughput dependem do caminho real de execucao, nao apenas da tecnica declarada. & Cenarios sem kernel/formato compativel nao sao promovidos a hardware mesmo que tenham erro aceitavel. & Ha evidencia de kernel/formato otimizado e medicao consistente de ganho fisico. \\
 H4 & RQ4 & A matriz de validacao separa corretamente conclusoes conceituais, numericas, algoritmicas e de hardware. & Toda conclusao aponta para registro CSV e linha conceitual da matriz. & Alguma conclusao exige evidencia que nao esta registrada. \\
+H5 & RQ5 & As tendencias principais persistem entre seeds, distribuicoes e perfis. & A direcao ocorre em pelo menos 80\% dos pares e o IC95\% nao cruza o efeito nulo. & A direcao oposta predomina; ausencia de predominio e classificada como mista. \\
+H6 & RQ6 & A degradacao cresce com a sparsity do pruning por magnitude. & As metricas pareadas formam tendencia monotona entre os quatro niveis. & Sparsity maior melhora a qualidade de modo predominante e consistente. \\
+H7 & RQ7 & As tendencias sinteticas de qualidade aparecem nos modelos OPT. & A direcao coincide nos tres modelos para perplexidade e logits. & A direcao oposta predomina; divergencia por modelo e classificada como mista. \\
+H8 & RQ8 & Apenas representacoes compactas e kernels confirmados sustentam ganhos fisicos. & Speedup mediano $\geq 1{,}05$, IC95\% acima de 1 e kernel correto no profiler. & Armazenamento/memoria nao caem ou speedup, intervalo e kernel nao sao satisfeitos juntos. \\
 \bottomrule
 \end{longtable}
 \end{landscape}
@@ -59,6 +67,14 @@ H4 & RQ4 & A matriz de validacao separa corretamente conclusoes conceituais, num
 
 
 \section{Regra de conclusao}
+
+Uma tendencia e classificada como sustentada quando aparece em pelo menos 80\%
+dos casos pareados e o intervalo bootstrap de 95\% nao cruza o efeito nulo. Ela
+e mista quando depende de seed, perfil ou modelo, e contradita quando a direcao
+oposta e predominante e consistente. Ganho de desempenho exige speedup mediano
+de pelo menos $1{,}05$, intervalo inteiramente acima de $1{,}0$ e confirmacao
+do kernel. Os limites de aumento de perplexidade de 2\% para quantizacao e 5\%
+para pruning sao criterios operacionais deste experimento, nao regras universais.
 
 
 

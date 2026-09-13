@@ -1,130 +1,149 @@
 \chapter{Estado atual e proximos passos}
 
-\section{O que foi encerrado}
+\section{Evidencias concluidas}
 
-O portao de correcao da scaled dot-product attention esta fechado. As mesmas
-entradas, geradas uma unica vez em NumPy, foram executadas em quatro caminhos:
-NumPy manual, PyTorch manual, \texttt{torch.nn.functional.scaled\_\allowbreak{}dot\_\allowbreak{}product\_\allowbreak{}attention}
-e \texttt{keras.ops.nn.dot\_\allowbreak{}product\_\allowbreak{}attention} com backend TensorFlow. Todas as
-nove comparacoes passaram com \texttt{atol=1e-6} e \texttt{rtol=1e-5}; o maior
-erro absoluto observado foi $2{,}38418579\times10^{-7}$.
+O portao conceitual foi ampliado de nove para dezoito comparacoes. Os casos
+originais validam o nucleo da scaled dot-product attention; os nove casos novos
+validam a composicao multi-head com projecoes Q, K, V e O para
+$H\in\{1,4,8\}$. NumPy manual, PyTorch manual, PyTorch SDPA e Keras/TensorFlow
+receberam as mesmas entradas e pesos. As 18 comparacoes passaram com
+\texttt{atol=1e-6} e \texttt{rtol=1e-5}; o maior erro absoluto foi
+$4{,}76837158\times10^{-7}$. Essa diferenca e arredondamento de ponto flutuante,
+nao divergencia conceitual.
 
-A pipeline de benchmark tambem foi validada em CPU: ela recusa diretorios nao
-vazios, captura ambiente antes de persistir resultados, executa lotes
-independentes, calcula hashes, grava manifesto e recusa analise quando a
-integridade e violada. O diagnostico inicial ainda revelou uma escolha inadequada
-de pesos $\mathcal{N}(0,1)$; o contrato foi corrigido para Xavier e a segunda
-execucao confirmou a estabilidade de escala esperada.
+O benchmark GPU v1 tambem esta concluido e preservado. Foram realizadas duas
+execucoes na RTX 4070 Ti SUPER, com 54 registros em cada, para projecao densa e
+self-attention de uma cabeca. Configuracao, ambiente, logs, CSVs, metadados,
+graficos e relatorio foram copiados sem alteracao e verificados por SHA-256.
 
-\section{Proximo passo: coleta na GPU alvo}
-
-\begin{icstatus}[Decisao operacional]{icGreen}
-O proximo passo nao e adicionar outro framework nem ampliar a arquitetura. E
-clonar este repositorio na maquina com a RTX 4070 Ti Super, validar o ambiente
-CUDA e executar a grade principal exatamente como versionada.
+\begin{icstatus}[Limite da evidencia v1]{icAmber}
+O v1 usa uma seed, poucos shapes, pruning denso e quantizacao fake seguida de
+dequantizacao. Ele permite comparar erro numerico e tempos observados dessa
+implementacao, mas nao sustenta uma alegacao de kernel INT8 ou sparse nem uma
+generalizacao entre entradas e modelos.
 \end{icstatus}
 
-\subsection{Preparar o clone}
+\section{Infraestrutura implementada para a etapa v3}
 
-\begin{Verbatim}[fontsize=\small]
-git clone https://github.com/LucasCerqueiraGalvao/scientific-initiation.git
-cd scientific-initiation
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install torch==2.11.0+cu128 `
-  torchvision==0.26.0+cu128 torchaudio==2.11.0+cu128 `
-  --index-url https://download.pytorch.org/whl/cu128
-.\.venv\Scripts\python.exe -m pip install `
-  -r fases\01_validacao_conceitual\requirements-comparacao.txt
-\end{Verbatim}
+O schema v3 mantem a leitura dos schemas v1/v2 e adiciona identidade de caso,
+seed, repeticao, perfil, grupo de baseline, dtype, backend, memoria,
+armazenamento, hashes, status e confirmacao de kernel. Cada registro agregado e
+ligado as amostras individuais em \texttt{timings.csv}. A retomada exige
+coincidencia dos hashes de configuracao, codigo, ambiente e artefatos existentes.
 
-\subsection{Validar CUDA e dependencias}
+A bateria sintetica foi fixada em 13 combinacoes de perfil e distribuicao, cinco
+seeds, seis cenarios e tres repeticoes. Para as duas operacoes isso produz 2.340
+registros agregados e 117 mil amostras de latencia. O pruning por magnitude usa
+10\%, 25\%, 50\% e 75\%; a quantizacao fake e simetrica, por linha, com retorno
+a FP32 para medir fidelidade numerica.
 
-\begin{Verbatim}[fontsize=\small]
-nvidia-smi
-.\.venv\Scripts\python.exe -c "import torch; print(torch.__version__); `
-  print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0))"
-.\.venv\Scripts\python.exe -m pip check
-$env:PYTHONPATH = "fases\01_validacao_conceitual"
-.\.venv\Scripts\python.exe -m pytest `
-  fases\01_validacao_conceitual\tests -q -W error
-\end{Verbatim}
+O caminho fisico foi isolado em um container Linux com PyTorch 2.11, CUDA 12.8,
+TorchAO e cuSPARSELt fixados. Antes da coleta, o probe verifica GPU, compute
+capability 8.9, Triton, forward finito, representacao INT8, conversao 2:4 e os
+operadores do profiler. Candidatos incompativeis permanecem registrados como
+\texttt{unsupported}; nunca sao removidos silenciosamente.
 
-O resultado esperado e \texttt{torch.cuda.is\_\allowbreak{}available() == True}, o nome da
-RTX 4070 Ti Super, \texttt{pip check} sem inconsistencias e a suite sem o skip
-destinado a ambientes sem CUDA. Qualquer divergencia deve ser registrada antes
-da coleta.
+O runner de modelos carrega separadamente OPT-125M, OPT-350M e OPT-1.3B em
+revisoes imutaveis. Cada variante parte novamente dos pesos originais e altera
+somente inferencia. A qualidade usa 64 janelas uniformes de 512 tokens do
+WikiText-2 versionado e 20 prompts locais; o desempenho separa prefill, TTFT e
+decode com KV cache. Os tres modelos e o dataset ja foram armazenados em cache e
+reabertos durante o prefetch, totalizando 6,63~GB para a futura coleta offline.
 
-\subsection{Revalidar a atencao entre frameworks}
+A suite local desta revisao aprovou 67 testes; o unico skip e a integracao
+externa com download, protegida por ativacao explicita.
 
-\begin{Verbatim}[fontsize=\small]
-.\.venv\Scripts\python.exe -m validacao.comparacao_frameworks `
-  --output-dir resultados\comparacao_frameworks_gpu_host `
-  --seed 2026 --atol 1e-6 --rtol 1e-5
-\end{Verbatim}
+\section{Resultado da bateria sintetica v3}
 
-Esse comando continua executando TensorFlow em CPU e serve para detectar
-mudancas de versao ou ambiente. Nao e benchmark entre frameworks.
+A bateria terminou com os 2.340 registros em estado \texttt{complete}: 390
+baselines e 1.950 candidatos corretamente pareados. As tres repeticoes
+registraram 39 mil amostras cada, perfazendo 117 mil timings. Os manifests de
+execucao e analise verificam os hashes de todos os CSVs, figuras e relatorios.
+A evidencia esta em
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/robustez_sintetica_v3_2026-09-13/}.
 
-\subsection{Executar a grade principal}
+\begin{longtable}{@{}lrr@{}}
+\toprule
+\textbf{Cenario} & \textbf{MSE projecao densa} & \textbf{MSE multi-head} \\
+\midrule
+INT8 fake por linha & $5{,}854\times10^{-5}$ & $1{,}349\times10^{-5}$ \\
+Pruning 10\% & $5{,}676\times10^{-4}$ & $1{,}285\times10^{-4}$ \\
+Pruning 25\% & $8{,}984\times10^{-3}$ & $2{,}003\times10^{-3}$ \\
+Pruning 50\% & $7{,}669\times10^{-2}$ & $1{,}425\times10^{-2}$ \\
+Pruning 75\% & $2{,}971\times10^{-1}$ & $3{,}394\times10^{-2}$ \\
+\bottomrule
+\end{longtable}
 
-O diretorio de saida deve ser novo e vazio. Use uma identificacao com data,
-maquina e versao do experimento.
+Em 100\% dos pares, o INT8 fake apresentou MSE menor que o pruning nos quatro
+niveis. Os intervalos bootstrap de 95\% para a diferenca permaneceram acima de
+zero, e a mediana do MSE de pruning cresceu monotonicamente com a sparsity.
+Isso sustenta H1/H5 e H6 no recorte sintetico. Valores absolutos entre as duas
+operacoes nao devem ser comparados diretamente porque suas escalas de saida
+diferem.
 
-\begin{Verbatim}[fontsize=\small]
-$env:PYTHONPATH = "fases\01_validacao_conceitual"
-$evidenceDir = "resultados\benchmark_gpu_4070ti_super_YYYY-MM-DD"
-
-.\.venv\Scripts\python.exe -m validacao.benchmark_operacoes `
-  --config fases\01_validacao_conceitual\experimentos\benchmark_principal_gpu.json `
-  --output-dir $evidenceDir
-
-.\.venv\Scripts\python.exe -m validacao.analise_benchmark_operacoes `
-  --evidence-dir $evidenceDir
-\end{Verbatim}
-
-\subsection{Critérios de aceite da coleta}
-
-\begin{enumerate}
-  \item o runner termina com codigo zero e grava duas execucoes independentes;
-  \item o manifesto confirma todos os hashes de CSV e metadados;
-  \item nenhuma linha contem NaN ou infinito;
-  \item cada candidato e comparado com o baseline da mesma execucao e do mesmo shape;
-  \item a analise gera consolidacao, reprodutibilidade e graficos;
-  \item o ambiente registra GPU, driver, CUDA, PyTorch, sistema operacional, seed e configuracao;
-  \item toda afirmacao de ganho distingue tempo medido, memoria medida, memoria teorica e FLOPs analiticos.
-\end{enumerate}
-
-\section{Depois da coleta}
-
-\begin{enumerate}
-  \item copiar a evidencia aprovada de \sourcepath{resultados/} para uma pasta versionada em \sourcepath{fases/01_validacao_conceitual/evidencias/benchmarks/};
-  \item revisar as diferencas entre as duas execucoes e investigar outliers antes de resumir medias;
-  \item responder as perguntas de pesquisa separadamente para projecao densa e self-attention;
-  \item confrontar latencia, throughput, memoria e qualidade da saida com o baseline comum;
-  \item atualizar este relatorio LaTeX com tabelas, figuras, limitacoes e ameacas a validade;
-  \item executar novamente \sourcepath{scripts/build_docs.ps1}, revisar o PDF e publicar o commit de evidencias.
-\end{enumerate}
-
-\section{Riscos que permanecem abertos}
-
-\begin{itemize}
-  \item pruning nao estruturado pode criar zeros sem acionar um kernel esparso;
-  \item quantizacao simulada com dequantizacao pode medir erro numerico sem executar um kernel INT8;
-  \item sincronizacao CUDA incorreta distorce latencia; o runner deve continuar usando sincronizacao explicita;
-  \item processos em segundo plano, aquecimento termico e clocks variaveis afetam a dispersao;
-  \item resultados do ponto CPU nao devem ser usados para prever a ordem relativa na GPU;
-  \item uma conclusao global exige separar os resultados por operacao, shape e metrica.
-\end{itemize}
+Nenhum cenario sustentou ganho de desempenho: todos os intervalos de speedup
+cruzaram $1{,}0$, nenhum kernel INT8 ou sparse foi usado, e o armazenamento
+permaneceu denso. Portanto, o resultado de qualidade e valido, mas a conclusao
+fisica continua em aberto.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.76\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/diagnostico_cpu_l64_d128_v2_2026-08-25/analise/latencia_relativa.png}
-  \caption{Diagnostico CPU v2. A figura valida a pipeline de analise, nao o desempenho do hardware alvo.}
+  \includegraphics[width=0.78\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/robustez_sintetica_v3_2026-09-13/analise_v3/qualidade_por_sparsity.png}
+  \caption{Degradacao numerica por nivel de sparsity na bateria sintetica v3.}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.76\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/diagnostico_cpu_l64_d128_v2_2026-08-25/analise/qualidade_saida.png}
-  \caption{Qualidade numerica das saidas no diagnostico CPU v2.}
+  \includegraphics[width=0.82\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/robustez_sintetica_v3_2026-09-13/analise_v3/speedup_ci95.png}
+  \caption{Speedup mediano e intervalos bootstrap de 95\%; nenhum candidato satisfaz o criterio de ganho fisico.}
+\end{figure}
+
+\section{Criterios pre-registrados}
+
+Uma tendencia sera sustentada quando ocorrer em pelo menos 80\% dos casos
+pareados e o intervalo bootstrap de 95\% nao cruzar o efeito nulo. Ela sera
+mista quando depender de seed, perfil ou modelo, e contradita quando a direcao
+oposta for predominante e consistente. Ganho fisico relevante exige speedup
+mediano de pelo menos $1{,}05$, intervalo inteiramente acima de $1{,}0$ e kernel
+correto confirmado. Aumento de perplexidade de ate 2\% para quantizacao e 5\%
+para pruning sao limites operacionais deste estudo, nao regras universais.
+
+\section{Ordem restante de execucao}
+
+\begin{enumerate}
+  \item restaurar o daemon Linux do Docker Desktop;
+  \item construir a imagem Docker fixada e executar o probe de hardware;
+  \item passar o smoke CUDA de baseline, INT8 e 2:4;
+  \item executar e analisar a bateria fisica completa;
+  \item avaliar os tres modelos OPT ja armazenados, sem rede durante a coleta;
+  \item revisar casos suportados, incompativeis e falhos antes de resumir resultados;
+  \item incorporar as evidencias fisicas e de modelos ao PDF.
+\end{enumerate}
+
+Nesta maquina, o Docker Desktop 4.63 encerra o backend antes de iniciar a
+distribuicao WSL2 por causa de um socket de inference local inacessivel. Nenhuma
+coleta fisica foi improvisada fora do ambiente pre-registrado: o bloqueio foi
+preservado e requer reparo ou reinicializacao do Docker antes do proximo portao.
+
+\section{Riscos que permanecem abertos}
+
+\begin{itemize}
+  \item pruning denso pode criar zeros sem reduzir armazenamento ou latencia;
+  \item weight-only INT8 prova armazenamento compacto, nao necessariamente computacao inteira;
+  \item kernels otimizados podem depender do shape e tornar a tendencia mista;
+  \item aquecimento, clocks e processos concorrentes podem ampliar a dispersao temporal;
+  \item os modelos OPT podem responder de forma diferente dos pesos sinteticos;
+  \item resultados negativos e casos incompativeis devem permanecer na evidencia final.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.76\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/benchmark_gpu_4070ti_super_2026-08-29/analise/latencia_relativa.png}
+  \caption{Latencia relativa do benchmark GPU v1, preservada como evidencia historica.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.76\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/benchmark_gpu_4070ti_super_2026-08-29/analise/qualidade_saida.png}
+  \caption{Fidelidade numerica do benchmark GPU v1.}
 \end{figure}

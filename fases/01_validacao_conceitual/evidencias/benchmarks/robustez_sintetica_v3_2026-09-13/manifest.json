@@ -1,0 +1,43 @@
+{
+  "schema_version": 3,
+  "experiment_id": "robustez_sintetica_gpu_v3",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "3509e3289b45ed6a0c80894dc5c4c4842d81f9fd5cbd31766d06db174bfd0451",
+  "code_sha256": "202b18cfab75ea38d1bff955e04786ffc94e3f9a606ae7ddb59da631184f2ee2",
+  "environment": "environment.json",
+  "environment_sha256": "cf2320390ef5588482b40ead015d53b88bd3681577c1b33a554f9481217f6133",
+  "runs": [
+    {
+      "repeat_index": 1,
+      "csv": "run_01.csv",
+      "csv_sha256": "be64f739450bf308f131b7274aa593bb5c2f4da19e9e244bd8e227683134d149",
+      "timings": "run_01.timings.csv",
+      "timings_sha256": "49465ab78bfbbd4c0d1512bd2fe1d2a62842afdca0c3a1e1df3875ce9abb7e7e",
+      "records": 780,
+      "timing_samples": 39000
+    },
+    {
+      "repeat_index": 2,
+      "csv": "run_02.csv",
+      "csv_sha256": "a32952ea000f87c1233449ccf62ea6fe60b7f741abc564c21a7c6bbac9bfa8da",
+      "timings": "run_02.timings.csv",
+      "timings_sha256": "fec8e4c0b0cee929490af91505c1fc5be77fe43b0187ecab73feda936d5e567c",
+      "records": 780,
+      "timing_samples": 39000
+    },
+    {
+      "repeat_index": 3,
+      "csv": "run_03.csv",
+      "csv_sha256": "4520dc90a6767a97f013f471f0db3f6e6134e0c5b4688ff500fa9b0d7768f10a",
+      "timings": "run_03.timings.csv",
+      "timings_sha256": "d08835780a84921c854dd576be320450a1db5742168cd2ffe9e86eecd25e879b",
+      "records": 780,
+      "timing_samples": 39000
+    }
+  ],
+  "resumed_at": [],
+  "timings": "timings.csv",
+  "timings_sha256": "59f86df3ec0abc84bd77ba02a98774b7e593f3bbe9ff01468bb55d631f73dc6e",
+  "completed_at": "2026-09-13T18:31:06-03:00"
+}

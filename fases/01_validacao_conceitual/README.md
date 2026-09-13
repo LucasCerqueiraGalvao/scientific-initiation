@@ -16,9 +16,11 @@ Estão validados:
 - schema, configuração, integridade e reprodutibilidade da pipeline;
 - equivalência do núcleo da atenção em NumPy, PyTorch e TensorFlow/Keras.
 
-O objeto arquitetural é um **bloco Transformer simplificado**. A coleta
-principal em CUDA permanece pendente e nenhuma técnica é tratada como superior
-antes dessa evidência.
+O objeto principal agora é a self-attention multi-head completa, com projeção
+densa mantida como controle das operações Q/K/V/O. O benchmark GPU v1 está
+concluído e a bateria sintética v3 também. As coletas físicas e OPT ainda não
+autorizam conclusões antes da execução e da confirmação dos kernels pelo
+profiler.
 
 ## Estrutura
 
@@ -61,9 +63,9 @@ $env:PYTHONPATH = "fases\01_validacao_conceitual"
   fases\01_validacao_conceitual\tests -q -W error
 ```
 
-Resultado registrado no ambiente sem NVIDIA: `45 passed, 1 skipped`. O único
-skip é protegido por disponibilidade CUDA; a comparação TensorFlow/Keras roda
-sem skip.
+Resultado local atual: `67 passed, 1 skipped`. O skip é a integração real com
+Hugging Face, ativada explicitamente por `RUN_HF_INTEGRATION=1`; o smoke com um
+OPT minúsculo criado por configuração roda sem download.
 
 ## Comparação numérica entre frameworks
 
@@ -74,10 +76,11 @@ $env:PYTHONPATH = "fases\01_validacao_conceitual"
   --seed 2026 --atol 1e-6 --rtol 1e-5
 ```
 
-A evidência canônica aprovou 9/9 comparações; o maior erro absoluto foi
-`2.38418579e-07`. Consulte o [relatório LaTeX](evidencias/comparacao_frameworks/comparacao_atencao.tex),
-o [CSV](evidencias/comparacao_frameworks/comparacao_atencao.csv) e os
-[metadados](evidencias/comparacao_frameworks/comparacao_atencao.metadata.json).
+A evidência v1 aprovou 9/9 comparações. A validação v2 adiciona nove comparações
+da multi-head completa, com `H={1,4,8}`, para totalizar 18. Consulte o
+[relatório LaTeX](evidencias/comparacao_frameworks_v2_2026-09-13/comparacao_atencao.tex),
+o [CSV](evidencias/comparacao_frameworks_v2_2026-09-13/comparacao_atencao.csv) e os
+[metadados](evidencias/comparacao_frameworks_v2_2026-09-13/comparacao_atencao.metadata.json).
 Essa etapa valida correção, não velocidade.
 
 ## Configurações de benchmark
@@ -87,30 +90,47 @@ Essa etapa valida correção, não velocidade.
 | `experimentos/smoke_cpu.json` | Pipeline curta | Nenhuma conclusão de hardware. |
 | `experimentos/diagnostico_cpu_l64_d128.json` | Um ponto formal em CPU | Diagnóstico metodológico. |
 | `experimentos/benchmark_principal_gpu.json` | Grade CUDA na RTX 4070 Ti Super | Base para a análise principal, após auditoria do caminho. |
+| `experimentos/smoke_v3_cpu.json` | Contrato v3 curto | Validação local sem conclusão de hardware. |
+| `experimentos/robustez_sintetica_v3.json` | 13 perfis, 5 seeds e 6 cenários | Robustez numérica de dense e multi-head attention. |
+| `experimentos/smoke_hardware_v3.json` | Portão físico curto | Confirma compilação, INT8 e 2:4 antes da bateria. |
+| `experimentos/hardware_nativo_v3.json` | 1.650 casos físicos | Latência, memória e armazenamento com kernels compatíveis. |
+| `experimentos/modelos_opt_v1.json` | OPT 125M, 350M e 1.3B | Qualidade e desempenho em pesos pré-treinados. |
 
-O schema v2 fixa entradas `N(0,1)`, pesos Xavier normal ajustados por dimensão e
-bias zero. Evidências v1 são preservadas para documentar por que o contrato foi
-corrigido.
+O schema v3 preserva leitura dos schemas v1/v2 e acrescenta perfis, múltiplas
+seeds, cenários parametrizados, grupos de baseline, timings brutos, memória,
+armazenamento, hashes e confirmação de kernels.
 
-## Executar a coleta principal
+## Resultado sintético v3
+
+A execução completa está em
+[`evidencias/benchmarks/robustez_sintetica_v3_2026-09-13/`](evidencias/benchmarks/robustez_sintetica_v3_2026-09-13/).
+São 2.340 registros completos, 1.950 comparações pareadas e 117 mil amostras de
+latência. O INT8 fake teve MSE menor que o pruning em 100% dos pares nos quatro
+níveis, enquanto o MSE do pruning cresceu monotonicamente com a sparsity.
+
+Os speedups foram classificados como mistos: os intervalos de 95% cruzaram
+`1,0x`, o armazenamento continuou denso e nenhum kernel físico foi confirmado.
+Isso é resultado esperado de uma bateria de fidelidade numérica, não evidência
+de aceleração INT8 ou sparse.
+
+## Executar as novas baterias
 
 O diretório precisa ser novo e vazio:
 
 ```powershell
-$env:PYTHONPATH = "fases\01_validacao_conceitual"
-$evidenceDir = "resultados\benchmark_gpu_4070ti_super_YYYY-MM-DD"
-
-.\.venv\Scripts\python.exe -m validacao.benchmark_operacoes `
-  --config fases\01_validacao_conceitual\experimentos\benchmark_principal_gpu.json `
-  --output-dir $evidenceDir
-
-.\.venv\Scripts\python.exe -m validacao.analise_benchmark_operacoes `
-  --evidence-dir $evidenceDir
+.\scripts\run_benchmarks_docker.ps1 -Action Build
+.\scripts\run_benchmarks_docker.ps1 -Action Probe
+.\scripts\run_benchmarks_docker.ps1 -Action Prefetch
+.\scripts\run_benchmarks_docker.ps1 -Action Smoke
+.\scripts\run_benchmarks_docker.ps1 -Action Synthetic
+.\scripts\run_benchmarks_docker.ps1 -Action Hardware
+.\scripts\run_benchmarks_docker.ps1 -Action Models
 ```
 
-A análise gera CSVs consolidados, `reprodutibilidade.json`,
-`relatorio_preliminar.tex`, `latencia_relativa.png` e `qualidade_saida.png`.
-Ela recusa artefatos cujo checksum não coincide com o manifesto.
+Os runners escrevem checkpoints e manifestos. As análises geram intervalos
+bootstrap, curvas por sparsity, heatmaps, boxplots por seed, speedup, memória,
+armazenamento, Pareto e tabelas de casos suportados ou incompatíveis. Arquivos
+com checksum divergente são recusados.
 
 ## Documentos técnicos
 
@@ -126,10 +146,8 @@ Ela recusa artefatos cujo checksum não coincide com o manifesto.
 
 ## Próximo portão
 
-1. confirmar driver, CUDA e nome da GPU no clone novo;
-2. executar toda a suíte sem o skip de CUDA;
-3. coletar a grade principal sem alterar o JSON versionado;
-4. revisar hashes, dispersão e comparações por operação/shape;
-5. verificar se pruning e INT8 acionam caminhos físicos compatíveis antes de
-   classificar qualquer ganho como evidência de hardware;
-6. versionar a coleta aprovada e atualizar o relatório LaTeX.
+1. iniciar o daemon do Docker Desktop com backend WSL2;
+2. construir a imagem fixada e passar o probe de hardware;
+3. executar o smoke, os caminhos físicos e os três modelos OPT;
+4. revisar hashes, pareamentos, intervalos e casos incompatíveis;
+5. atualizar o relatório com respostas a RQ1-RQ8 e versionar a evidência.

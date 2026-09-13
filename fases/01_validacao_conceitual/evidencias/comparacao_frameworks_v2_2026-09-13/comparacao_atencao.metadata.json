@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "comparison_kind": "numerical_correctness",
+  "performance_claim": false,
+  "reference": "numpy_manual",
+  "candidates": [
+    "pytorch_manual",
+    "pytorch_sdpa",
+    "keras_tensorflow_sdpa"
+  ],
+  "seed": 2026,
+  "atol": 1e-06,
+  "rtol": 1e-05,
+  "dtype": "float32",
+  "device": "cpu",
+  "python_version": "3.11.9",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "numpy_version": "2.4.4",
+  "torch_version": "2.11.0+cu128",
+  "tensorflow_version": "2.21.0",
+  "keras_version": "3.15.1",
+  "keras_backend": "tensorflow",
+  "cases": [
+    "tiny_manual_unmasked",
+    "seeded_multihead_unmasked",
+    "seeded_multihead_additive_mask",
+    "projected_multihead_h1",
+    "projected_multihead_h4",
+    "projected_multihead_h8"
+  ]
+}

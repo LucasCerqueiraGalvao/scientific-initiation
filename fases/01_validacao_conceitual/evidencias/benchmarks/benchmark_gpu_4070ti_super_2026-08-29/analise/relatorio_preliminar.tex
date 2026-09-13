@@ -1,0 +1,119 @@
+\chapter{Relatório preliminar - operacoes\_\allowbreak{}principais\_\allowbreak{}gpu\_\allowbreak{}v1}
+
+\begin{icquote}
+Esta coleta foi configurada como benchmark principal em CUDA; as conclusões ainda devem respeitar o nível de validade de cada cenário.
+\end{icquote}
+
+\section{Pergunta, hipótese e desenho}
+
+\begin{itemize}
+\item Pergunta principal: quantização INT8 simulada preserva melhor a saída que pruning por magnitude de 50\% nas mesmas operações?
+\item Hipótese: a quantização terá MSE/MAE menores e $R^2$/cosseno maiores que o pruning.
+\item Amostra: tensores sintéticos de distribuição normal, gerados deterministicamente; não há dataset ou pré-processamento externo.
+\item Seed: \texttt{42}; lotes: \texttt{[1]}; sequências: \texttt{[64, 128, 256]}; dimensões: \texttt{[128, 256, 512]}.
+\item Dados/pesos: entrada \texttt{standard\_\allowbreak{}normal}, pesos \texttt{xavier\_\allowbreak{}normal} e bias \texttt{zeros}.
+\item Medição: \texttt{20} warm-ups, \texttt{50} medições e \texttt{2} execuções independentes.
+\item Dispositivo observado: \texttt{cuda:0} NVIDIA GeForce RTX 4070 Ti SUPER.
+\item Inclusão: todos os casos válidos da grade e os três cenários registrados; exclusão: qualquer artefato com checksum, shape, dtype ou valor numérico inválido.
+\end{itemize}
+
+\section{Reprodutibilidade}
+
+\begin{itemize}
+\item Hashes de entrada iguais entre execuções: \texttt{True}.
+\item Hashes de saída iguais entre execuções: \texttt{True}.
+\item As latências não precisam ser idênticas: elas medem ruído e estado do sistema; entradas e saídas determinísticas precisam coincidir.
+\end{itemize}
+
+\section{Resultados por operação e cenário}
+
+\begin{landscape}
+\small
+\begin{longtable}{@{}p{0.20\linewidth}p{0.20\linewidth}rrrrr@{}}
+\toprule
+\textbf{Operação} & \textbf{Cenário} & \textbf{Latência (ms)} & \textbf{DP} & \textbf{MSE} & \textbf{$R^2$} & \textbf{Cosseno} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Operação} & \textbf{Cenário} & \textbf{Latência (ms)} & \textbf{DP} & \textbf{MSE} & \textbf{$R^2$} & \textbf{Cosseno} \\
+\midrule
+\endhead
+dense\_\allowbreak{}projection & baseline & 0.154976 & 0.0021694 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & baseline & 0.136247 & 1.55563e-05 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & baseline & 0.183354 & 0.0199857 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & baseline & 0.127999 & 0.0133346 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & baseline & 0.158239 & 0.00131663 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & baseline & 0.128803 & 0.00148351 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & baseline & 0.121921 & 0.00641629 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & baseline & 0.157987 & 0.0111341 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & baseline & 0.118018 & 0.0074925 & 0 & 1 & 1 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.142595 & 0.0107212 & 0.0727207 & 0.926527 & 0.962572 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.171191 & 0.000748119 & 0.0715476 & 0.927112 & 0.962866 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.144272 & 0.0080497 & 0.0716447 & 0.928389 & 0.963533 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.124756 & 0.00698056 & 0.0707332 & 0.929816 & 0.96427 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.181001 & 0.030919 & 0.0720674 & 0.926982 & 0.962805 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.152848 & 0.0108244 & 0.0724666 & 0.927698 & 0.963173 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.150323 & 0.0410108 & 0.0693999 & 0.928408 & 0.96354 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.146113 & 0.0168192 & 0.0722279 & 0.928179 & 0.963421 \\
+dense\_\allowbreak{}projection & pruning\_\allowbreak{}magnitude & 0.12311 & 0.0356976 & 0.0713366 & 0.928748 & 0.963716 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.192197 & 0.00854326 & 7.77889e-05 & 0.999921 & 0.999961 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.152302 & 0.0176579 & 8.68791e-05 & 0.999911 & 0.999956 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.146561 & 0.00268842 & 0.000102175 & 0.999898 & 0.999949 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.17891 & 0.0275489 & 8.77829e-05 & 0.999913 & 0.999956 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.149771 & 0.000719835 & 9.82458e-05 & 0.9999 & 0.99995 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.163131 & 0.0637655 & 0.000103987 & 0.999896 & 0.999948 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.123397 & 0.0159085 & 7.93685e-05 & 0.999918 & 0.999959 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.143514 & 0.00309713 & 9.10519e-05 & 0.999909 & 0.999955 \\
+dense\_\allowbreak{}projection & quantization\_\allowbreak{}int8 & 0.149146 & 0.0336555 & 0.000141154 & 0.999859 & 0.99993 \\
+self\_\allowbreak{}attention & baseline & 0.547976 & 0.0418522 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & baseline & 0.493358 & 0.05727 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & baseline & 0.551014 & 0.0355335 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & baseline & 0.415846 & 0.065744 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & baseline & 0.494226 & 0.00640356 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & baseline & 0.492053 & 0.025115 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & baseline & 0.443417 & 0.00706117 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & baseline & 0.529221 & 0.0601649 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & baseline & 0.446569 & 0.0624814 & 0 & 1 & 1 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.524125 & 0.0438816 & 0.0110127 & 0.762797 & 0.873495 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.533186 & 0.089466 & 0.00952993 & 0.77801 & 0.882438 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.521855 & 0.00305329 & 0.00885257 & 0.766722 & 0.875633 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.431755 & 0.0535718 & 0.00617402 & 0.755223 & 0.869392 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.517076 & 0.0459959 & 0.00548234 & 0.744202 & 0.862855 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.506012 & 0.0226585 & 0.00544488 & 0.763186 & 0.873714 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.445271 & 0.0402414 & 0.00495851 & 0.745114 & 0.863213 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.530754 & 0.117824 & 0.00346378 & 0.747677 & 0.864843 \\
+self\_\allowbreak{}attention & pruning\_\allowbreak{}magnitude & 0.441184 & 0.0700403 & 0.00296347 & 0.765105 & 0.874789 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.545552 & 0.0479814 & 1.63923e-05 & 0.999647 & 0.999824 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.493135 & 0.0711562 & 1.7481e-05 & 0.999593 & 0.999797 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.539973 & 0.00226416 & 1.6899e-05 & 0.999555 & 0.999778 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.447587 & 0.0816298 & 1.01318e-05 & 0.999598 & 0.9998 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.556039 & 0.00549422 & 8.9275e-06 & 0.999583 & 0.999792 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.493984 & 0.00935927 & 1.0123e-05 & 0.99956 & 0.999781 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.472683 & 0.00516047 & 7.66996e-06 & 0.999606 & 0.999803 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.506035 & 0.057673 & 5.4124e-06 & 0.999606 & 0.999803 \\
+self\_\allowbreak{}attention & quantization\_\allowbreak{}int8 & 0.42709 & 0.0189024 & 5.53518e-06 & 0.999561 & 0.999781 \\
+\bottomrule
+\end{longtable}
+\end{landscape}
+
+\section{Interpretação preliminar}
+
+\begin{itemize}
+\item \texttt{dense\_\allowbreak{}projection}: MSE da quantização \texttt{9.64926e-05} e do pruning \texttt{0.0715716}; evidência compatível com H1 nesta amostra.
+\item \texttt{self\_\allowbreak{}attention}: MSE da quantização \texttt{1.09525e-05} e do pruning \texttt{0.00643136}; evidência compatível com H1 nesta amostra.
+\item Pruning usa matriz densa e não usa kernel esparso; quantização é dequantizada para \texttt{float32} e não usa kernel INT8.
+\item Razões de latência e memória estão nos CSVs de análise, mas só podem sustentar alegação de hardware se o experimento for principal e o caminho executado tiver validade \texttt{hardware}.
+\item Resultados de smoke ou diagnóstico CPU não são estimativas finais de desempenho no hardware-alvo.
+\end{itemize}
+
+\section{Cadeia de evidência}
+
+Pergunta $\rightarrow$ H1 $\rightarrow$ configuração versionada $\rightarrow$ CSVs por execução $\rightarrow$ checksums/hashes $\rightarrow$ resumo com média e DP $\rightarrow$ interpretação limitada.
+
+\section{Reprodução}
+
+\begin{Verbatim}[fontsize=\small]
+$env:PYTHONPATH = "fases\01_validacao_conceitual"
+.\.venv\Scripts\python.exe -m validacao.benchmark_operacoes --config <config.json> --output-dir <diretorio-novo>
+.\.venv\Scripts\python.exe -m validacao.analise_benchmark_operacoes --evidence-dir <diretorio-novo>
+\end{Verbatim}

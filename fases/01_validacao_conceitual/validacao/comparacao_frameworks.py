@@ -16,6 +16,8 @@ import numpy as np
 import torch
 
 from validacao.attention import (
+    multi_head_self_attention_numpy,
+    multi_head_self_attention_torch,
     scaled_dot_product_attention_numpy,
     scaled_dot_product_attention_torch,
 )
@@ -60,6 +62,17 @@ class AttentionComparisonCase:
     value: np.ndarray
     additive_mask: np.ndarray | None
     mask_kind: str
+
+
+@dataclass(frozen=True)
+class ProjectedAttentionComparisonCase:
+    case_id: str
+    inputs: np.ndarray
+    w_q: np.ndarray
+    w_k: np.ndarray
+    w_v: np.ndarray
+    w_o: np.ndarray
+    num_heads: int
 
 
 @dataclass(frozen=True)
@@ -222,6 +235,88 @@ def build_attention_comparison_cases(seed: int = 2026) -> tuple[AttentionCompari
     return tiny, random_multihead, masked_multihead
 
 
+def build_projected_attention_comparison_cases(
+    seed: int = 2026,
+) -> tuple[ProjectedAttentionComparisonCase, ...]:
+    cases: list[ProjectedAttentionComparisonCase] = []
+    for index, num_heads in enumerate((1, 4, 8)):
+        dimension = num_heads * 4
+        generator = np.random.default_rng(seed + 100 + index)
+        weights = tuple(
+            (
+                generator.standard_normal((dimension, dimension), dtype=np.float32)
+                / np.float32(math.sqrt(dimension))
+            ).astype(np.float32)
+            for _ in range(4)
+        )
+        cases.append(
+            ProjectedAttentionComparisonCase(
+                case_id=f"projected_multihead_h{num_heads}",
+                inputs=generator.standard_normal((1, 3, dimension), dtype=np.float32),
+                w_q=weights[0],
+                w_k=weights[1],
+                w_v=weights[2],
+                w_o=weights[3],
+                num_heads=num_heads,
+            )
+        )
+    return tuple(cases)
+
+
+def projected_attention_keras_tensorflow(case: ProjectedAttentionComparisonCase) -> np.ndarray:
+    keras, tensorflow = _load_keras_tensorflow()
+    batch_size, seq_len, dimension = case.inputs.shape
+    head_dim = dimension // case.num_heads
+    with tensorflow.device("/CPU:0"):
+        inputs = keras.ops.convert_to_tensor(case.inputs, dtype="float32")
+
+        def project(weight: np.ndarray):
+            converted = keras.ops.convert_to_tensor(weight, dtype="float32")
+            return keras.ops.matmul(inputs, keras.ops.transpose(converted))
+
+        def to_heads(value):
+            value = keras.ops.reshape(value, (batch_size, seq_len, case.num_heads, head_dim))
+            return keras.ops.transpose(value, (0, 2, 1, 3))
+
+        query = to_heads(project(case.w_q))
+        key = to_heads(project(case.w_k))
+        value = to_heads(project(case.w_v))
+        context = keras.ops.nn.dot_product_attention(
+            pytorch_to_keras_layout(np.asarray(keras.ops.convert_to_numpy(query), dtype=np.float32)),
+            pytorch_to_keras_layout(np.asarray(keras.ops.convert_to_numpy(key), dtype=np.float32)),
+            pytorch_to_keras_layout(np.asarray(keras.ops.convert_to_numpy(value), dtype=np.float32)),
+            flash_attention=False,
+        )
+        combined = keras.ops.reshape(context, (batch_size, seq_len, dimension))
+        output = keras.ops.matmul(
+            combined,
+            keras.ops.transpose(keras.ops.convert_to_tensor(case.w_o, dtype="float32")),
+        )
+    return np.asarray(keras.ops.convert_to_numpy(output), dtype=np.float32)
+
+
+def _projected_comparison_record(
+    case: ProjectedAttentionComparisonCase,
+    candidate_name: str,
+    reference: np.ndarray,
+    candidate: np.ndarray,
+    config: FrameworkComparisonConfig,
+) -> dict[str, object]:
+    dimension = case.inputs.shape[-1]
+    proxy = AttentionComparisonCase(
+        case_id=case.case_id,
+        query=np.empty(
+            (case.inputs.shape[0], case.num_heads, case.inputs.shape[1], dimension // case.num_heads),
+            dtype=np.float32,
+        ),
+        key=np.empty((0,), dtype=np.float32),
+        value=np.empty((0,), dtype=np.float32),
+        additive_mask=None,
+        mask_kind="none_projected_qkvo",
+    )
+    return _comparison_record(proxy, candidate_name, reference, candidate, config)
+
+
 def _torch_manual_output(case: AttentionComparisonCase) -> np.ndarray:
     with torch.inference_mode():
         output = scaled_dot_product_attention_torch(
@@ -340,6 +435,44 @@ def run_framework_comparison(
             validate_comparison_record(record)
             records.append(record)
 
+    projected_cases = build_projected_attention_comparison_cases(config.seed)
+    for case in projected_cases:
+        reference = multi_head_self_attention_numpy(
+            case.inputs,
+            case.w_q,
+            case.w_k,
+            case.w_v,
+            case.w_o,
+            num_heads=case.num_heads,
+        ).astype(np.float32, copy=False)
+        with torch.inference_mode():
+            torch_inputs = torch.from_numpy(case.inputs)
+            torch_weights = tuple(
+                torch.from_numpy(weight)
+                for weight in (case.w_q, case.w_k, case.w_v, case.w_o)
+            )
+            pytorch_manual = multi_head_self_attention_torch(
+                torch_inputs,
+                *torch_weights,
+                num_heads=case.num_heads,
+                use_sdpa=False,
+            ).numpy()
+            pytorch_sdpa = multi_head_self_attention_torch(
+                torch_inputs,
+                *torch_weights,
+                num_heads=case.num_heads,
+                use_sdpa=True,
+            ).numpy()
+        candidates = {
+            "pytorch_manual": pytorch_manual,
+            "pytorch_sdpa": pytorch_sdpa,
+            "keras_tensorflow_sdpa": projected_attention_keras_tensorflow(case),
+        }
+        for candidate_name, candidate in candidates.items():
+            record = _projected_comparison_record(case, candidate_name, reference, candidate, config)
+            validate_comparison_record(record)
+            records.append(record)
+
     metadata: dict[str, object] = {
         "schema_version": 1,
         "comparison_kind": "numerical_correctness",
@@ -358,7 +491,7 @@ def run_framework_comparison(
         "tensorflow_version": tensorflow.__version__,
         "keras_version": keras.__version__,
         "keras_backend": str(keras.backend.backend()),
-        "cases": [case.case_id for case in cases],
+        "cases": [case.case_id for case in cases] + [case.case_id for case in projected_cases],
     }
     return FrameworkComparisonRun(records=tuple(records), metadata=metadata)
 
@@ -388,7 +521,7 @@ def _latex_escape(value: object) -> str:
 
 def _build_latex(run: FrameworkComparisonRun) -> str:
     lines = [
-        r"\chapter{Comparação numérica da scaled dot-product attention}",
+        r"\chapter{Comparação numérica da attention local e multi-head}",
         "",
         r"\begin{icquote}",
         "Esta evidência valida correção numérica. Ela não compara desempenho e não sustenta alegações de hardware.",

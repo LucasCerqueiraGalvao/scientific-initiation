@@ -87,13 +87,16 @@ def comparison_run() -> FrameworkComparisonRun:
 
 
 def test_all_frameworks_match_in_every_case(comparison_run: FrameworkComparisonRun) -> None:
-    assert len(comparison_run.records) == 9
+    assert len(comparison_run.records) == 18
     assert comparison_run.passed
     assert {record["candidate"] for record in comparison_run.records} == set(CANDIDATE_NAMES)
     assert {record["case_id"] for record in comparison_run.records} == {
         "tiny_manual_unmasked",
         "seeded_multihead_unmasked",
         "seeded_multihead_additive_mask",
+        "projected_multihead_h1",
+        "projected_multihead_h4",
+        "projected_multihead_h8",
     }
 
     for record in comparison_run.records:
@@ -131,7 +134,7 @@ def test_comparison_outputs_are_complete_and_auditable(
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     latex = latex_path.read_text(encoding="utf-8")
 
-    assert len(rows) == 9
+    assert len(rows) == 18
     assert all(row["passed"] == "True" for row in rows)
     assert metadata["comparison_kind"] == "numerical_correctness"
     assert metadata["performance_claim"] is False

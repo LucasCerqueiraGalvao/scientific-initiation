@@ -1,0 +1,47 @@
+{
+  "schema_version": 3,
+  "experiment_id": "smoke_operacoes_v3_cpu",
+  "purpose": "smoke_test",
+  "stage": "synthetic_numerical",
+  "device": "cpu",
+  "required_gpu_name": "",
+  "data_seeds": [11, 23],
+  "input_distributions": ["standard_normal"],
+  "profiles": [
+    {
+      "identifier": "smoke_b1_l4_d8_h2",
+      "batch_size": 1,
+      "seq_len": 4,
+      "d_model": 8,
+      "num_heads": 2,
+      "input_distribution": "standard_normal"
+    }
+  ],
+  "operations": ["dense_projection", "multi_head_self_attention"],
+  "scenarios": [
+    {"identifier": "baseline_fp32", "kind": "baseline", "comparison_group": "fp32_dense", "dtype": "float32"},
+    {"identifier": "pruning_10", "kind": "pruning_magnitude", "comparison_group": "fp32_dense", "dtype": "float32", "pruning_sparsity": 0.1},
+    {"identifier": "pruning_25", "kind": "pruning_magnitude", "comparison_group": "fp32_dense", "dtype": "float32", "pruning_sparsity": 0.25},
+    {"identifier": "pruning_50", "kind": "pruning_magnitude", "comparison_group": "fp32_dense", "dtype": "float32", "pruning_sparsity": 0.5},
+    {"identifier": "pruning_75", "kind": "pruning_magnitude", "comparison_group": "fp32_dense", "dtype": "float32", "pruning_sparsity": 0.75},
+    {"identifier": "int8_fake_per_row", "kind": "quantization_int8_fake_per_row", "comparison_group": "fp32_dense", "dtype": "float32"}
+  ],
+  "weight_initialization": "xavier_normal",
+  "bias_initialization": "zeros",
+  "measurement": {"warmup_iterations": 1, "measure_iterations": 3, "repetitions": 2},
+  "execution": {
+    "scenario_order": "deterministic_shuffle",
+    "compile": false,
+    "compile_mode": "eager",
+    "save_raw_timings": true,
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 2026,
+    "capabilities_file": ""
+  },
+  "hardware_requirements": {
+    "compute_capability": "",
+    "require_triton": false,
+    "require_cusparselt": false,
+    "temperature_abort_c": 85
+  }
+}

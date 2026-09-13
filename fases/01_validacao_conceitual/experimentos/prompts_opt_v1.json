@@ -1,0 +1,22 @@
+[
+  {"id": "completion_01", "text": "The history of computing began with"},
+  {"id": "completion_02", "text": "A reliable scientific experiment should"},
+  {"id": "completion_03", "text": "In machine learning, attention allows a model to"},
+  {"id": "completion_04", "text": "The main advantage of renewable energy is"},
+  {"id": "completion_05", "text": "When a program becomes slower, the first measurement to collect is"},
+  {"id": "factual_01", "text": "Paris is the capital city of"},
+  {"id": "factual_02", "text": "Water freezes at a temperature of"},
+  {"id": "factual_03", "text": "The largest planet in the Solar System is"},
+  {"id": "factual_04", "text": "The author of Hamlet was"},
+  {"id": "factual_05", "text": "A triangle has exactly"},
+  {"id": "reasoning_01", "text": "If every red object is heavy and this object is red, then"},
+  {"id": "reasoning_02", "text": "A train travels 60 miles in one hour. In two hours it travels"},
+  {"id": "reasoning_03", "text": "If the measured latency decreases while all inputs remain equal, the speedup"},
+  {"id": "reasoning_04", "text": "A result observed with only one random seed may"},
+  {"id": "reasoning_05", "text": "If half of the weights are zero but a dense kernel is used, latency"},
+  {"id": "technical_01", "text": "The scaled dot-product attention equation computes"},
+  {"id": "technical_02", "text": "Quantizing weights from floating point to int8 generally reduces"},
+  {"id": "technical_03", "text": "A KV cache accelerates autoregressive inference by"},
+  {"id": "technical_04", "text": "Magnitude pruning removes parameters whose absolute values are"},
+  {"id": "technical_05", "text": "A reproducible benchmark records its software versions, hardware, and"}
+]

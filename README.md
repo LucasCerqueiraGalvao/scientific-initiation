@@ -4,11 +4,11 @@ Iniciação científica sobre eficiência computacional de operações centrais 
 Transformers em inferência, com comparação controlada entre baseline, pruning
 por magnitude e quantização linear INT8.
 
-O repositório está pronto para a coleta principal na máquina com uma NVIDIA
-GeForce RTX 4070 Ti Super de 16 GB. A matemática da atenção, a arquitetura do
-recorte, a equivalência NumPy/PyTorch/TensorFlow e a pipeline de benchmark já
-foram validadas. O que falta é executar a grade CUDA e analisar a evidência do
-hardware-alvo.
+O benchmark GPU v1 foi concluído na NVIDIA GeForce RTX 4070 Ti SUPER e sua
+evidência foi preservada com hashes. A infraestrutura v3 amplia o estudo para
+cinco seeds, três distribuições, 13 perfis, multi-head attention, kernels reais
+e modelos OPT pré-treinados. A bateria sintética v3 também foi concluída; as
+coletas físicas e OPT permanecem separadas até a confirmação dos kernels.
 
 ## Estado atual
 
@@ -16,15 +16,20 @@ hardware-alvo.
 | --- | --- | --- |
 | Scaled dot-product attention manual | Validada | Casos conhecidos, NumPy independente e PyTorch SDPA. |
 | Bloco Transformer simplificado | Validado no recorte | Auditoria estrutural, dependência entre posições e controle negativo. |
-| Comparação entre frameworks | Validada | 9/9 comparações NumPy, PyTorch manual, PyTorch SDPA e Keras/TensorFlow aprovadas. |
-| Pipeline de benchmark | Validada em CPU | Configuração, duas execuções, hashes, manifesto, análise e gráficos. |
+| Comparação entre frameworks | Validada | 18 comparações cobrem SDPA e multi-head completa com projeções Q/K/V/O. |
+| Pipeline de benchmark | Validada em CPU e GPU | Configuração, retomada, hashes, manifesto, análise pareada e gráficos. |
 | Inicialização dos pesos | Corrigida | Contrato v2 com Xavier normal e bias zero. |
-| Benchmark principal em CUDA | Pendente | Deve ser executado na RTX 4070 Ti Super. |
+| Benchmark GPU v1 | Concluído | Duas execuções, 108 registros, hashes, análise e gráficos versionados. |
+| Benchmark sintético v3 | Concluído | 2.340 registros completos, 1.950 pares e 117 mil timings na GPU. |
+| Caminhos físicos | Implementado | Docker, probe, TorchAO INT8 e pruning 2:4 com confirmação por profiler. |
+| Modelos OPT | Preparado | Runner completo e 6,63 GB de modelos/dataset armazenados para uso offline. |
 | Ganho real de pruning/INT8 | Não afirmado | Depende do caminho e do kernel efetivamente executados na GPU. |
 
-A posição científica correta é: o projeto implementa e testa operações de um
-**bloco Transformer simplificado**. Ele ainda não demonstra uma Transformer
-completa nem superioridade de uma técnica de otimização em hardware.
+A posição científica correta é: a evidência v1 demonstra comportamento numérico
+e a v3 sustenta a robustez numérica em múltiplas entradas. Em todos os casos
+pareados, INT8 fake apresentou MSE menor que pruning, e o erro do pruning cresceu
+com a sparsity. Nenhuma delas prova aceleração física de INT8 ou pruning; essa
+afirmação depende da bateria com profiler e kernels reais.
 
 ## Documentação LaTeX
 
@@ -65,54 +70,9 @@ scripts/                       build da documentação
 legado/                        protótipo inicial preservado
 ```
 
-## Rodar na máquina com a placa de vídeo
+## Executar e reproduzir
 
-As instruções abaixo assumem Windows, PowerShell, Git, Python 3.11, driver
-NVIDIA compatível e a RTX 4070 Ti Super disponível.
-
-### 1. Clonar e criar o ambiente
-
-```powershell
-git clone https://github.com/LucasCerqueiraGalvao/scientific-initiation.git
-cd scientific-initiation
-
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-```
-
-Instale primeiro a build CUDA fixada do PyTorch:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install `
-  torch==2.11.0+cu128 torchvision==0.26.0+cu128 torchaudio==2.11.0+cu128 `
-  --index-url https://download.pytorch.org/whl/cu128
-```
-
-Depois instale as dependências comuns e a comparação TensorFlow/Keras:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install `
-  -r fases\01_validacao_conceitual\requirements-comparacao.txt
-```
-
-TensorFlow/Keras é usado em CPU apenas para equivalência numérica. O benchmark
-de desempenho continua no caminho PyTorch/CUDA.
-
-### 2. Confirmar o ambiente antes da coleta
-
-```powershell
-nvidia-smi
-
-.\.venv\Scripts\python.exe -c `
-  "import torch; print('torch:', torch.__version__); print('cuda:', torch.version.cuda); print('available:', torch.cuda.is_available()); print('device:', torch.cuda.get_device_name(0))"
-
-.\.venv\Scripts\python.exe -m pip check
-```
-
-Não avance se `torch.cuda.is_available()` retornar `False`, se o nome da GPU não
-for o esperado ou se `pip check` apontar conflito.
-
-### 3. Executar a suíte completa
+Para testes locais:
 
 ```powershell
 $env:PYTHONPATH = "fases\01_validacao_conceitual"
@@ -120,14 +80,8 @@ $env:PYTHONPATH = "fases\01_validacao_conceitual"
   fases\01_validacao_conceitual\tests -q -W error
 ```
 
-No ambiente local sem NVIDIA, o resultado registrado é `45 passed, 1 skipped`.
-Na máquina CUDA, o teste protegido pelo portão da GPU deve executar em vez de
-ser ignorado. TensorFlow/Keras não pode ser `skip` em nenhum dos ambientes.
-
-### 4. Revalidar a atenção no clone novo
-
-Use uma pasta nova em `resultados/`, que é ignorada pelo Git durante testes
-locais:
+O teste de integração com download é deliberadamente ignorado até
+`RUN_HF_INTEGRATION=1` ser definido. Para revalidar os 18 casos conceituais:
 
 ```powershell
 .\.venv\Scripts\python.exe -m validacao.comparacao_frameworks `
@@ -135,56 +89,33 @@ locais:
   --seed 2026 --atol 1e-6 --rtol 1e-5
 ```
 
-Aceite somente se as nove linhas do CSV tiverem `passed=True`. Essa execução
+Aceite somente se as 18 linhas do CSV tiverem `passed=True`. Essa execução
 não mede velocidade entre frameworks.
 
-### 5. Executar o benchmark principal
-
-A configuração formal já está versionada em
-`fases/01_validacao_conceitual/experimentos/benchmark_principal_gpu.json`. Ela
-usa seed 42, lote 1, `L={64,128,256}`, `D={128,256,512}`, 20 warm-ups, 50
-medições e duas execuções independentes.
-
-O diretório de saída precisa ser novo e vazio:
+O ambiente físico é padronizado em Docker Linux. Com Docker Desktop usando WSL2
+e integração NVIDIA ativos, cada ação pode ser executada isoladamente:
 
 ```powershell
-$env:PYTHONPATH = "fases\01_validacao_conceitual"
-$evidenceDir = "resultados\benchmark_gpu_4070ti_super_YYYY-MM-DD"
-
-.\.venv\Scripts\python.exe -m validacao.benchmark_operacoes `
-  --config fases\01_validacao_conceitual\experimentos\benchmark_principal_gpu.json `
-  --output-dir $evidenceDir
-
-.\.venv\Scripts\python.exe -m validacao.analise_benchmark_operacoes `
-  --evidence-dir $evidenceDir
+.\scripts\run_benchmarks_docker.ps1 -Action Build
+.\scripts\run_benchmarks_docker.ps1 -Action Probe
+.\scripts\run_benchmarks_docker.ps1 -Action Prefetch
+.\scripts\run_benchmarks_docker.ps1 -Action Smoke
+.\scripts\run_benchmarks_docker.ps1 -Action Synthetic
+.\scripts\run_benchmarks_docker.ps1 -Action Hardware
+.\scripts\run_benchmarks_docker.ps1 -Action Models
 ```
 
-Não reutilize uma pasta anterior e não edite CSVs manualmente: a análise valida
-os checksums do manifesto e deve recusar evidência alterada.
+O cache pode ficar em outro disco, sem alterar o experimento:
 
-### 6. Conferir a coleta
-
-Antes de interpretar os números, confirme:
-
-- duas execuções completas para todas as combinações e cenários;
-- ausência de NaN e infinito;
-- `manifest.json` e hashes aprovados;
-- GPU, driver, CUDA, PyTorch, seed e configuração registrados;
-- comparação de cada técnica contra o baseline da mesma execução e shape;
-- relatório `relatorio_preliminar.tex`, CSVs consolidados e dois gráficos;
-- distinção entre memória medida, memória teórica, latência e FLOPs analíticos.
-
-### 7. Versionar a evidência aprovada
-
-Depois de revisar a coleta, copie a pasta de `resultados/` para:
-
-```text
-fases/01_validacao_conceitual/evidencias/benchmarks/
+```powershell
+.\scripts\run_benchmarks_docker.ps1 -Action Prefetch `
+  -CacheRoot "D:\Caches\scientific-initiation\huggingface"
 ```
 
-Use um nome imutável com data e hardware. Em seguida, atualize o relatório
-LaTeX, recompile o PDF, rode a suíte novamente e faça um commit que mantenha
-configuração, ambiente, CSVs, manifesto, análise e texto juntos.
+`-Action All` executa toda a sequência. Downloads ocorrem apenas no prefetch;
+testes e coletas posteriores usam rede desativada. Configuração, código,
+ambiente, CSVs e timings são hasheados, e `--resume` só aceita uma retomada
+quando esses contratos coincidem.
 
 ## Compilar o relatório
 
@@ -204,15 +135,11 @@ Arquivos auxiliares ficam em `tmp/pdfs/latex/` e não são versionados.
 
 ## Próximos passos
 
-1. executar o clone e a validação CUDA na máquina alvo;
-2. coletar a grade principal sem alterar a configuração versionada;
-3. auditar se pruning usa caminho esparso e se INT8 usa kernel/representação
-   realmente quantizados antes de falar em ganho de hardware;
-4. analisar separadamente projeção densa e self-attention por shape;
-5. incorporar tabelas, gráficos, dispersão entre execuções, limitações e ameaças
-   à validade no relatório LaTeX;
-6. publicar a evidência e o PDF atualizados no GitHub;
-7. somente depois avaliar uma demonstração opcional com modelo pré-treinado.
+1. restaurar o daemon Linux do Docker Desktop e passar o probe e o smoke;
+2. coletar a bateria física sem alterar os JSONs;
+3. avaliar os três OPT pré-treinados sem treinamento ou fine-tuning;
+4. revisar casos suportados, incompatíveis e falhos antes de interpretar médias;
+5. incorporar as evidências físicas e de modelos ao relatório.
 
 ## Cuidados de interpretação
 

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "experiment_id": "operacoes_principais_gpu_v1",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "environment": "environment.json",
+  "log": "execution.log",
+  "runs": [
+    {
+      "independent_run": 1,
+      "csv": "run_01.csv",
+      "csv_sha256": "4d2d6e0c44306526f2a88cd7a52476d65d00d4247aa1ab05f640604db54bef91",
+      "metadata": "run_01.metadata.json",
+      "metadata_sha256": "a1423be684aa66457d730d2ba654b8c94dead7404dc18333b92c27fe70a61d39",
+      "records": 54
+    },
+    {
+      "independent_run": 2,
+      "csv": "run_02.csv",
+      "csv_sha256": "445cebb2c70aaa6a96a2a0f6732f027d0afb4ab001324172c11e2361f3bb8d3d",
+      "metadata": "run_02.metadata.json",
+      "metadata_sha256": "8623388acb2ab1234152a41fd1aebc62d4e8f3689644ac9199e0c26f8763986f",
+      "records": 54
+    }
+  ],
+  "completed_at": "2026-08-29T17:39:01-03:00"
+}

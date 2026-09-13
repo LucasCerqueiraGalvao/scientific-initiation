@@ -1,0 +1,6 @@
+hypothesis,comparison,paired_cases,int8_lower_mse_rate,mse_difference_mean,mse_difference_ci95_low,mse_difference_ci95_high,conclusion
+H1_H5,int8_vs_pruning_10,390,1.0,0.0003120334830575939,0.000283533851797077,0.00034099806885787325,sustentada
+H1_H5,int8_vs_pruning_25,390,1.0,0.005457496890354588,0.004958666704281086,0.005962844771168595,sustentada
+H1_H5,int8_vs_pruning_50,390,1.0,0.04543528831123363,0.041388622492074895,0.04951225386680159,sustentada
+H1_H5,int8_vs_pruning_75,390,1.0,0.16546075171535543,0.15063596852495856,0.180265414820179,sustentada
+H6,mse_vs_sparsity,1560,,,,,sustentada

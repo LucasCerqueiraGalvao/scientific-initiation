@@ -300,7 +300,17 @@ def _git_metadata() -> dict[str, object]:
 
 
 def environment_metadata(device: torch.device) -> dict[str, object]:
-    package_names = ("numpy", "pandas", "scikit-learn", "matplotlib", "seaborn", "torchao")
+    package_names = (
+        "numpy",
+        "pandas",
+        "scikit-learn",
+        "matplotlib",
+        "seaborn",
+        "torchao",
+        "transformers",
+        "datasets",
+        "accelerate",
+    )
     versions: dict[str, str] = {}
     for name in package_names:
         try:
@@ -875,12 +885,33 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Executa benchmarks reproduziveis das operacoes isoladas.")
     parser.add_argument("--config", required=True, help="Configuracao JSON versionada.")
     parser.add_argument("--output-dir", required=True, help="Diretorio novo para evidencias.")
+    parser.add_argument("--resume", action="store_true", help="Retoma apenas experimentos schema v3 verificados.")
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
+        raw_config = json.loads(Path(args.config).read_text(encoding="utf-8"))
+        if isinstance(raw_config, dict) and raw_config.get("schema_version") == 3:
+            from validacao.benchmark_operacoes_v3 import (
+                config_v3_from_mapping,
+                execute_experiment_suite_v3,
+            )
+
+            config_v3 = config_v3_from_mapping(raw_config)
+            suite_v3 = execute_experiment_suite_v3(
+                config_v3,
+                args.output_dir,
+                resume=args.resume,
+            )
+            print(f"experimento concluido: {config_v3.experiment_id}")
+            for path in suite_v3.run_paths:
+                print(path)
+            print(suite_v3.manifest_path)
+            return 0
+        if args.resume:
+            raise ExperimentConfigurationError("--resume esta disponivel somente no schema v3")
         config = load_experiment_config(args.config)
         suite = execute_experiment_suite(config, args.output_dir)
     except (ExperimentConfigurationError, ExperimentEnvironmentError, FileExistsError) as exc:
