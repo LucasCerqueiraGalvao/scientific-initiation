@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "captured_at": "2026-09-14",
+  "source": "validacao.hardware_probe",
+  "artifacts": [
+    {
+      "path": "hardware_capabilities.json",
+      "sha256": "d1e2757ef053eb6fbe6ddfc01a01144f2b4759f7285f1ef29cfbe2f4a22b1ba7",
+      "bytes": 1168
+    },
+    {
+      "path": "hardware_operators.json",
+      "sha256": "ff10b9b3f52f7e6c063a381d2a920f5b17864c21fb8b6d73231150ce36b7153c",
+      "bytes": 4161
+    }
+  ]
+}

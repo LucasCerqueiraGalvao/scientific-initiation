@@ -12,7 +12,9 @@ COPY fases/01_validacao_conceitual/requirements-comparacao.txt /tmp/requirements
 COPY fases/01_validacao_conceitual/requirements-modelos.txt /tmp/requirements-modelos.txt
 COPY fases/01_validacao_conceitual/requirements-hardware.txt /tmp/requirements-hardware.txt
 
-RUN python -m pip install --no-cache-dir -r /tmp/requirements-hardware.txt
+RUN python -m pip install --break-system-packages --no-cache-dir -r /tmp/requirements-hardware.txt
+RUN python -m pip uninstall --break-system-packages --yes spin \
+    && python -m pip check
 
 ENV PYTHONPATH=/workspace/fases/01_validacao_conceitual
 

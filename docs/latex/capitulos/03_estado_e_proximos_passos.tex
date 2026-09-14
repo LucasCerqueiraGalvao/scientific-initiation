@@ -48,9 +48,9 @@ revisoes imutaveis. Cada variante parte novamente dos pesos originais e altera
 somente inferencia. A qualidade usa 64 janelas uniformes de 512 tokens do
 WikiText-2 versionado e 20 prompts locais; o desempenho separa prefill, TTFT e
 decode com KV cache. Os tres modelos e o dataset ja foram armazenados em cache e
-reabertos durante o prefetch, totalizando 6,63~GB para a futura coleta offline.
+reabertos durante o prefetch, totalizando 6,63~GB para a coleta offline.
 
-A suite local desta revisao aprovou 67 testes; o unico skip e a integracao
+A suite no container desta revisao aprovou 71 testes; o unico skip e a integracao
 externa com download, protegida por ativacao explicita.
 
 \section{Resultado da bateria sintetica v3}
@@ -81,10 +81,11 @@ Isso sustenta H1/H5 e H6 no recorte sintetico. Valores absolutos entre as duas
 operacoes nao devem ser comparados diretamente porque suas escalas de saida
 diferem.
 
-Nenhum cenario sustentou ganho de desempenho: todos os intervalos de speedup
-cruzaram $1{,}0$, nenhum kernel INT8 ou sparse foi usado, e o armazenamento
-permaneceu denso. Portanto, o resultado de qualidade e valido, mas a conclusao
-fisica continua em aberto.
+Nenhum cenario sintetico sustentou ganho de desempenho: todos os intervalos de
+speedup cruzaram $1{,}0$, nenhum kernel INT8 ou sparse foi usado, e o
+armazenamento permaneceu denso. Portanto, essa bateria responde fidelidade e
+robustez numerica, enquanto a bateria fisica apresentada a seguir responde
+representacao, memoria e latencia no hardware-alvo.
 
 \begin{figure}[H]
   \centering
@@ -92,11 +93,76 @@ fisica continua em aberto.
   \caption{Degradacao numerica por nivel de sparsity na bateria sintetica v3.}
 \end{figure}
 
+\section{Resultado da bateria fisica v3}
+
+O probe aprovou CUDA 12.8, compute capability 8.9, Triton, TorchAO INT8
+weight-only e dinamico, alem da conversao semiestruturada 2:4 por cuSPARSELt.
+Os traces registram o kernel packed para pesos INT8, GEMM S8 CUTLASS no caminho
+dinamico e sparse GEMM cuSPARSELt no caminho 2:4. A coleta completa produziu
+1.650 registros em estado \texttt{complete}, 990 pares e 82.500 amostras de
+latencia. Manifestos e artefatos da analise foram verificados por SHA-256.
+A evidencia esta em
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/hardware_nativo_v3_2026-09-14/}.
+
+\begin{center}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Operacao} & \textbf{Cenario} & \textbf{Speedup mediano} &
+\textbf{Memoria mediana} & \textbf{Armazenamento} \\
+\midrule
+Projecao densa & INT8 dinamico & 0,808 & 0,801 & 0,504 \\
+Projecao densa & INT8 weight-only & 0,136 & 0,801 & 0,504 \\
+Projecao densa & pruning 2:4 & 0,823 & 0,825 & 0,564 \\
+Multi-head attention & INT8 dinamico & 0,650 & 0,639 & 0,503 \\
+Multi-head attention & INT8 weight-only & 0,097 & 0,639 & 0,503 \\
+Multi-head attention & pruning 2:4 & 0,645 & 0,728 & 0,562 \\
+\bottomrule
+\end{tabular}%
+}
+\end{center}
+
+As razoes de memoria e armazenamento abaixo de 1 mostram reducao fisica, mas
+todos os intervalos bootstrap de speedup ficaram inteiramente abaixo de 1.
+Assim, a bateria sustenta reducao de armazenamento e de memoria de pico, mas
+contradiz ganho de latencia neste recorte. O weight-only continua classificado
+como representacao compacta de pesos; somente o INT8 dinamico confirma
+computacao inteira de ativacoes e pesos.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/hardware_nativo_v3_2026-09-14/analise_v3/speedup_ci95.png}
+  \caption{Speedup e intervalos bootstrap de 95\% na bateria fisica; todos os grupos ficaram abaixo do baseline.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/hardware_nativo_v3_2026-09-14/analise_v3/memoria_pico_ci95.png}
+  \caption{Memoria de pico relativa ao baseline, com intervalos bootstrap de 95\%.}
+\end{figure}
+
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.82\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/robustez_sintetica_v3_2026-09-13/analise_v3/speedup_ci95.png}
   \caption{Speedup mediano e intervalos bootstrap de 95\%; nenhum candidato satisfaz o criterio de ganho fisico.}
 \end{figure}
+
+\section{Respostas atuais as perguntas de pesquisa}
+
+\begin{longtable}{@{}lp{0.76\linewidth}@{}}
+\toprule
+\textbf{Pergunta} & \textbf{Resposta sustentada ate esta revisao} \\
+\midrule
+RQ1 & No recorte sintetico, INT8 fake preservou melhor a saida que pruning por magnitude em 100\% dos pares. \\
+RQ2 & INT8 fisico reduziu armazenamento para cerca de 50\% do baseline; 2:4, para cerca de 56\%. A memoria de pico mediana tambem caiu nos seis grupos. \\
+RQ3 & Nenhuma tecnica sustentou ganho de latencia nas operacoes isoladas; todos os intervalos de speedup ficaram abaixo de 1. \\
+RQ4 & A separacao por nivel foi confirmada: quantizacao fake responde fidelidade, weight-only responde pesos compactos e INT8 dinamico/2:4 exigem trace do kernel. \\
+RQ5 & As tendencias numericas principais persistiram entre cinco seeds, distribuicoes e perfis; os efeitos temporais sinteticos permaneceram mistos. \\
+RQ6 & A degradacao por pruning cresceu monotonicamente entre 10\%, 25\%, 50\% e 75\% de sparsity. \\
+RQ7 & Permanece aberta ate a avaliacao final dos tres modelos OPT pre-treinados. \\
+RQ8 & INT8 e 2:4 reduziram armazenamento e memoria com caminhos compativeis, mas nao reduziram latencia neste hardware e nestes shapes. \\
+\bottomrule
+\end{longtable}
 
 \section{Criterios pre-registrados}
 
@@ -111,19 +177,48 @@ para pruning sao limites operacionais deste estudo, nao regras universais.
 \section{Ordem restante de execucao}
 
 \begin{enumerate}
-  \item restaurar o daemon Linux do Docker Desktop;
-  \item construir a imagem Docker fixada e executar o probe de hardware;
-  \item passar o smoke CUDA de baseline, INT8 e 2:4;
-  \item executar e analisar a bateria fisica completa;
+  \item passar o smoke OPT final em uma janela sem concorrencia da GPU;
   \item avaliar os tres modelos OPT ja armazenados, sem rede durante a coleta;
   \item revisar casos suportados, incompativeis e falhos antes de resumir resultados;
-  \item incorporar as evidencias fisicas e de modelos ao PDF.
+  \item incorporar a evidencia final de modelos ao PDF.
 \end{enumerate}
 
-Nesta maquina, o Docker Desktop 4.63 encerra o backend antes de iniciar a
-distribuicao WSL2 por causa de um socket de inference local inacessivel. Nenhuma
-coleta fisica foi improvisada fora do ambiente pre-registrado: o bloqueio foi
-preservado e requer reparo ou reinicializacao do Docker antes do proximo portao.
+O Docker Desktop 4.63 voltou a operar com backend WSL2 apos a separacao segura
+dos sockets AF\_UNIX residuais. O disco de dados foi realocado para
+\path{D:\DockerDesktopData}; os containers existentes foram preservados e o
+disco do sistema deixou de receber as camadas grandes. A imagem cientifica foi
+construida com PyTorch 2.11, CUDA 12.8, TorchAO 0.17, Transformers 5.17,
+Datasets 5.0.1, Accelerate 1.15 e TensorFlow 2.21. Como a imagem-base adota PEP
+668, as dependencias sao instaladas com a autorizacao explicita apropriada a um
+container imutavel. O pacote auxiliar \texttt{spin}, que possuia requisito
+incompativel e nao participa do experimento, foi removido; \texttt{pip check}
+nao encontrou dependencias quebradas.
+
+O orquestrador possui agora uma acao de estado e uma sequencia exclusiva das
+etapas pendentes. O mesmo identificador produz diretorios previsiveis e a opcao
+de retomada e encaminhada aos runners. Antes de probe, smoke, hardware e OPT,
+cinco amostras precisam confirmar jogo fechado, uso medio da GPU abaixo de 10\%,
+ate 2.048~MiB de VRAM ocupada e temperatura abaixo de 65~graus Celsius. Para a
+leitura residual do WDDM, processos abaixo de 10\%, potencia ate 35~W e clock
+grafico ate 300~MHz podem confirmar ociosidade, sem relaxar memoria ou
+temperatura. Etapas completas sao ignoradas apenas quando manifestos, hashes e
+analises permanecem integros. Nenhum processo e encerrado automaticamente.
+
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=powershell]
+.\scripts\run_benchmarks_docker.ps1 -Action Remaining -CacheRoot "D:\Caches\scientific-initiation\huggingface" -RunId "final-20260913" -Resume
+\end{Verbatim}
+
+\begin{longtable}{@{}ll@{}}
+\toprule
+\textbf{Etapa restante} & \textbf{Tempo esperado} \\
+\midrule
+Build, probe e bateria fisica & concluido \\
+Testes e smoke OPT final & 15--40 min \\
+OPT-125M, OPT-350M e OPT-1.3B & 3--6 h \\
+Analise, PDF e publicacao & 30--90 min \\
+\textbf{Total restante} & \textbf{4--8 h} \\
+\bottomrule
+\end{longtable}
 
 \section{Riscos que permanecem abertos}
 

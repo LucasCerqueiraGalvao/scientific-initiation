@@ -130,6 +130,12 @@ Cenario & Descricao & Validade inicial \\
 \bottomrule
 \end{longtable}
 
+Na extensao v3, esses cenarios iniciais foram mantidos para fidelidade numerica
+e separados dos caminhos fisicos. TorchAO INT8 weight-only/dinamico e pruning
+semiestruturado 2:4 receberam validade de hardware somente apos o profiler
+confirmar os operadores esperados. A coleta reduziu armazenamento e memoria,
+mas nao sustentou ganho de latencia.
+
 
 
 \section{Metricas}

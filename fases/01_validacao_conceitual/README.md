@@ -18,9 +18,9 @@ Estão validados:
 
 O objeto principal agora é a self-attention multi-head completa, com projeção
 densa mantida como controle das operações Q/K/V/O. O benchmark GPU v1 está
-concluído e a bateria sintética v3 também. As coletas físicas e OPT ainda não
-autorizam conclusões antes da execução e da confirmação dos kernels pelo
-profiler.
+concluído, assim como as baterias sintética v3 e física. O estudo OPT ainda não
+autoriza conclusões finais antes da coleta completa em uma janela sem concorrência
+da GPU.
 
 ## Estrutura
 
@@ -63,7 +63,7 @@ $env:PYTHONPATH = "fases\01_validacao_conceitual"
   fases\01_validacao_conceitual\tests -q -W error
 ```
 
-Resultado local atual: `67 passed, 1 skipped`. O skip é a integração real com
+Resultado atual no contêiner: `71 passed, 1 skipped`. O skip é a integração real com
 Hugging Face, ativada explicitamente por `RUN_HF_INTEGRATION=1`; o smoke com um
 OPT minúsculo criado por configuração roda sem download.
 
@@ -94,6 +94,7 @@ Essa etapa valida correção, não velocidade.
 | `experimentos/robustez_sintetica_v3.json` | 13 perfis, 5 seeds e 6 cenários | Robustez numérica de dense e multi-head attention. |
 | `experimentos/smoke_hardware_v3.json` | Portão físico curto | Confirma compilação, INT8 e 2:4 antes da bateria. |
 | `experimentos/hardware_nativo_v3.json` | 1.650 casos físicos | Latência, memória e armazenamento com kernels compatíveis. |
+| `experimentos/modelos_opt_smoke.json` | OPT-125M reduzido | Portão funcional de qualidade, prefill, TTFT, decode e profiler. |
 | `experimentos/modelos_opt_v1.json` | OPT 125M, 350M e 1.3B | Qualidade e desempenho em pesos pré-treinados. |
 
 O schema v3 preserva leitura dos schemas v1/v2 e acrescenta perfis, múltiplas
@@ -113,24 +114,54 @@ Os speedups foram classificados como mistos: os intervalos de 95% cruzaram
 Isso é resultado esperado de uma bateria de fidelidade numérica, não evidência
 de aceleração INT8 ou sparse.
 
+## Resultado físico v3
+
+O probe, o smoke e a coleta completa estão em
+[`evidencias/benchmarks/hardware_probe_2026-09-14/`](evidencias/benchmarks/hardware_probe_2026-09-14/),
+[`evidencias/benchmarks/smoke_hardware_v3_2026-09-14/`](evidencias/benchmarks/smoke_hardware_v3_2026-09-14/)
+e [`evidencias/benchmarks/hardware_nativo_v3_2026-09-14/`](evidencias/benchmarks/hardware_nativo_v3_2026-09-14/).
+A bateria contém 1.650 registros completos, 990 pares e 82.500 medições. O
+profiler confirmou computação INT8 dinâmica e cuSPARSELt 2:4 nos cenários
+correspondentes. Mesmo assim, os seis grupos de operação e técnica ficaram mais
+lentos que o baseline compilado, com intervalos de 95% inteiramente abaixo de
+`1,0x`; portanto, o ganho de latência foi contradito neste recorte.
+
 ## Executar as novas baterias
 
-O diretório precisa ser novo e vazio:
+O Docker Desktop está funcional com backend WSL2, e seu disco de dados está em
+`D:\DockerDesktopData`. O cache dos três modelos OPT e do WikiText está em
+`D:\Caches\scientific-initiation\huggingface`. Para inspecionar o estado sem
+iniciar uma medição:
 
 ```powershell
-.\scripts\run_benchmarks_docker.ps1 -Action Build
-.\scripts\run_benchmarks_docker.ps1 -Action Probe
-.\scripts\run_benchmarks_docker.ps1 -Action Prefetch
-.\scripts\run_benchmarks_docker.ps1 -Action Smoke
-.\scripts\run_benchmarks_docker.ps1 -Action Synthetic
-.\scripts\run_benchmarks_docker.ps1 -Action Hardware
-.\scripts\run_benchmarks_docker.ps1 -Action Models
+$cacheRoot = "D:\Caches\scientific-initiation\huggingface"
+.\scripts\run_benchmarks_docker.ps1 -Action Status -CacheRoot $cacheRoot
+```
+
+A sequência abaixo executa somente as etapas pendentes e usa nomes estáveis para
+retomada:
+
+```powershell
+.\scripts\run_benchmarks_docker.ps1 `
+  -Action Remaining `
+  -CacheRoot $cacheRoot `
+  -RunId "final-20260913" `
+  -Resume
 ```
 
 Os runners escrevem checkpoints e manifestos. As análises geram intervalos
 bootstrap, curvas por sparsity, heatmaps, boxplots por seed, speedup, memória,
 armazenamento, Pareto e tabelas de casos suportados ou incompatíveis. Arquivos
 com checksum divergente são recusados.
+
+`Remaining` não repete a robustez sintética já concluída. Antes de cada etapa que
+usa a GPU, o orquestrador exige jogo fechado, utilização média de cinco amostras
+abaixo de 10%, até 2.048 MiB de VRAM ocupada e temperatura abaixo de 65 °C; o pico
+também fica registrado no diagnóstico. Em WDDM, uma leitura residual pode ser
+aceita somente com processos abaixo de 10%, potência até 35 W e clock até 300 MHz,
+sem relaxar VRAM ou temperatura. Etapas completas e íntegras são ignoradas em
+`-Resume`. Restam cerca de 4–8 horas: 15–40 minutos de suíte/smoke OPT, 3–6 horas
+de OPT e 30–90 minutos de consolidação.
 
 ## Documentos técnicos
 
@@ -146,8 +177,7 @@ com checksum divergente são recusados.
 
 ## Próximo portão
 
-1. iniciar o daemon do Docker Desktop com backend WSL2;
-2. construir a imagem fixada e passar o probe de hardware;
-3. executar o smoke, os caminhos físicos e os três modelos OPT;
-4. revisar hashes, pareamentos, intervalos e casos incompatíveis;
-5. atualizar o relatório com respostas a RQ1-RQ8 e versionar a evidência.
+1. executar o smoke OPT final quando o portão de GPU permitir;
+2. executar OPT-125M, OPT-350M e OPT-1.3B;
+3. revisar hashes, pareamentos, intervalos e casos incompatíveis;
+4. atualizar RQ1–RQ8, compilar o PDF e versionar a evidência OPT.

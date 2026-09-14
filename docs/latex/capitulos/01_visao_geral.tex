@@ -54,7 +54,8 @@ Diagnostico em CPU & \statusok & Smoke e duas versoes do ponto $L=64$, $D=128$, 
 Benchmark GPU v1 & \statusok & Duas execucoes, 108 registros, hashes, analise e graficos na RTX 4070 Ti SUPER. \\
 Infraestrutura v3 & \statusok & Cinco seeds, 13 perfis, timings brutos, bootstrap, Docker, TorchAO, 2:4 e runners OPT. \\
 Benchmark sintetico v3 & \statusok & 2.340 registros completos, 1.950 comparacoes pareadas e 117 mil amostras de latencia na GPU. \\
-Caminhos fisicos e OPT & \statuspending & Requerem restaurar o daemon Docker, passar probe e smoke e executar as baterias fixadas no container Linux. \\
+Caminhos fisicos & \statusok & Probe, smoke e 1.650 casos no container Linux; kernels INT8 e 2:4 confirmados pelo profiler. \\
+Modelos OPT & \statuspending & Smoke diagnostico aprovado; a coleta final dos tres modelos aguarda uma janela sem concorrencia da GPU. \\
 \bottomrule
 \end{longtable}
 
@@ -62,5 +63,7 @@ Caminhos fisicos e OPT & \statuspending & Requerem restaurar o daemon Docker, pa
 As implementacoes local, multi-head e com projecoes completas sao numericamente
 equivalentes as referencias escolhidas. A bateria v3 sustenta que a fidelidade
 do INT8 fake foi superior a do pruning nos casos sinteticos pareados, mas nao
-prova aceleracao fisica; essa conclusao depende de kernels confirmados.
+prova aceleracao fisica. Na bateria com kernels confirmados, INT8 e pruning 2:4
+reduziram armazenamento e memoria, mas nenhum dos seis grupos obteve speedup
+sustentado. A generalizacao para pesos pre-treinados ainda depende da coleta OPT.
 \end{icstatus}

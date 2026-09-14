@@ -1,0 +1,25 @@
+{
+  "schema_version": 3,
+  "experiment_id": "smoke_hardware_v3",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "bde8f1ef77ddeae71f517dc61a1d13be5ada878fbd6746bd1dfd17d1273423a2",
+  "code_sha256": "cf50252c5a1d5d6fa1b4579cde729c535352eba59cf48ff68622cae7c495d850",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "runs": [
+    {
+      "repeat_index": 1,
+      "csv": "run_01.csv",
+      "csv_sha256": "dc732a5178d15e82e846af1adb9d776a00a50f457cd667db273a0b5792ffa79f",
+      "timings": "run_01.timings.csv",
+      "timings_sha256": "df66f50dbc7ed20cab9493dd2304ef3ed2e1cd1668914018ce8dc870b60c3827",
+      "records": 10,
+      "timing_samples": 30
+    }
+  ],
+  "resumed_at": [],
+  "timings": "timings.csv",
+  "timings_sha256": "df66f50dbc7ed20cab9493dd2304ef3ed2e1cd1668914018ce8dc870b60c3827",
+  "completed_at": "2026-09-14T09:03:04+00:00"
+}

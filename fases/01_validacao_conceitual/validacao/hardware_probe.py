@@ -41,14 +41,19 @@ def _profile_operators(callable_module, inputs: torch.Tensor) -> list[str]:
 def detect_kernel_flags(operators: Sequence[str]) -> dict[str, bool]:
     text = " ".join(operators).casefold()
     return {
-        "int8": "int_mm" in text or "int8" in text,
+        "int8": (
+            "int_mm" in text
+            or "int8" in text
+            or "gemm_s8" in text
+            or ("cutlass" in text and "s8" in text)
+        ),
         "sparse_2to4": "cslt" in text or "cusparselt" in text or "sparse" in text,
     }
 
 
 def _linear(dtype: torch.dtype) -> tuple[nn.Module, torch.Tensor]:
     model = nn.Linear(2048, 2048, bias=False, device="cuda", dtype=dtype).eval()
-    inputs = torch.randn(16, 2048, device="cuda", dtype=dtype)
+    inputs = torch.randn(32, 2048, device="cuda", dtype=dtype)
     return model, inputs
 
 
@@ -92,7 +97,11 @@ def run_hardware_probe(
 
         weight_only, inputs = _linear(torch.bfloat16)
         reference = weight_only(inputs)
-        quantize_(weight_only, Int8WeightOnlyConfig(version=2, granularity=PerRow()), device=device)
+        quantize_(
+            weight_only,
+            Int8WeightOnlyConfig(version=2, granularity=PerRow(), set_inductor_config=False),
+            device=device,
+        )
         compiled_weight_only = torch.compile(weight_only, mode=compile_mode)
         for _ in range(3):
             weight_output = compiled_weight_only(inputs)
@@ -106,12 +115,18 @@ def run_hardware_probe(
                 if isinstance(child, nn.Linear)
             )
         )
-        checks["int8_weight_only_max_abs_error"] = float((reference - weight_output).abs().max())
+        checks["int8_weight_only_max_abs_error"] = float(
+            (reference - weight_output).abs().max().detach()
+        )
 
         dynamic, inputs = _linear(torch.bfloat16)
         quantize_(
             dynamic,
-            Int8DynamicActivationInt8WeightConfig(version=2, granularity=PerRow()),
+            Int8DynamicActivationInt8WeightConfig(
+                version=2,
+                granularity=PerRow(),
+                set_inductor_config=False,
+            ),
             device=device,
         )
         compiled_dynamic = torch.compile(dynamic, mode=compile_mode)
@@ -132,16 +147,23 @@ def run_hardware_probe(
     try:
         from torch.sparse import to_sparse_semi_structured
 
-        dense_weight = torch.randn(128, 128, device=device, dtype=torch.float16)
+        sparse_linear = nn.Linear(
+            128,
+            128,
+            bias=False,
+            device=device,
+            dtype=torch.float16,
+        ).eval()
+        dense_weight = sparse_linear.weight.detach()
         grouped = dense_weight.reshape(128, 32, 4)
         keep = grouped.abs().topk(2, dim=-1).indices
         mask = torch.zeros_like(grouped, dtype=torch.bool).scatter_(-1, keep, True)
         pruned_weight = (grouped * mask).reshape_as(dense_weight)
-        sparse_weight = to_sparse_semi_structured(pruned_weight)
-        inputs = torch.randn(16, 128, device=device, dtype=torch.float16)
-
-        def sparse_linear(value: torch.Tensor) -> torch.Tensor:
-            return torch.nn.functional.linear(value, sparse_weight)
+        sparse_linear.weight = nn.Parameter(
+            to_sparse_semi_structured(pruned_weight),
+            requires_grad=False,
+        )
+        inputs = torch.randn(32, 128, device=device, dtype=torch.float16)
 
         compiled_sparse = torch.compile(sparse_linear, mode=compile_mode)
         for _ in range(3):

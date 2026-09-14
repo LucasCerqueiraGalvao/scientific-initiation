@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "all_accelerators_passed": true,
+  "captured_at": "2026-09-14T08:37:42+00:00",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python_version": "3.12.3",
+  "torch_version": "2.11.0+cu128",
+  "torch_cuda_build": "12.8",
+  "required_checks": [
+    "cuda_available",
+    "gpu_name_matches",
+    "compute_capability_matches",
+    "triton"
+  ],
+  "accelerator_checks": [
+    "int8_weight_only",
+    "int8_weight_storage",
+    "int8_dynamic_forward",
+    "int8_dynamic_kernel",
+    "sparse_2to4_forward",
+    "sparse_2to4"
+  ],
+  "checks": {
+    "cuda_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+    "gpu_name_matches": true,
+    "compute_capability": "8.9",
+    "compute_capability_matches": true,
+    "temperature_c": 46,
+    "triton": true,
+    "triton_version": "3.6.0",
+    "int8_weight_only": true,
+    "int8_weight_storage": true,
+    "int8_weight_only_max_abs_error": 0.015625,
+    "int8_dynamic_forward": true,
+    "int8_dynamic_kernel": true,
+    "sparse_2to4_forward": true,
+    "sparse_2to4": true
+  },
+  "trace_file": "resultados/hardware_operators.json"
+}

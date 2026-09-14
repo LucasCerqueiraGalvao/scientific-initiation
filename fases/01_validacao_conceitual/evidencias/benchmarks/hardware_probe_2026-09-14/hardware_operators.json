@@ -1,0 +1,52 @@
+{
+  "int8_weight_only": [
+    "## Call CompiledFxGraph f3jnrcqley3rfj7oe7aichdbwftadjw6diuzythtpkckosfxsj3n ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "at::native::weight_int8pack_mm_kernel(float const*, signed char const*, float const*, float*, int, int, int)",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing",
+    "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<c10::BFloat16, 2, 1, 1>, at::native::Copy<c10::BFloat16, c10::BFloat16> >(at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<c10::BFloat16, 2, 1, 1>, at::native::Copy<c10::BFloat16, c10::BFloat16>)",
+    "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1> >(int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1>)",
+    "void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul> >(int, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul>)"
+  ],
+  "int8_dynamic": [
+    "## Call CompiledFxGraph f34lhz44i7vh5tq5r4xb2m5b7hte3yiujit3ppegyevymsxyujfn ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/1",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing",
+    "triton_poi_fused__to_copy_clamp_div_expand_maximum_minimum_mul_neg_sub_view_zeros_like_2",
+    "triton_red_fused__to_copy_add_amax_amin_clamp_div_maximum_minimum_mul_neg_reciprocal_zeros_like_0",
+    "triton_red_fused_sum_1",
+    "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<c10::BFloat16, 2, 1, 1>, at::native::Copy<c10::BFloat16, c10::BFloat16> >(at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<c10::BFloat16, 2, 1, 1>, at::native::Copy<c10::BFloat16, c10::BFloat16>)",
+    "void cutlass::Kernel2<cutlass_80_tensorop_i16832gemm_s8_128x64_128x3_tn_align16>(cutlass_80_tensorop_i16832gemm_s8_128x64_128x3_tn_align16::Params)"
+  ],
+  "sparse_2to4": [
+    "## Call CompiledFxGraph fy3mu4t2zwn26wj4af7ddwcz7sdfewfcvq6mnactlygraf43zhuy ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/2",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing",
+    "sm86_xmma_sparse_gemm_f16f16_f16f32_f32_tn_t_tilesize128x64x64_stage5_warpsize2x2x1_sptensor16x8x32_execute_kernel_cusparse",
+    "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<c10::Half, 2, 1, 1>, at::native::Copy<c10::Half, c10::Half> >(at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<c10::Half, 2, 1, 1>, at::native::Copy<c10::Half, c10::Half>)"
+  ]
+}

@@ -22,6 +22,7 @@ from validacao.attention import (
 from validacao.benchmark_operacoes import load_experiment_config
 from validacao.benchmark_operacoes_v3 import (
     BenchmarkProfileV3,
+    _module_storage_bytes,
     build_operation_inputs_v3,
     config_v3_from_mapping,
     exact_magnitude_prune,
@@ -75,6 +76,31 @@ def test_v3_config_rejects_non_divisible_heads_and_missing_baseline() -> None:
     data["scenarios"] = [scenario for scenario in data["scenarios"] if scenario["kind"] != "baseline"]
     with pytest.raises(ValueError, match="baseline"):
         config_v3_from_mapping(data)
+
+
+def test_module_storage_counts_sparse_components_instead_of_logical_shape() -> None:
+    crow = torch.tensor([0, 2, 4], dtype=torch.int64)
+    columns = torch.tensor([0, 1, 0, 1], dtype=torch.int64)
+    values = torch.tensor([1.0, 2.0, 3.0, 4.0], dtype=torch.float32)
+    with pytest.warns(UserWarning, match="Sparse CSR tensor support"):
+        with torch.sparse.check_sparse_tensor_invariants(False):
+            sparse = torch.sparse_csr_tensor(
+                crow,
+                columns,
+                values,
+                size=(2, 2),
+            )
+    module = torch.nn.Module()
+    module.register_parameter(
+        "weight",
+        torch.nn.Parameter(sparse, requires_grad=False),
+    )
+
+    expected = sum(
+        tensor.untyped_storage().nbytes()
+        for tensor in (crow, columns, values)
+    )
+    assert _module_storage_bytes(module) == expected
 
 
 def test_multi_head_operation_matches_numpy_manual_and_sdpa() -> None:

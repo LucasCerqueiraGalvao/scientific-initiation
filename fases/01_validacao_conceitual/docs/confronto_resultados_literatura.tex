@@ -14,7 +14,10 @@ Este documento responde uma pergunta central da validacao: os numeros obtidos no
 
 
 
-A resposta curta e: sim para os testes matematicos e de aderencia conceitual ja criados; ainda nao para alegacoes de desempenho de hardware, porque essas exigem benchmarks controlados e comparacao experimental equivalente.
+A resposta curta e: sim para os testes matematicos e de aderencia conceitual.
+A bateria fisica posterior confirmou representacoes e kernels INT8/2:4, mas
+contradisse ganho de latencia nas operacoes isoladas. A comparacao de desempenho
+com modelos completos e setups equivalentes aos artigos continua em andamento.
 
 
 
@@ -68,7 +71,7 @@ R2 & Definicao de coeficiente de determinacao e \texttt{sklearn.\allowbreak{}met
 Similaridade de cosseno & Manning, Raghavan e Schutze; scikit-learn pairwise metrics & Para \texttt{[1,1,0]} e \texttt{[1,0,0]}, \texttt{cos=1/\allowbreak{}sqrt(2)=0.\allowbreak{}70710678}. & \texttt{0.\allowbreak{}7071067811865475}. & Sim & Valida a metrica numerica. \\
 Pruning L1 PyTorch & Tutorial/API PyTorch pruning & Em matriz \texttt{2x4}, \texttt{amount=0.\allowbreak{}5} deve zerar 4 de 8 pesos e criar mascara. & \texttt{4/\allowbreak{}8} zeros, esparsidade \texttt{0.\allowbreak{}5}, mascara \texttt{weight\_\allowbreak{}mask} presente. & Sim, parcialmente & Valida pruning conceitual/algoritmico; nao valida ganho real de hardware porque o caminho continua denso. \\
 Quantizacao simetrica int8 manual & Literatura de compressao/quantizacao e definicao operacional & Para tensor de 5 valores \texttt{float32}, esperado reduzir de \texttt{20} bytes para \texttt{5} bytes em armazenamento int8; escala \texttt{2/\allowbreak{}127=0.\allowbreak{}015748}. & \texttt{dtype=torch.\allowbreak{}int8}, \texttt{5} bytes contra \texttt{20} bytes; erro maximo \texttt{0.\allowbreak{}007874}, dentro do limite de arredondamento da escala. & Sim & Valida quantizacao numerica; nao valida kernel de inferencia. \\
-torchao int8 weight-only v2 & Documentacao torchao \texttt{Int8WeightOnlyConfig} & Configuracao deve aplicar quantizacao simetrica int8 weight-only em camadas lineares. & Camada executa sem warnings, peso \texttt{Int8Tensor} possui \texttt{qdata} em \texttt{int8}. & Sim, parcialmente & Valida representacao e execucao basica; ainda falta provar kernel/caminho de hardware no recorte final. \\
+torchao int8 weight-only v2 & Documentacao torchao \texttt{Int8WeightOnlyConfig} & Configuracao deve aplicar quantizacao simetrica int8 weight-only em camadas lineares. & Peso \texttt{Int8Tensor} possui \texttt{qdata} em \texttt{int8}; o profiler fisico confirmou \texttt{weight\_int8pack\_mm}. & Sim & Valida representacao compacta e caminho weight-only; nao implica ativacoes inteiras. \\
 \bottomrule
 \end{longtable}
 \end{landscape}
@@ -82,11 +85,14 @@ torchao int8 weight-only v2 & Documentacao torchao \texttt{Int8WeightOnlyConfig}
 
 
 
-Ainda nao podemos dizer que os resultados batem com artigos de desempenho como compressao, ganho de latencia, throughput, uso de memoria em GPU ou speedup. Os testes atuais validam definicao e comportamento local, nao reproduzem o setup experimental de papers como os de compressao de Transformers ou KV cache.
+Ja podemos relatar compressao, memoria e latencia das operacoes isoladas na RTX
+4070 Ti SUPER. Ainda nao podemos afirmar reproducao de artigos de desempenho:
+os setups, modelos e kernels publicados nao sao necessariamente equivalentes, e
+a avaliacao final dos tres modelos OPT permanece pendente.
 
 
 
-Para validar desempenho contra literatura, o proximo protocolo precisa fixar:
+Para confrontar desempenho diretamente com a literatura, o protocolo precisa fixar:
 
 
 \begin{enumerate}
@@ -117,7 +123,11 @@ As ferramentas atuais sao adequadas para iniciar o trabalho porque passam na val
 
 
 
-Mas ainda nao sao suficientes para afirmar ganho de hardware. Essa conclusao so sera permitida quando pruning usar formato/kernel esparso exploravel, quando quantizacao usar representacao menor durante a execucao real, e quando os benchmarks forem comparaveis aos protocolos dos artigos escolhidos.
+Os caminhos fisicos agora sao suficientes para afirmar reducao de armazenamento
+e memoria no recorte medido, pois formato e kernels foram confirmados. Eles nao
+sustentam ganho de latencia: os seis grupos ficaram abaixo do baseline. Uma
+generalizacao para Transformers pre-treinados depende da coleta OPT e uma
+comparacao direta com artigos exige equivalencia de setup.
 
 
 

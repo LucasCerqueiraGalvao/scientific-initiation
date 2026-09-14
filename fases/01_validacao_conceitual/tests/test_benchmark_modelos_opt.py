@@ -20,8 +20,11 @@ from validacao.benchmark_modelos_opt import (
     apply_model_scenario,
     build_evaluation_subset,
     evaluate_quality,
+    failure_status,
     load_model_config,
     load_prompts,
+    model_weight_hash,
+    observed_model_sparsity,
     target_linears,
 )
 from validacao.analise_benchmark_modelos_opt import (
@@ -106,6 +109,40 @@ def test_opt_layer_selection_excludes_embeddings_and_lm_head() -> None:
     }
     assert len(blocks) == 6
     assert all("embed" not in name and not name.endswith("lm_head") for name, _ in blocks)
+
+
+def test_observed_model_sparsity_is_reported_only_for_pruning() -> None:
+    model = TinyOPTStructure()
+    with torch.no_grad():
+        model.model.decoder.layers[0].self_attn.q_proj.weight.zero_()
+
+    assert observed_model_sparsity(model, "attention_only", "baseline") == 0.0
+    assert observed_model_sparsity(
+        model,
+        "attention_only",
+        "quantization_int8_dynamic",
+    ) == 0.0
+    magnitude_sparsity = observed_model_sparsity(
+        model,
+        "attention_only",
+        "pruning_magnitude",
+    )
+    assert 0.0 < magnitude_sparsity < 1.0
+    assert observed_model_sparsity(
+        model,
+        "attention_only",
+        "pruning_2to4",
+    ) == 0.5
+
+
+def test_model_weight_hash_supports_bfloat16_bytes() -> None:
+    model = TinyOPTStructure().to(dtype=torch.bfloat16)
+
+    first = model_weight_hash(model)
+    second = model_weight_hash(model)
+
+    assert len(first) == 64
+    assert first == second
 
 
 def test_opt_pruning_changes_only_selected_layers_and_is_exact() -> None:
@@ -196,9 +233,18 @@ def test_tiny_opt_quality_smoke_without_download() -> None:
 
 def test_kernel_detection_requires_expected_operator_names() -> None:
     assert detect_kernel_flags(["aten::_int_mm"])["int8"]
+    assert detect_kernel_flags(
+        ["void cutlass::Kernel2<cutlass_80_tensorop_i16832gemm_s8_128x64_128x3_tn_align16>()"]
+    )["int8"]
     assert detect_kernel_flags(["triton_poi_fused_cslt_sparse_mm"])["sparse_2to4"]
     assert not detect_kernel_flags(["aten::mm"])["int8"]
     assert not detect_kernel_flags(["aten::linear"])["sparse_2to4"]
+
+
+def test_model_failure_status_distinguishes_incompatibility_from_failure() -> None:
+    assert failure_status(RuntimeError("operation is not supported")) == "unsupported"
+    assert failure_status(RuntimeError("self.size(0) needs to be greater than 16")) == "unsupported"
+    assert failure_status(AssertionError("unexpected compiler state")) == "failed"
 
 
 def _write_rows(path: Path, columns: list[str], rows: list[dict[str, object]]) -> None:
@@ -364,6 +410,9 @@ def test_model_analysis_checks_integrity_pairs_baselines_and_writes_manifest(tmp
     assert len(loaded.comparisons) == 1
     assert loaded.comparisons.iloc[0]["speedup_vs_baseline"] == pytest.approx(4 / 3)
     assert all(path.exists() and path.stat().st_size > 0 for path in outputs.paths())
+    with outputs.cases.open(encoding="utf-8", newline="") as handle:
+        evidence_types = {row["evidence_type"] for row in csv.DictReader(handle)}
+    assert evidence_types == {"quality", "performance"}
 
     with (evidence / "quality.csv").open("a", encoding="utf-8") as handle:
         handle.write("tampered\n")

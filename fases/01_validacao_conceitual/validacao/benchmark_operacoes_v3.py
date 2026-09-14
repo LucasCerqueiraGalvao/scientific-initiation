@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gc
 import hashlib
 import json
 import math
@@ -516,9 +517,13 @@ def _module_from_tensors(
         except ImportError as exc:
             raise RuntimeError("torchao indisponivel") from exc
         quantization_config = (
-            Int8WeightOnlyConfig(version=2, granularity=PerRow())
+            Int8WeightOnlyConfig(version=2, granularity=PerRow(), set_inductor_config=False)
             if scenario.kind == "quantization_int8_weight_only"
-            else Int8DynamicActivationInt8WeightConfig(version=2, granularity=PerRow())
+            else Int8DynamicActivationInt8WeightConfig(
+                version=2,
+                granularity=PerRow(),
+                set_inductor_config=False,
+            )
         )
         quantize_(module, quantization_config, device=device)
     elif scenario.kind == "pruning_2to4":
@@ -558,12 +563,34 @@ def _module_storage_bytes(module: nn.Module) -> int:
     total = 0
     seen: set[int] = set()
     for parameter in module.parameters():
-        candidates = []
+        candidates: list[torch.Tensor] = []
         if hasattr(parameter, "qdata"):
             candidates.append(parameter.qdata)
             if hasattr(parameter, "scale"):
                 candidates.append(parameter.scale)
+        elif type(parameter).__name__.startswith("SparseSemiStructuredTensor"):
+            candidates.extend((parameter.values(), parameter.indices()))
+        elif parameter.layout != torch.strided:
+            for accessor_name in (
+                "values",
+                "indices",
+                "crow_indices",
+                "col_indices",
+                "ccol_indices",
+                "row_indices",
+            ):
+                accessor = getattr(parameter, accessor_name, None)
+                if not callable(accessor):
+                    continue
+                try:
+                    component = accessor()
+                except RuntimeError:
+                    continue
+                if isinstance(component, torch.Tensor):
+                    candidates.append(component)
         else:
+            candidates.append(parameter)
+        if not candidates:
             candidates.append(parameter)
         for tensor in candidates:
             try:
@@ -602,7 +629,11 @@ def _module_weight_hash(module: nn.Module) -> str:
     return digest.hexdigest()
 
 
-def _observed_sparsity(module: nn.Module) -> float:
+def _observed_sparsity(module: nn.Module, scenario_kind: str) -> float:
+    if scenario_kind not in {"pruning_magnitude", "pruning_2to4"}:
+        return 0.0
+    if scenario_kind == "pruning_2to4":
+        return 0.5
     zeros = 0
     total = 0
     for child in module.modules():
@@ -801,9 +832,13 @@ def _run_repeat(
                         repeat_index,
                         baseline.identifier,
                     )
+                    module: nn.Module | None = None
+                    callable_module: Callable[[torch.Tensor], torch.Tensor] | None = None
+                    inputs: torch.Tensor | None = None
+                    output: torch.Tensor | None = None
                     try:
                         module, inputs = _module_from_tensors(operation, base_tensors, profile, scenario, device)
-                        callable_module: Callable[[torch.Tensor], torch.Tensor] = module
+                        callable_module = module
                         if config.execution.compile:
                             callable_module = torch.compile(module, mode=config.execution.compile_mode)
                             with torch.inference_mode():
@@ -869,7 +904,7 @@ def _run_repeat(
                                 else scenario.dtype
                             ),
                             activation_dtype=scenario.dtype,
-                            observed_sparsity=_observed_sparsity(module),
+                            observed_sparsity=_observed_sparsity(module, scenario.kind),
                             uses_sparse_kernel=uses_sparse,
                             uses_int8_kernel=uses_int8,
                             latency_ms_mean=float(np.mean(timings)),
@@ -908,9 +943,6 @@ def _run_repeat(
                                         "latency_ms": latency,
                                     }
                                 )
-                        del module, callable_module, inputs, output
-                        if device.type == "cuda":
-                            torch.cuda.empty_cache()
                     except Exception as exc:
                         record = empty_benchmark_record_v3(
                             experiment_id=config.experiment_id,
@@ -942,6 +974,16 @@ def _run_repeat(
                         if not validation.is_valid:
                             raise RuntimeError(f"registro de falha v3 invalido: {validation}") from exc
                         records.append(record)
+                    finally:
+                        module = None
+                        callable_module = None
+                        inputs = None
+                        output = None
+                        if config.execution.compile:
+                            torch.compiler.reset()
+                        gc.collect()
+                        if device.type == "cuda":
+                            torch.cuda.empty_cache()
     return records, timing_records
 
 

@@ -47,6 +47,7 @@ class AnalysisOutputsV3:
     timings: Path
     report: Path
     speedup_plot: Path
+    memory_plot: Path
     pruning_plot: Path
     seed_plot: Path
     heatmap_plot: Path
@@ -261,12 +262,20 @@ def summarize_comparisons_v3(
     groups = ["stage", "operation", "scenario", "comparison_group"]
     for group_key, group in comparisons.groupby(groups, sort=True, dropna=False):
         speedup = group["speedup_vs_baseline"].to_numpy(dtype=np.float64)
+        memory_ratio = group["peak_memory_ratio_vs_baseline"].to_numpy(dtype=np.float64)
         ci_low, ci_high = bootstrap_confidence_interval(
             speedup,
             resamples=resamples,
             seed=seed,
             statistic="median",
         )
+        memory_ci_low, memory_ci_high = bootstrap_confidence_interval(
+            memory_ratio,
+            resamples=resamples,
+            seed=seed,
+            statistic="median",
+        )
+        finite_memory = memory_ratio[np.isfinite(memory_ratio)]
         hardware_confirmed = bool(
             group["uses_sparse_kernel"].astype(str).str.lower().eq("true").all()
             or group["uses_int8_kernel"].astype(str).str.lower().eq("true").all()
@@ -289,6 +298,14 @@ def summarize_comparisons_v3(
                 "speedup_std": float(np.std(speedup, ddof=1)) if len(speedup) > 1 else 0.0,
                 "speedup_ci95_low": ci_low,
                 "speedup_ci95_high": ci_high,
+                "peak_memory_ratio_mean": (
+                    float(np.mean(finite_memory)) if finite_memory.size else math.nan
+                ),
+                "peak_memory_ratio_median": (
+                    float(np.median(finite_memory)) if finite_memory.size else math.nan
+                ),
+                "peak_memory_ratio_ci95_low": memory_ci_low,
+                "peak_memory_ratio_ci95_high": memory_ci_high,
                 "storage_ratio_mean": float(group["storage_ratio_vs_baseline"].mean()),
                 "mse_mean": float(group["mse"].mean()),
                 "mae_mean": float(group["mae"].mean()),
@@ -363,6 +380,29 @@ def _save_speedup(summary: pd.DataFrame, path: Path) -> None:
     axis.axhline(1.0, color="#9d3d38", linewidth=1)
     axis.axhline(1.05, color="#c58b2a", linewidth=1, linestyle="--")
     axis.set_ylabel("Speedup vs baseline")
+    axis.tick_params(axis="x", rotation=30)
+    fig.tight_layout()
+    fig.savefig(path, dpi=160)
+    plt.close(fig)
+
+
+def _save_memory(summary: pd.DataFrame, path: Path) -> None:
+    if summary.empty:
+        _save_empty_plot(path, "Memoria de pico", "Sem candidatos completos")
+        return
+    fig, axis = plt.subplots(figsize=(10, 5))
+    labels = [f"{row.operation}\n{row.scenario}" for row in summary.itertuples()]
+    values = summary["peak_memory_ratio_median"].to_numpy()
+    ci_low = summary["peak_memory_ratio_ci95_low"].to_numpy()
+    ci_high = summary["peak_memory_ratio_ci95_high"].to_numpy()
+    positions = np.arange(len(values))
+    axis.bar(positions, values, color="#4d6781")
+    axis.vlines(positions, ci_low, ci_high, color="#202020", linewidth=1)
+    axis.hlines(ci_low, positions - 0.08, positions + 0.08, color="#202020", linewidth=1)
+    axis.hlines(ci_high, positions - 0.08, positions + 0.08, color="#202020", linewidth=1)
+    axis.set_xticks(positions, labels)
+    axis.axhline(1.0, color="#9d3d38", linewidth=1)
+    axis.set_ylabel("Memoria de pico relativa ao baseline")
     axis.tick_params(axis="x", rotation=30)
     fig.tight_layout()
     fig.savefig(path, dpi=160)
@@ -449,6 +489,19 @@ def _save_empty_plot(path: Path, title: str, message: str) -> None:
     plt.close(fig)
 
 
+def _latex_escape(value: object) -> str:
+    text = str(value)
+    for source, replacement in (
+        ("\\", r"\textbackslash{}"),
+        ("_", r"\_"),
+        ("%", r"\%"),
+        ("&", r"\&"),
+        ("#", r"\#"),
+    ):
+        text = text.replace(source, replacement)
+    return text
+
+
 def _build_report(
     loaded: LoadedExperimentV3,
     summary: pd.DataFrame,
@@ -458,7 +511,9 @@ def _build_report(
     mixed = int((summary["performance_conclusion"] == "mista").sum()) if not summary.empty else 0
     contradicted = int((summary["performance_conclusion"] == "contradita").sum()) if not summary.empty else 0
     hypothesis_lines = "\n".join(
-        rf"\item {row.hypothesis}: {row.comparison} -- \texttt{{{row.conclusion}}}."
+        rf"\item \texttt{{{_latex_escape(row.hypothesis)}}}: "
+        rf"\texttt{{{_latex_escape(row.comparison)}}} -- "
+        rf"\texttt{{{_latex_escape(row.conclusion)}}}."
         for row in hypotheses.itertuples()
     ) or r"\item Nenhuma hipotese comparativa aplicavel a esta configuracao."
     return "\n".join(
@@ -494,6 +549,7 @@ def write_analysis_v3(evidence_dir: str | Path, output_dir: str | Path | None = 
     timings_path = output / "timings.csv"
     report_path = output / "relatorio_v3.tex"
     speedup_path = output / "speedup_ci95.png"
+    memory_path = output / "memoria_pico_ci95.png"
     pruning_path = output / "qualidade_por_sparsity.png"
     seed_path = output / "dispersao_entre_seeds.png"
     heatmap_path = output / "heatmap_sequencia_dimensao.png"
@@ -520,6 +576,7 @@ def write_analysis_v3(evidence_dir: str | Path, output_dir: str | Path | None = 
     loaded.timings.to_csv(timings_path, index=False, lineterminator="\n")
     report_path.write_text(_build_report(loaded, summary, hypotheses), encoding="utf-8")
     _save_speedup(summary, speedup_path)
+    _save_memory(summary, memory_path)
     _save_pruning(loaded.comparisons, pruning_path)
     _save_seed_boxplot(loaded.comparisons, seed_path)
     _save_heatmap(loaded.comparisons, heatmap_path)
@@ -527,7 +584,8 @@ def write_analysis_v3(evidence_dir: str | Path, output_dir: str | Path | None = 
 
     artifacts = [
         results_path, comparisons_path, summary_path, hypotheses_path, unsupported_path,
-        timings_path, report_path, speedup_path, pruning_path, seed_path, heatmap_path, pareto_path,
+        timings_path, report_path, speedup_path, memory_path, pruning_path, seed_path,
+        heatmap_path, pareto_path,
     ]
     manifest = {
         "schema_version": 1,
@@ -548,6 +606,7 @@ def write_analysis_v3(evidence_dir: str | Path, output_dir: str | Path | None = 
         timings=timings_path,
         report=report_path,
         speedup_plot=speedup_path,
+        memory_plot=memory_path,
         pruning_plot=pruning_path,
         seed_plot=seed_path,
         heatmap_plot=heatmap_path,

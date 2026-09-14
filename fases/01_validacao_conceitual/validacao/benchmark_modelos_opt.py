@@ -17,13 +17,19 @@ from typing import Callable, Iterable, Mapping, Sequence
 import numpy as np
 import torch
 from torch import nn
+from torch.profiler import ProfilerActivity, profile
 
 from validacao.benchmark_operacoes import (
     ExperimentConfigurationError,
     ExperimentEnvironmentError,
     environment_metadata,
 )
-from validacao.benchmark_operacoes_v3 import exact_magnitude_prune, magnitude_prune_2to4
+from validacao.benchmark_operacoes_v3 import (
+    _module_storage_bytes,
+    exact_magnitude_prune,
+    magnitude_prune_2to4,
+)
+from validacao.hardware_probe import detect_kernel_flags
 from validacao.protocolo import (
     CSV_COLUMNS_V3,
     empty_benchmark_record_v3,
@@ -352,9 +358,13 @@ def apply_model_scenario(model: nn.Module, scenario: ModelScenario) -> int:
         from torchao.quantization.granularity import PerRow
 
         quantization_config = (
-            Int8WeightOnlyConfig(version=2, granularity=PerRow())
+            Int8WeightOnlyConfig(version=2, granularity=PerRow(), set_inductor_config=False)
             if scenario.kind == "quantization_int8_weight_only"
-            else Int8DynamicActivationInt8WeightConfig(version=2, granularity=PerRow())
+            else Int8DynamicActivationInt8WeightConfig(
+                version=2,
+                granularity=PerRow(),
+                set_inductor_config=False,
+            )
         )
         target_names = {name for name, _ in targets}
         quantize_(
@@ -373,28 +383,14 @@ def apply_model_scenario(model: nn.Module, scenario: ModelScenario) -> int:
 
 
 def model_storage_bytes(model: nn.Module) -> int:
-    total = 0
-    seen: set[int] = set()
-    for parameter in model.parameters():
-        tensors = [parameter]
-        if hasattr(parameter, "qdata"):
-            tensors = [parameter.qdata]
-            if hasattr(parameter, "scale"):
-                tensors.append(parameter.scale)
-        for tensor in tensors:
-            try:
-                pointer = int(tensor.untyped_storage().data_ptr())
-                size = int(tensor.untyped_storage().nbytes())
-            except (AttributeError, RuntimeError):
-                pointer = id(tensor)
-                size = int(tensor.numel() * tensor.element_size())
-            if pointer not in seen:
-                seen.add(pointer)
-                total += size
-    return total
+    return _module_storage_bytes(model)
 
 
-def observed_model_sparsity(model: nn.Module, scope: str) -> float:
+def observed_model_sparsity(model: nn.Module, scope: str, scenario_kind: str) -> float:
+    if scenario_kind not in {"pruning_magnitude", "pruning_2to4"}:
+        return 0.0
+    if scenario_kind == "pruning_2to4":
+        return 0.5
     zeros = 0
     count = 0
     for _, module in target_linears(model, scope):
@@ -427,7 +423,7 @@ def model_weight_hash(model: nn.Module) -> str:
             except RuntimeError:
                 digest.update(repr(parameter).encode("utf-8"))
                 continue
-        digest.update(value.numpy().tobytes())
+        digest.update(value.view(torch.uint8).numpy().tobytes())
     return digest.hexdigest()
 
 
@@ -616,42 +612,133 @@ def _measure_call(callable_fn: Callable[[], object], warmups: int, iterations: i
     return timings, output
 
 
-def _decode_once(
+def profile_model_operators(
+    model: nn.Module,
+    token_source: Sequence[int],
+    seq_len: int = 128,
+    use_cache: bool = True,
+) -> list[str]:
+    effective_length = min(seq_len, len(token_source))
+    source = tuple(token_source[:effective_length])
+    if not source:
+        raise ValueError("tokens insuficientes para o profiler do modelo")
+    device = next(model.parameters()).device
+    input_ids = torch.tensor(source, dtype=torch.long, device=device).unsqueeze(0)
+    with torch.inference_mode():
+        for _ in range(2):
+            model(input_ids=input_ids, use_cache=use_cache)
+        torch.cuda.synchronize(device)
+        with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as captured:
+            model(input_ids=input_ids, use_cache=use_cache)
+            torch.cuda.synchronize(device)
+    return sorted({item.key for item in captured.key_averages()})
+
+
+def profile_model_decode_operators(
+    model: nn.Module,
+    token_source: Sequence[int],
+    seq_len: int = 128,
+    use_cache: bool = True,
+) -> list[str]:
+    effective_length = min(seq_len, len(token_source))
+    source = tuple(token_source[:effective_length])
+    if not source:
+        raise ValueError("tokens insuficientes para o profiler de decode")
+    device = next(model.parameters()).device
+    input_ids = torch.tensor(source, dtype=torch.long, device=device).unsqueeze(0)
+    with torch.inference_mode():
+        for _ in range(2):
+            token, cache = _prepare_decode(model, input_ids, use_cache)
+            _decode_after_prefill(model, input_ids, token, cache, 1, use_cache)
+        token, cache = _prepare_decode(model, input_ids, use_cache)
+        torch.cuda.synchronize(device)
+        with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as captured:
+            _decode_after_prefill(model, input_ids, token, cache, 1, use_cache)
+            torch.cuda.synchronize(device)
+    return sorted({item.key for item in captured.key_averages()})
+
+
+def _prepare_decode(model, input_ids: torch.Tensor, use_cache: bool):
+    with torch.inference_mode():
+        output = model(input_ids=input_ids, use_cache=use_cache)
+    token = output.logits[:, -1, :].argmax(dim=-1, keepdim=True)
+    cache = output.past_key_values if use_cache else None
+    return token, cache
+
+
+def _decode_after_prefill(
+    model,
+    input_ids: torch.Tensor,
+    token: torch.Tensor,
+    cache,
+    decode_steps: int,
+    use_cache: bool,
+) -> torch.Tensor:
+    running_input = input_ids
+    with torch.inference_mode():
+        for _ in range(decode_steps):
+            if not use_cache:
+                running_input = torch.cat((running_input, token), dim=1)
+            output = model(
+                input_ids=token if use_cache else running_input,
+                past_key_values=cache,
+                use_cache=use_cache,
+            )
+            token = output.logits[:, -1, :].argmax(dim=-1, keepdim=True)
+            cache = output.past_key_values if use_cache else None
+    return token.detach().cpu()
+
+
+def _measure_decode(
     model,
     input_ids: torch.Tensor,
     decode_tokens: int,
     use_cache: bool,
-) -> tuple[float, float, torch.Tensor]:
-    started = torch.cuda.Event(enable_timing=True)
-    first_done = torch.cuda.Event(enable_timing=True)
-    end = torch.cuda.Event(enable_timing=True)
-    started.record()
-    output = model(input_ids=input_ids, use_cache=use_cache)
-    first_done.record()
-    token = output.logits[:, -1, :].argmax(dim=-1, keepdim=True)
-    cache = output.past_key_values if use_cache else None
-    running_input = input_ids
-    for _ in range(decode_tokens - 1):
-        if not use_cache:
-            running_input = torch.cat((running_input, token), dim=1)
-        output = model(
-            input_ids=token if use_cache else running_input,
-            past_key_values=cache,
-            use_cache=use_cache,
+    warmups: int,
+    iterations: int,
+) -> tuple[list[float], torch.Tensor]:
+    decode_steps = decode_tokens - 1
+    if decode_steps < 1:
+        raise ValueError("decode requer pelo menos dois tokens gerados")
+    for _ in range(warmups):
+        token, cache = _prepare_decode(model, input_ids, use_cache)
+        _decode_after_prefill(model, input_ids, token, cache, decode_steps, use_cache)
+    torch.cuda.synchronize()
+    timings: list[float] = []
+    generated_token = torch.empty(0, dtype=torch.long)
+    for _ in range(iterations):
+        token, cache = _prepare_decode(model, input_ids, use_cache)
+        started = torch.cuda.Event(enable_timing=True)
+        ended = torch.cuda.Event(enable_timing=True)
+        started.record()
+        generated_token = _decode_after_prefill(
+            model,
+            input_ids,
+            token,
+            cache,
+            decode_steps,
+            use_cache,
         )
-        token = output.logits[:, -1, :].argmax(dim=-1, keepdim=True)
-        cache = output.past_key_values if use_cache else None
-    end.record()
-    end.synchronize()
-    return (
-        float(started.elapsed_time(first_done)),
-        float(first_done.elapsed_time(end)) / max(decode_tokens - 1, 1),
-        token.detach().cpu(),
-    )
+        ended.record()
+        ended.synchronize()
+        timings.append(float(started.elapsed_time(ended)) / decode_steps)
+    return timings, generated_token
 
 
 def _case_id(*parts: object) -> str:
     return hashlib.sha256("|".join(str(part) for part in parts).encode("utf-8")).hexdigest()[:20]
+
+
+def failure_status(exc: Exception) -> str:
+    message = f"{type(exc).__name__}: {exc}".casefold()
+    unsupported_markers = (
+        "not supported",
+        "unsupported",
+        "not implemented",
+        "notimplementederror",
+        "needs to be greater than",
+    )
+    return "unsupported" if any(marker in message for marker in unsupported_markers) else "failed"
 
 
 def benchmark_model_performance(
@@ -666,8 +753,9 @@ def benchmark_model_performance(
     weight_hash: str,
     hidden_size: int,
     num_attention_heads: int,
-    uses_sparse_kernel: bool,
-    uses_int8_kernel: bool,
+    uses_sparse_kernel: Mapping[str, bool],
+    uses_int8_kernel: Mapping[str, bool],
+    profiler_trace: Mapping[str, str],
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     records: list[dict[str, object]] = []
     timing_rows: list[dict[str, object]] = []
@@ -676,6 +764,132 @@ def benchmark_model_performance(
         item for item in config.scenarios
         if item.comparison_group == scenario.comparison_group and item.kind == "baseline"
     )
+
+    def make_record(
+        *,
+        operation: str,
+        batch_size: int,
+        seq_len: int,
+        repeat_index: int,
+        status: str,
+        skip_reason: str = "",
+        timings: Sequence[float] = (),
+        throughput_units: int = 0,
+        output_sha256: str = "",
+    ) -> dict[str, object]:
+        profile_prefix = "prefill" if operation == "model_prefill" else "decode"
+        case_id = _case_id(
+            config.experiment_id,
+            model_spec.identifier,
+            scenario.identifier,
+            operation,
+            batch_size,
+            seq_len,
+            repeat_index,
+        )
+        baseline_case = _case_id(
+            config.experiment_id,
+            model_spec.identifier,
+            baseline_scenario.identifier,
+            operation,
+            batch_size,
+            seq_len,
+            repeat_index,
+        )
+        common = dict(
+            experiment_id=config.experiment_id,
+            stage="pretrained_hardware",
+            case_id=case_id,
+            baseline_case_id=baseline_case,
+            data_seed=2026,
+            repeat_index=repeat_index,
+            profile_id=f"{profile_prefix}_b{batch_size}_l{seq_len}",
+            model_id=model_spec.identifier,
+            model_revision=model_spec.revision,
+            operation=operation,
+            optimization_scope=scenario.optimization_scope,
+            scenario=scenario.identifier,
+            comparison_group=scenario.comparison_group,
+            status=status,
+            skip_reason=skip_reason,
+            batch_size=batch_size,
+            seq_len=seq_len,
+            d_model=hidden_size,
+            num_heads=num_attention_heads,
+            dtype=scenario.dtype,
+            backend="transformers_pytorch_cuda",
+            compile_mode=config.execution.compile_mode if config.execution.compile else "eager",
+            input_distribution="tokens",
+            pruning_method="magnitude_2to4" if scenario.kind == "pruning_2to4" else "none",
+            pruning_sparsity=scenario.pruning_sparsity,
+            quantization_method=scenario.kind if "quantization" in scenario.kind else "none",
+            weight_storage_dtype="int8" if "int8" in scenario.kind else scenario.dtype,
+            activation_dtype=scenario.dtype,
+            observed_sparsity=scenario.pruning_sparsity,
+            uses_sparse_kernel=uses_sparse_kernel.get(operation, False),
+            uses_int8_kernel=uses_int8_kernel.get(operation, False),
+        )
+        if status != "complete":
+            return empty_benchmark_record_v3(**common)
+        mean_latency = float(np.mean(timings))
+        source = list(token_source[:seq_len])
+        return empty_benchmark_record_v3(
+            **common,
+            latency_ms_mean=mean_latency,
+            latency_ms_p50=float(np.percentile(timings, 50)),
+            latency_ms_p95=float(np.percentile(timings, 95)),
+            throughput_tokens_s=throughput_units / (mean_latency / 1000.0),
+            peak_memory_allocated_bytes=int(torch.cuda.max_memory_allocated(device)),
+            peak_memory_reserved_bytes=int(torch.cuda.max_memory_reserved(device)),
+            parameter_storage_bytes=storage_bytes,
+            theoretical_flops=parameter_count,
+            mse=quality_metrics["logits_mse"],
+            mae=0.0,
+            r2=0.0,
+            cosine_similarity=quality_metrics["logits_cosine"],
+            kl_divergence=quality_metrics["logits_kl_divergence"],
+            top1_agreement=quality_metrics["top1_agreement"],
+            loss=quality_metrics["mean_loss"],
+            perplexity=quality_metrics["perplexity"],
+            input_sha256=_hash_values(source),
+            weight_sha256=weight_hash,
+            output_sha256=output_sha256,
+            profiler_trace=profiler_trace[operation],
+        )
+
+    def append_timings(record: Mapping[str, object], values: Sequence[float]) -> None:
+        for iteration, latency in enumerate(values, start=1):
+            timing_rows.append(
+                {
+                    "case_id": record["case_id"],
+                    "model_id": model_spec.identifier,
+                    "scenario": scenario.identifier,
+                    "operation": record["operation"],
+                    "repeat_index": record["repeat_index"],
+                    "iteration": iteration,
+                    "latency_ms": latency,
+                }
+            )
+
+    def append_failure(
+        operation: str,
+        batch_size: int,
+        seq_len: int,
+        repeat_index: int,
+        exc: Exception,
+    ) -> None:
+        records.append(
+            make_record(
+                operation=operation,
+                batch_size=batch_size,
+                seq_len=seq_len,
+                repeat_index=repeat_index,
+                status=failure_status(exc),
+                skip_reason=f"{type(exc).__name__}: {exc}",
+            )
+        )
+
+    decode_jobs: list[tuple[int, int, int]] = []
     for repeat_index in range(1, config.performance.repetitions + 1):
         for batch_size in config.performance.batch_sizes:
             for seq_len in config.performance.prefill_lengths:
@@ -686,173 +900,94 @@ def benchmark_model_performance(
                     with torch.inference_mode():
                         return model(input_ids=input_ids, use_cache=config.performance.use_kv_cache)
 
-                torch.cuda.reset_peak_memory_stats(device)
-                timings, output = _measure_call(
-                    prefill,
-                    config.performance.warmup_iterations,
-                    config.performance.measure_iterations,
-                )
-                output_hash = hashlib.sha256(
-                    output.logits[:, -1, :].detach().float().cpu().contiguous().numpy().tobytes()
-                ).hexdigest()
-                del output
-                case_id = _case_id(config.experiment_id, model_spec.identifier, scenario.identifier, "prefill", batch_size, seq_len, repeat_index)
-                baseline_case = _case_id(config.experiment_id, model_spec.identifier, baseline_scenario.identifier, "prefill", batch_size, seq_len, repeat_index)
-                mean_latency = float(np.mean(timings))
-                records.append(
-                    empty_benchmark_record_v3(
-                        experiment_id=config.experiment_id,
-                        stage="pretrained_hardware",
-                        case_id=case_id,
-                        baseline_case_id=baseline_case,
-                        data_seed=2026,
-                        repeat_index=repeat_index,
-                        profile_id=f"prefill_b{batch_size}_l{seq_len}",
-                        model_id=model_spec.identifier,
-                        model_revision=model_spec.revision,
+                try:
+                    torch.cuda.reset_peak_memory_stats(device)
+                    timings, output = _measure_call(
+                        prefill,
+                        config.performance.warmup_iterations,
+                        config.performance.measure_iterations,
+                    )
+                    output_hash = hashlib.sha256(
+                        output.logits[:, -1, :].detach().float().cpu().contiguous().numpy().tobytes()
+                    ).hexdigest()
+                    del output
+                    record = make_record(
                         operation="model_prefill",
-                        optimization_scope=scenario.optimization_scope,
-                        scenario=scenario.identifier,
-                        comparison_group=scenario.comparison_group,
-                        status="complete",
                         batch_size=batch_size,
                         seq_len=seq_len,
-                        d_model=hidden_size,
-                        num_heads=num_attention_heads,
-                        dtype=scenario.dtype,
-                        backend="transformers_pytorch_cuda",
-                        compile_mode=config.execution.compile_mode if config.execution.compile else "eager",
-                        pruning_method="magnitude_2to4" if scenario.kind == "pruning_2to4" else "none",
-                        pruning_sparsity=scenario.pruning_sparsity,
-                        quantization_method=scenario.kind if "quantization" in scenario.kind else "none",
-                        weight_storage_dtype="int8" if "int8" in scenario.kind else scenario.dtype,
-                        activation_dtype=scenario.dtype,
-                        observed_sparsity=scenario.pruning_sparsity,
-                        uses_sparse_kernel=uses_sparse_kernel,
-                        uses_int8_kernel=uses_int8_kernel,
-                        latency_ms_mean=mean_latency,
-                        latency_ms_p50=float(np.percentile(timings, 50)),
-                        latency_ms_p95=float(np.percentile(timings, 95)),
-                        throughput_tokens_s=batch_size * seq_len / (mean_latency / 1000.0),
-                        peak_memory_allocated_bytes=int(torch.cuda.max_memory_allocated(device)),
-                        peak_memory_reserved_bytes=int(torch.cuda.max_memory_reserved(device)),
-                        parameter_storage_bytes=storage_bytes,
-                        theoretical_flops=parameter_count,
-                        mse=quality_metrics["logits_mse"],
-                        mae=0.0,
-                        r2=0.0,
-                        cosine_similarity=quality_metrics["logits_cosine"],
-                        kl_divergence=quality_metrics["logits_kl_divergence"],
-                        top1_agreement=quality_metrics["top1_agreement"],
-                        loss=quality_metrics["mean_loss"],
-                        perplexity=quality_metrics["perplexity"],
-                        input_sha256=_hash_values(source),
-                        weight_sha256=weight_hash,
+                        repeat_index=repeat_index,
+                        status="complete",
+                        timings=timings,
+                        throughput_units=batch_size * seq_len,
                         output_sha256=output_hash,
-                        profiler_trace="hardware_operators.json",
                     )
-                )
-                for iteration, latency in enumerate(timings, start=1):
-                    timing_rows.append(
-                        {
-                            "case_id": case_id,
-                            "model_id": model_spec.identifier,
-                            "scenario": scenario.identifier,
-                            "operation": "model_prefill",
-                            "repeat_index": repeat_index,
-                            "iteration": iteration,
-                            "latency_ms": latency,
-                        }
-                    )
+                    records.append(record)
+                    append_timings(record, timings)
+                except Exception as exc:
+                    append_failure("model_prefill", batch_size, seq_len, repeat_index, exc)
             for prompt_len in config.performance.decode_prompt_lengths:
                 source = list(token_source[:prompt_len])
                 input_ids = torch.tensor(source, dtype=torch.long, device=device).unsqueeze(0).repeat(batch_size, 1)
-                for _ in range(config.performance.warmup_iterations):
-                    _decode_once(model, input_ids, config.performance.decode_tokens, config.performance.use_kv_cache)
-                ttft_values: list[float] = []
-                decode_values: list[float] = []
-                generated_token = torch.empty(0, dtype=torch.long)
-                torch.cuda.reset_peak_memory_stats(device)
-                for _ in range(config.performance.measure_iterations):
-                    ttft, decode, generated_token = _decode_once(
-                        model,
-                        input_ids,
-                        config.performance.decode_tokens,
-                        config.performance.use_kv_cache,
+                def ttft():
+                    with torch.inference_mode():
+                        return model(input_ids=input_ids, use_cache=config.performance.use_kv_cache)
+
+                try:
+                    torch.cuda.reset_peak_memory_stats(device)
+                    ttft_values, output = _measure_call(
+                        ttft,
+                        config.performance.warmup_iterations,
+                        config.performance.measure_iterations,
                     )
-                    ttft_values.append(ttft)
-                    decode_values.append(decode)
-                for operation, values in (("model_ttft", ttft_values), ("model_decode", decode_values)):
-                    case_id = _case_id(config.experiment_id, model_spec.identifier, scenario.identifier, operation, batch_size, prompt_len, repeat_index)
-                    baseline_case = _case_id(config.experiment_id, model_spec.identifier, baseline_scenario.identifier, operation, batch_size, prompt_len, repeat_index)
-                    mean_latency = float(np.mean(values))
-                    records.append(
-                        empty_benchmark_record_v3(
-                            experiment_id=config.experiment_id,
-                            stage="pretrained_hardware",
-                            case_id=case_id,
-                            baseline_case_id=baseline_case,
-                            data_seed=2026,
-                            repeat_index=repeat_index,
-                            profile_id=f"decode_b{batch_size}_l{prompt_len}",
-                            model_id=model_spec.identifier,
-                            model_revision=model_spec.revision,
-                            operation=operation,
-                            optimization_scope=scenario.optimization_scope,
-                            scenario=scenario.identifier,
-                            comparison_group=scenario.comparison_group,
-                            status="complete",
-                            batch_size=batch_size,
-                            seq_len=prompt_len,
-                            d_model=hidden_size,
-                            num_heads=num_attention_heads,
-                            dtype=scenario.dtype,
-                            backend="transformers_pytorch_cuda",
-                            compile_mode=config.execution.compile_mode if config.execution.compile else "eager",
-                            pruning_method="magnitude_2to4" if scenario.kind == "pruning_2to4" else "none",
-                            pruning_sparsity=scenario.pruning_sparsity,
-                            quantization_method=scenario.kind if "quantization" in scenario.kind else "none",
-                            weight_storage_dtype="int8" if "int8" in scenario.kind else scenario.dtype,
-                            activation_dtype=scenario.dtype,
-                            observed_sparsity=scenario.pruning_sparsity,
-                            uses_sparse_kernel=uses_sparse_kernel,
-                            uses_int8_kernel=uses_int8_kernel,
-                            latency_ms_mean=mean_latency,
-                            latency_ms_p50=float(np.percentile(values, 50)),
-                            latency_ms_p95=float(np.percentile(values, 95)),
-                            throughput_tokens_s=batch_size / (mean_latency / 1000.0),
-                            peak_memory_allocated_bytes=int(torch.cuda.max_memory_allocated(device)),
-                            peak_memory_reserved_bytes=int(torch.cuda.max_memory_reserved(device)),
-                            parameter_storage_bytes=storage_bytes,
-                            theoretical_flops=parameter_count,
-                            mse=quality_metrics["logits_mse"],
-                            mae=0.0,
-                            r2=0.0,
-                            cosine_similarity=quality_metrics["logits_cosine"],
-                            kl_divergence=quality_metrics["logits_kl_divergence"],
-                            top1_agreement=quality_metrics["top1_agreement"],
-                            loss=quality_metrics["mean_loss"],
-                            perplexity=quality_metrics["perplexity"],
-                            input_sha256=_hash_values(source),
-                            weight_sha256=weight_hash,
-                            output_sha256=hashlib.sha256(
-                                generated_token.contiguous().numpy().tobytes()
-                            ).hexdigest(),
-                            profiler_trace="hardware_operators.json",
-                        )
+                    output_hash = hashlib.sha256(
+                        output.logits[:, -1, :].detach().float().cpu().contiguous().numpy().tobytes()
+                    ).hexdigest()
+                    del output
+                    record = make_record(
+                        operation="model_ttft",
+                        batch_size=batch_size,
+                        seq_len=prompt_len,
+                        repeat_index=repeat_index,
+                        status="complete",
+                        timings=ttft_values,
+                        throughput_units=batch_size,
+                        output_sha256=output_hash,
                     )
-                    for iteration, latency in enumerate(values, start=1):
-                        timing_rows.append(
-                            {
-                                "case_id": case_id,
-                                "model_id": model_spec.identifier,
-                                "scenario": scenario.identifier,
-                                "operation": operation,
-                                "repeat_index": repeat_index,
-                                "iteration": iteration,
-                                "latency_ms": latency,
-                            }
-                        )
+                    records.append(record)
+                    append_timings(record, ttft_values)
+                except Exception as exc:
+                    append_failure("model_ttft", batch_size, prompt_len, repeat_index, exc)
+                decode_jobs.append((repeat_index, batch_size, prompt_len))
+
+    for repeat_index, batch_size, prompt_len in decode_jobs:
+        source = list(token_source[:prompt_len])
+        input_ids = torch.tensor(source, dtype=torch.long, device=device).unsqueeze(0).repeat(batch_size, 1)
+        try:
+            torch.cuda.reset_peak_memory_stats(device)
+            decode_values, generated_token = _measure_decode(
+                model,
+                input_ids,
+                config.performance.decode_tokens,
+                config.performance.use_kv_cache,
+                config.performance.warmup_iterations,
+                config.performance.measure_iterations,
+            )
+            record = make_record(
+                operation="model_decode",
+                batch_size=batch_size,
+                seq_len=prompt_len,
+                repeat_index=repeat_index,
+                status="complete",
+                timings=decode_values,
+                throughput_units=batch_size,
+                output_sha256=hashlib.sha256(
+                    generated_token.contiguous().numpy().tobytes()
+                ).hexdigest(),
+            )
+            records.append(record)
+            append_timings(record, decode_values)
+        except Exception as exc:
+            append_failure("model_decode", batch_size, prompt_len, repeat_index, exc)
     for record in records:
         validation = validate_benchmark_record_v3(record)
         if not validation.is_valid:
@@ -950,6 +1085,7 @@ def _write_model_checkpoint(
     prompt_rows: list[dict[str, object]],
     performance_rows: list[dict[str, object]],
     timing_rows: list[dict[str, object]],
+    operator_traces: Mapping[str, Sequence[str]],
 ) -> None:
     subset_path = output / "evaluation_subset.json"
     subset_path.write_text(
@@ -970,6 +1106,18 @@ def _write_model_checkpoint(
         entries.append({"path": name, "sha256": _sha256(path), "records": len(rows)})
     entries.append(
         {"path": subset_path.name, "sha256": _sha256(subset_path), "records": len(subset_records)}
+    )
+    operators_path = output / "model_operators.json"
+    operators_path.write_text(
+        json.dumps(operator_traces, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    entries.append(
+        {
+            "path": operators_path.name,
+            "sha256": _sha256(operators_path),
+            "records": len(operator_traces),
+        }
     )
     manifest["artifacts"] = entries
 
@@ -1003,6 +1151,7 @@ def execute_model_experiment(
     performance_rows: list[dict[str, object]] = []
     timing_rows: list[dict[str, object]] = []
     subset_records: dict[str, object] = {}
+    operator_traces: dict[str, list[str]] = {}
     completed: set[tuple[str, str]] = set()
 
     if output.exists() and any(output.iterdir()):
@@ -1035,8 +1184,18 @@ def execute_model_experiment(
                 subset_records = stored_subsets
         except (OSError, json.JSONDecodeError) as exc:
             raise ExperimentEnvironmentError("subconjunto de avaliacao invalido na retomada") from exc
+        try:
+            stored_operators = json.loads((output / "model_operators.json").read_text(encoding="utf-8"))
+            if isinstance(stored_operators, dict):
+                operator_traces = {
+                    str(key): [str(operator) for operator in value]
+                    for key, value in stored_operators.items()
+                    if isinstance(value, list)
+                }
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ExperimentEnvironmentError("traces de operadores invalidos na retomada") from exc
         for item in manifest.get("models", []):
-            if isinstance(item, Mapping) and item.get("status") in {"complete", "unsupported"}:
+            if isinstance(item, Mapping) and item.get("status") in {"complete", "unsupported", "failed"}:
                 completed.add((str(item.get("model_id")), str(item.get("scenario"))))
         manifest["status"] = "running"
         resumed_at = manifest.setdefault("resumed_at", [])
@@ -1090,6 +1249,7 @@ def execute_model_experiment(
         prompt_rows,
         performance_rows,
         timing_rows,
+        operator_traces,
     )
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     try:
@@ -1105,6 +1265,9 @@ def execute_model_experiment(
                     continue
                 dtype = torch.bfloat16 if scenario.dtype == "bfloat16" else torch.float16
                 model = None
+                benchmark_model = None
+                performance: list[dict[str, object]] = []
+                timings: list[dict[str, object]] = []
                 try:
                     model, tokenizer = _load_model_and_tokenizer(
                         model_spec,
@@ -1142,10 +1305,11 @@ def execute_model_experiment(
                         scenario_id=scenario.identifier,
                         baseline_prompts=baselines,
                     )
-                    if scenario.kind == "baseline":
-                        baseline_prompts_by_group[scenario.comparison_group] = produced
-                        baseline_perplexity_by_group[scenario.comparison_group] = metrics["perplexity"]
-                    baseline_perplexity = baseline_perplexity_by_group[scenario.comparison_group]
+                    baseline_perplexity = (
+                        metrics["perplexity"]
+                        if scenario.kind == "baseline"
+                        else baseline_perplexity_by_group[scenario.comparison_group]
+                    )
                     perplexity_ratio = metrics["perplexity"] / baseline_perplexity
                     limit = (
                         config.quality.pruning_perplexity_limit
@@ -1155,7 +1319,11 @@ def execute_model_experiment(
                         else 0.0
                     )
                     acceptable = scenario.kind == "baseline" or perplexity_ratio <= 1.0 + limit
-                    sparsity = observed_model_sparsity(model, scenario.optimization_scope)
+                    sparsity = observed_model_sparsity(
+                        model,
+                        scenario.optimization_scope,
+                        scenario.kind,
+                    )
                     quality_record = {
                             "experiment_id": config.experiment_id,
                             "model_id": model_spec.identifier,
@@ -1184,25 +1352,81 @@ def execute_model_experiment(
                             "weight_sha256": weight_hash,
                             "evaluation_subset_sha256": subset.sha256,
                         }
-                    if not already_completed:
-                        quality_rows.append(quality_record)
-                        window_rows.extend(windows)
-                        prompt_rows.extend(prompt_metrics)
                     if scenario.measure_performance and not already_completed:
                         benchmark_model = model
                         if config.execution.compile:
                             benchmark_model = torch.compile(model, mode=config.execution.compile_mode)
                         checks = capabilities.get("checks", {}) if isinstance(capabilities, dict) else {}
-                        uses_sparse = bool(
-                            scenario.kind == "pruning_2to4"
-                            and isinstance(checks, dict)
-                            and checks.get("sparse_2to4")
-                        )
-                        uses_int8 = bool(
-                            scenario.kind == "quantization_int8_dynamic"
-                            and isinstance(checks, dict)
-                            and checks.get("int8_dynamic_kernel")
-                        )
+                        trace_key = f"{model_spec.identifier}|{scenario.identifier}"
+                        trace_names = {
+                            "model_prefill": f"{trace_key}|prefill",
+                            "model_ttft": f"{trace_key}|prefill",
+                            "model_decode": f"{trace_key}|decode",
+                        }
+                        flags_by_operation: dict[str, dict[str, bool]] = {}
+                        prefill_name = trace_names["model_prefill"]
+                        try:
+                            operators = profile_model_operators(
+                                benchmark_model,
+                                baseline_token_source,
+                                use_cache=config.performance.use_kv_cache,
+                            )
+                            operator_traces[prefill_name] = operators
+                            flags_by_operation["model_prefill"] = detect_kernel_flags(operators)
+                        except Exception as exc:
+                            operator_traces[prefill_name] = [
+                                f"PROFILE_{failure_status(exc).upper()}: {type(exc).__name__}: {exc}"
+                            ]
+                            flags_by_operation["model_prefill"] = {
+                                "int8": False,
+                                "sparse_2to4": False,
+                            }
+
+                        if config.execution.compile:
+                            torch.compiler.reset()
+                            benchmark_model = torch.compile(model, mode=config.execution.compile_mode)
+                        decode_name = trace_names["model_decode"]
+                        try:
+                            operators = profile_model_decode_operators(
+                                benchmark_model,
+                                baseline_token_source,
+                                use_cache=config.performance.use_kv_cache,
+                            )
+                            operator_traces[decode_name] = operators
+                            flags_by_operation["model_decode"] = detect_kernel_flags(operators)
+                        except Exception as exc:
+                            operator_traces[decode_name] = [
+                                f"PROFILE_{failure_status(exc).upper()}: {type(exc).__name__}: {exc}"
+                            ]
+                            flags_by_operation["model_decode"] = {
+                                "int8": False,
+                                "sparse_2to4": False,
+                            }
+
+                        if config.execution.compile:
+                            torch.compiler.reset()
+                            benchmark_model = torch.compile(model, mode=config.execution.compile_mode)
+                        else:
+                            benchmark_model = model
+                        flags_by_operation["model_ttft"] = flags_by_operation["model_prefill"]
+                        uses_sparse = {
+                            operation: bool(
+                                scenario.kind == "pruning_2to4"
+                                and isinstance(checks, dict)
+                                and checks.get("sparse_2to4")
+                                and flags["sparse_2to4"]
+                            )
+                            for operation, flags in flags_by_operation.items()
+                        }
+                        uses_int8 = {
+                            operation: bool(
+                                scenario.kind == "quantization_int8_dynamic"
+                                and isinstance(checks, dict)
+                                and checks.get("int8_dynamic_kernel")
+                                and flags["int8"]
+                            )
+                            for operation, flags in flags_by_operation.items()
+                        }
                         performance, timings = benchmark_model_performance(
                             benchmark_model,
                             baseline_token_source,
@@ -1217,10 +1441,20 @@ def execute_model_experiment(
                             num_attention_heads,
                             uses_sparse,
                             uses_int8,
+                            {
+                                operation: f"model_operators.json#{name}"
+                                for operation, name in trace_names.items()
+                            },
                         )
+                    if scenario.kind == "baseline":
+                        baseline_prompts_by_group[scenario.comparison_group] = produced
+                        baseline_perplexity_by_group[scenario.comparison_group] = metrics["perplexity"]
+                    if not already_completed:
+                        quality_rows.append(quality_record)
+                        window_rows.extend(windows)
+                        prompt_rows.extend(prompt_metrics)
                         performance_rows.extend(performance)
                         timing_rows.extend(timings)
-                    if not already_completed:
                         manifest["models"].append(
                             {"model_id": model_spec.identifier, "scenario": scenario.identifier, "status": "complete"}
                         )
@@ -1230,6 +1464,7 @@ def execute_model_experiment(
                         raise ExperimentEnvironmentError(
                             f"nao foi possivel reconstruir baseline {scenario.identifier} na retomada"
                         ) from exc
+                    status = failure_status(exc)
                     quality_rows.append(
                         {
                             **{column: "" for column in QUALITY_COLUMNS},
@@ -1240,7 +1475,7 @@ def execute_model_experiment(
                             "comparison_group": scenario.comparison_group,
                             "optimization_scope": scenario.optimization_scope,
                             "dtype": scenario.dtype,
-                            "status": "unsupported",
+                            "status": status,
                             "skip_reason": f"{type(exc).__name__}: {exc}",
                         }
                     )
@@ -1248,14 +1483,17 @@ def execute_model_experiment(
                         {
                             "model_id": model_spec.identifier,
                             "scenario": scenario.identifier,
-                            "status": "unsupported",
+                            "status": status,
                             "reason": f"{type(exc).__name__}: {exc}",
                         }
                     )
                     completed.add(scenario_key)
                 finally:
+                    benchmark_model = None
                     if model is not None:
                         del model
+                    if config.execution.compile:
+                        torch.compiler.reset()
                     gc.collect()
                     torch.cuda.empty_cache()
                 _write_model_checkpoint(
@@ -1267,6 +1505,7 @@ def execute_model_experiment(
                     prompt_rows,
                     performance_rows,
                     timing_rows,
+                    operator_traces,
                 )
                 manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -1279,6 +1518,7 @@ def execute_model_experiment(
             prompt_rows,
             performance_rows,
             timing_rows,
+            operator_traces,
         )
         manifest["status"] = "complete"
         manifest["completed_at"] = datetime.now().astimezone().isoformat(timespec="seconds")

@@ -8,7 +8,14 @@ O benchmark GPU v1 foi concluído na NVIDIA GeForce RTX 4070 Ti SUPER e sua
 evidência foi preservada com hashes. A infraestrutura v3 amplia o estudo para
 cinco seeds, três distribuições, 13 perfis, multi-head attention, kernels reais
 e modelos OPT pré-treinados. A bateria sintética v3 também foi concluída; as
-coletas físicas e OPT permanecem separadas até a confirmação dos kernels.
+operações físicas foram coletadas com kernels confirmados, enquanto a bateria
+OPT final permanece separada até uma janela sem concorrência da GPU.
+
+O Docker Desktop voltou a operar com backend WSL2. Seu disco de dados foi
+realocado para `D:\DockerDesktopData`, preservando os contêineres existentes e
+evitando que as imagens científicas ocupem o disco `C:`. A imagem do benchmark
+foi construída com sucesso e suas dependências passaram em `pip check`; o
+probe físico, o smoke e a bateria de 1.650 casos foram concluídos.
 
 ## Estado atual
 
@@ -21,15 +28,17 @@ coletas físicas e OPT permanecem separadas até a confirmação dos kernels.
 | Inicialização dos pesos | Corrigida | Contrato v2 com Xavier normal e bias zero. |
 | Benchmark GPU v1 | Concluído | Duas execuções, 108 registros, hashes, análise e gráficos versionados. |
 | Benchmark sintético v3 | Concluído | 2.340 registros completos, 1.950 pares e 117 mil timings na GPU. |
-| Caminhos físicos | Implementado | Docker, probe, TorchAO INT8 e pruning 2:4 com confirmação por profiler. |
-| Modelos OPT | Preparado | Runner completo e 6,63 GB de modelos/dataset armazenados para uso offline. |
-| Ganho real de pruning/INT8 | Não afirmado | Depende do caminho e do kernel efetivamente executados na GPU. |
+| Caminhos físicos | Concluído | 1.650 registros, 82.500 timings, TorchAO INT8 e pruning 2:4 auditados pelo profiler. |
+| Modelos OPT | Smoke diagnóstico validado | Runner, cache offline e separação entre prefill, TTFT e decode validados; smoke limpo e coleta final pendentes. |
+| Ganho real nas operações | Não observado | Os seis grupos físicos tiveram intervalo de speedup inteiramente abaixo de `1,0x`. |
 
 A posição científica correta é: a evidência v1 demonstra comportamento numérico
 e a v3 sustenta a robustez numérica em múltiplas entradas. Em todos os casos
 pareados, INT8 fake apresentou MSE menor que pruning, e o erro do pruning cresceu
-com a sparsity. Nenhuma delas prova aceleração física de INT8 ou pruning; essa
-afirmação depende da bateria com profiler e kernels reais.
+com a sparsity. Na bateria física, INT8 dinâmico e 2:4 usaram os kernels esperados,
+mas nenhum cenário foi mais rápido que seu baseline compilado. Resultado físico
+negativo também é evidência: representação menor não implica menor latência para
+todo shape ou composição de operação.
 
 ## Documentação LaTeX
 
@@ -66,7 +75,7 @@ fases/01_validacao_conceitual/
   evidencias/                  CSV, JSON, logs, figuras e relatórios LaTeX
 
 output/pdf/                    relatório acadêmico compilado
-scripts/                       build da documentação
+scripts/                       build documental e orquestração dos benchmarks
 legado/                        protótipo inicial preservado
 ```
 
@@ -92,30 +101,51 @@ O teste de integração com download é deliberadamente ignorado até
 Aceite somente se as 18 linhas do CSV tiverem `passed=True`. Essa execução
 não mede velocidade entre frameworks.
 
-O ambiente físico é padronizado em Docker Linux. Com Docker Desktop usando WSL2
-e integração NVIDIA ativos, cada ação pode ser executada isoladamente:
+O ambiente físico é padronizado em Docker Linux. Nesta máquina, use sempre o
+cache em `D:`. O comando `Status` não inicia medições e mostra Docker, imagem,
+cache, GPU e espaço em disco:
 
 ```powershell
-.\scripts\run_benchmarks_docker.ps1 -Action Build
-.\scripts\run_benchmarks_docker.ps1 -Action Probe
-.\scripts\run_benchmarks_docker.ps1 -Action Prefetch
-.\scripts\run_benchmarks_docker.ps1 -Action Smoke
-.\scripts\run_benchmarks_docker.ps1 -Action Synthetic
-.\scripts\run_benchmarks_docker.ps1 -Action Hardware
-.\scripts\run_benchmarks_docker.ps1 -Action Models
+$cacheRoot = "D:\Caches\scientific-initiation\huggingface"
+.\scripts\run_benchmarks_docker.ps1 -Action Status -CacheRoot $cacheRoot
 ```
 
-O cache pode ficar em outro disco, sem alterar o experimento:
+Para executar somente o trabalho pendente, sem repetir a bateria sintética v3:
 
 ```powershell
-.\scripts\run_benchmarks_docker.ps1 -Action Prefetch `
-  -CacheRoot "D:\Caches\scientific-initiation\huggingface"
+.\scripts\run_benchmarks_docker.ps1 `
+  -Action Remaining `
+  -CacheRoot $cacheRoot `
+  -RunId "final-20260913" `
+  -Resume
 ```
 
-`-Action All` executa toda a sequência. Downloads ocorrem apenas no prefetch;
-testes e coletas posteriores usam rede desativada. Configuração, código,
-ambiente, CSVs e timings são hasheados, e `--resume` só aceita uma retomada
-quando esses contratos coincidem.
+`Remaining` percorre `Build`, `Probe`, `Test`, `Smoke`, `ModelSmoke`, `Hardware`
+e `Models`, mas ignora etapas já concluídas quando manifestos e checksums são
+válidos.
+As ações individuais continuam disponíveis; `All` mantém a sequência histórica,
+incluindo `Prefetch` e `Synthetic`. Downloads ocorrem apenas no prefetch; testes
+e coletas posteriores usam rede desativada. `-Resume` só retoma resultados com
+o mesmo `RunId` quando configuração, código, ambiente e artefatos preservados
+possuem hashes coincidentes.
+
+Antes de `Probe`, `Smoke`, `ModelSmoke`, `Hardware` e `Models`, o script amostra a GPU cinco
+vezes e exige: processo do jogo fechado, uso médio abaixo de 10%, no máximo 2.048 MiB
+de VRAM ocupada e temperatura abaixo de 65 °C. O pico de uso também é registrado
+no diagnóstico. Como o WDDM pode reportar utilização residual incorreta, existe
+um segundo critério conservador: soma dos processos abaixo de 10%, potência até
+35 W e clock gráfico até 300 MHz, mantendo os mesmos limites de VRAM e temperatura.
+O script nunca encerra processos para atender a esses limites.
+
+Estimativa para a sequência restante na RTX 4070 Ti SUPER:
+
+| Etapa | Tempo esperado |
+| --- | ---: |
+| Build, probe e bateria física | Concluídos |
+| Suíte e smoke OPT final | 15–40 min |
+| OPT-125M, OPT-350M e OPT-1.3B | 3–6 h |
+| Análise, PDF e publicação | 30–90 min |
+| **Total restante** | **4–8 h** |
 
 ## Compilar o relatório
 
@@ -135,11 +165,9 @@ Arquivos auxiliares ficam em `tmp/pdfs/latex/` e não são versionados.
 
 ## Próximos passos
 
-1. restaurar o daemon Linux do Docker Desktop e passar o probe e o smoke;
-2. coletar a bateria física sem alterar os JSONs;
-3. avaliar os três OPT pré-treinados sem treinamento ou fine-tuning;
-4. revisar casos suportados, incompatíveis e falhos antes de interpretar médias;
-5. incorporar as evidências físicas e de modelos ao relatório.
+1. executar o smoke OPT final quando o portão de GPU permitir;
+2. avaliar os três OPT sem treinamento ou fine-tuning;
+3. revisar os manifestos OPT, compilar o PDF e publicar a consolidação.
 
 ## Cuidados de interpretação
 

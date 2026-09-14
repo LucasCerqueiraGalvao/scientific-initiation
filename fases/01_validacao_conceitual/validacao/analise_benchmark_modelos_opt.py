@@ -56,6 +56,7 @@ class ModelAnalysisOutputs:
     cases: Path
     quality_plot: Path
     speedup_plot: Path
+    memory_plot: Path
     storage_plot: Path
     pareto_plot: Path
     report: Path
@@ -125,6 +126,10 @@ def load_model_experiment(evidence_dir: str | Path) -> LoadedModelExperiment:
         raise ModelAnalysisError("manifesto OPT nao esta completo")
     config = model_config_from_mapping(_read_json(root / "config.snapshot.json"))
     artifacts = _artifact_map(manifest)
+    for name, item in artifacts.items():
+        path = root / name
+        if not path.is_file() or _sha256(path) != item["sha256"]:
+            raise ModelAnalysisError(f"checksum divergente: {name}")
     quality = _load_csv(root, artifacts, "quality.csv", QUALITY_COLUMNS)
     windows = _load_csv(root, artifacts, "quality_windows.csv", WINDOW_COLUMNS)
     prompts = _load_csv(root, artifacts, "prompt_metrics.csv", PROMPT_COLUMNS)
@@ -223,7 +228,8 @@ def summarize_performance(loaded: LoadedModelExperiment) -> pd.DataFrame:
             columns=[
                 "model_id", "operation", "scenario", "paired_cases", "speedup_mean",
                 "speedup_median", "speedup_ci95_low", "speedup_ci95_high",
-                "memory_ratio_mean", "storage_ratio_mean", "kernel_confirmed", "conclusion",
+                "memory_ratio_mean", "memory_ratio_median", "memory_ratio_ci95_low",
+                "memory_ratio_ci95_high", "storage_ratio_mean", "kernel_confirmed", "conclusion",
             ]
         )
     rows: list[dict[str, object]] = []
@@ -236,6 +242,14 @@ def summarize_performance(loaded: LoadedModelExperiment) -> pd.DataFrame:
             seed=2026,
             statistic="median",
         )
+        memory_ratio = group["peak_memory_ratio_vs_baseline"].to_numpy(dtype=np.float64)
+        memory_low, memory_high = bootstrap_confidence_interval(
+            memory_ratio,
+            resamples=10000,
+            seed=2026,
+            statistic="median",
+        )
+        finite_memory = memory_ratio[np.isfinite(memory_ratio)]
         kernel_confirmed = bool(
             group["uses_sparse_kernel"].astype(str).str.lower().eq("true").all()
             or group["uses_int8_kernel"].astype(str).str.lower().eq("true").all()
@@ -256,7 +270,14 @@ def summarize_performance(loaded: LoadedModelExperiment) -> pd.DataFrame:
                 "speedup_median": median,
                 "speedup_ci95_low": low,
                 "speedup_ci95_high": high,
-                "memory_ratio_mean": float(group["peak_memory_ratio_vs_baseline"].mean()),
+                "memory_ratio_mean": (
+                    float(np.mean(finite_memory)) if finite_memory.size else math.nan
+                ),
+                "memory_ratio_median": (
+                    float(np.median(finite_memory)) if finite_memory.size else math.nan
+                ),
+                "memory_ratio_ci95_low": memory_low,
+                "memory_ratio_ci95_high": memory_high,
                 "storage_ratio_mean": float(group["storage_ratio_vs_baseline"].mean()),
                 "kernel_confirmed": kernel_confirmed,
                 "conclusion": conclusion,
@@ -309,6 +330,29 @@ def _plot_performance(summary: pd.DataFrame, path: Path, metric: str, ylabel: st
     plt.close(fig)
 
 
+def _plot_memory(summary: pd.DataFrame, path: Path) -> None:
+    if summary.empty:
+        _empty_plot(path, "Memoria de pico", "Sem casos completos de desempenho")
+        return
+    labels = [f"{row.model_id.split('/')[-1]}\n{row.operation}\n{row.scenario}" for row in summary.itertuples()]
+    values = summary["memory_ratio_median"].to_numpy(dtype=np.float64)
+    ci_low = summary["memory_ratio_ci95_low"].to_numpy(dtype=np.float64)
+    ci_high = summary["memory_ratio_ci95_high"].to_numpy(dtype=np.float64)
+    positions = np.arange(len(values))
+    fig, axis = plt.subplots(figsize=(max(9, len(labels) * 0.55), 5))
+    axis.bar(positions, values, color="#4d6781")
+    axis.vlines(positions, ci_low, ci_high, color="#202020", linewidth=1)
+    axis.hlines(ci_low, positions - 0.08, positions + 0.08, color="#202020", linewidth=1)
+    axis.hlines(ci_high, positions - 0.08, positions + 0.08, color="#202020", linewidth=1)
+    axis.set_xticks(positions, labels)
+    axis.axhline(1.0, color="#9d3d38", linewidth=1)
+    axis.set_ylabel("Memoria de pico relativa ao baseline")
+    axis.tick_params(axis="x", rotation=45)
+    fig.tight_layout()
+    fig.savefig(path, dpi=160)
+    plt.close(fig)
+
+
 def _plot_pareto(quality: pd.DataFrame, performance: pd.DataFrame, path: Path) -> None:
     if performance.empty:
         _empty_plot(path, "Fronteira qualidade e desempenho", "Sem casos completos de desempenho")
@@ -333,6 +377,10 @@ def _plot_pareto(quality: pd.DataFrame, performance: pd.DataFrame, path: Path) -
 def _report(loaded: LoadedModelExperiment, quality: pd.DataFrame, performance: pd.DataFrame) -> str:
     complete = int((quality["status"] == "complete").sum())
     unsupported = int((quality["status"] == "unsupported").sum())
+    quality_failed = int((quality["status"] == "failed").sum())
+    performance_complete = int((loaded.performance["status"] == "complete").sum())
+    performance_unsupported = int((loaded.performance["status"] == "unsupported").sum())
+    performance_failed = int((loaded.performance["status"] == "failed").sum())
     accepted = int(quality["quality_acceptable"].astype(str).str.lower().eq("true").sum())
     sustained = int((performance["conclusion"] == "sustentada").sum()) if not performance.empty else 0
     return "\n".join(
@@ -342,7 +390,8 @@ def _report(loaded: LoadedModelExperiment, quality: pd.DataFrame, performance: p
             rf"Foram configurados {len(loaded.config.models)} modelos OPT e {len(loaded.config.scenarios)} variantes por modelo, sem treinamento ou fine-tuning.",
             r"A avaliacao usa loss, perplexidade, divergencia dos logits e concordancia de geracao; desempenho e separado em prefill, TTFT e decode com KV cache.",
             r"\section{Cobertura}",
-            rf"Casos de qualidade completos: {complete}; incompativeis preservados: {unsupported}; dentro do limite operacional: {accepted}.",
+            rf"Casos de qualidade completos: {complete}; incompativeis preservados: {unsupported}; falhos: {quality_failed}; dentro do limite operacional: {accepted}.",
+            rf"Casos de desempenho completos: {performance_complete}; incompativeis preservados: {performance_unsupported}; falhos: {performance_failed}.",
             r"\section{Desempenho fisico}",
             rf"Comparacoes com ganho sustentado pelos criterios pre-registrados: {sustained}.",
             r"Ganho fisico so e aceito com speedup mediano de pelo menos 1,05, intervalo de 95\% acima de 1 e kernel confirmado.",
@@ -361,7 +410,27 @@ def write_model_analysis(evidence_dir: str | Path, output_dir: str | Path | None
 
     quality = summarize_quality(loaded)
     performance = summarize_performance(loaded)
-    cases = loaded.quality[["model_id", "scenario", "status", "skip_reason"]].copy()
+    quality_cases = loaded.quality[["model_id", "scenario", "status", "skip_reason"]].copy()
+    quality_cases.insert(0, "evidence_type", "quality")
+    quality_cases["operation"] = ""
+    quality_cases["profile_id"] = ""
+    quality_cases["repeat_index"] = ""
+    performance_cases = loaded.performance[
+        ["model_id", "scenario", "operation", "profile_id", "repeat_index", "status", "skip_reason"]
+    ].copy()
+    performance_cases.insert(0, "evidence_type", "performance")
+    cases = pd.concat(
+        [
+            quality_cases[
+                [
+                    "evidence_type", "model_id", "scenario", "operation", "profile_id",
+                    "repeat_index", "status", "skip_reason",
+                ]
+            ],
+            performance_cases,
+        ],
+        ignore_index=True,
+    )
     paths = ModelAnalysisOutputs(
         quality_summary=output / "resumo_qualidade.csv",
         performance_comparisons=output / "comparacoes_desempenho.csv",
@@ -369,6 +438,7 @@ def write_model_analysis(evidence_dir: str | Path, output_dir: str | Path | None
         cases=output / "casos_suportados_ignorados_falhos.csv",
         quality_plot=output / "qualidade_por_sparsity_e_modelo.png",
         speedup_plot=output / "speedup_prefill_decode.png",
+        memory_plot=output / "memoria_pico_ci95.png",
         storage_plot=output / "armazenamento_relativo.png",
         pareto_plot=output / "pareto_qualidade_latencia.png",
         report=output / "relatorio_modelos_opt.tex",
@@ -380,6 +450,7 @@ def write_model_analysis(evidence_dir: str | Path, output_dir: str | Path | None
     cases.to_csv(paths.cases, index=False, lineterminator="\n")
     _plot_quality(quality, paths.quality_plot)
     _plot_performance(performance, paths.speedup_plot, "speedup_median", "Speedup mediano")
+    _plot_memory(performance, paths.memory_plot)
     _plot_performance(performance, paths.storage_plot, "storage_ratio_mean", "Armazenamento relativo")
     _plot_pareto(quality, loaded.comparisons, paths.pareto_plot)
     paths.report.write_text(_report(loaded, quality, performance), encoding="utf-8")

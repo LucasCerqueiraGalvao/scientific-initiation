@@ -6,10 +6,10 @@
 # Depois instale este arquivo a partir da raiz do repositorio:
 #   python -m pip install -r fases/01_validacao_conceitual/requirements.txt
 
-pytest>=8.3
-numpy>=2.0
-pandas>=2.2
-scikit-learn>=1.5
-matplotlib>=3.9
-seaborn>=0.13
-torchao
+pytest==9.1.1
+numpy==2.4.3
+pandas==3.0.5
+scikit-learn==1.9.1
+matplotlib==3.11.2
+seaborn==0.13.2
+torchao==0.17.0

@@ -8,7 +8,7 @@
 
 
 
-Atualizado em 25/08/2026. 'Benchmark principal' significa a coleta destinada a sustentar conclusões de desempenho no hardware-alvo. Smoke tests em CPU são permitidos para validar a infraestrutura, desde que sejam rotulados como tal.
+Atualizado em 14/09/2026. 'Benchmark principal' significa a coleta destinada a sustentar conclusões de desempenho no hardware-alvo. Smoke tests em CPU são permitidos para validar a infraestrutura, desde que sejam rotulados como tal. A validação conceitual, o benchmark GPU v1, a robustez sintética v3 e a bateria física v3 já foram concluídos; este checklist agora controla a coleta final dos modelos OPT.
 
 
 
@@ -47,8 +47,9 @@ crescer com a dimensão e prejudica a comparação de MSE/MAE.
 \item \textbf{[OBRIGATÓRIO ANTES DO BENCHMARK]} Fazer smoke test ponta a ponta,
 incluindo análise, gráficos e reexecução determinística.
 \item \textbf{[OBRIGATÓRIO ANTES DO BENCHMARK]} Confirmar que o dispositivo da coleta
-principal é CUDA e registrar a RTX 4070 Ti Super. \textbf{Bloqueio externo atual:}
-esta máquina só expõe Intel Iris Xe e zero dispositivos CUDA.
+principal é CUDA e registrar a RTX 4070 Ti Super. A GPU e o runtime NVIDIA no
+Docker WSL2 foram confirmados pelo probe; smoke e bateria física foram executados
+com a GPU ociosa.
 \end{itemize}
 
 
@@ -74,13 +75,14 @@ corrigir, no canal apropriado, a inconsistência 2026/2027 do cronograma.
 
 
 \begin{itemize}
-\item \textbf{[PODE SER FEITO DEPOIS]} Inferência demonstrativa com modelo
-pré-treinado do Hugging Face.
+\item \textbf{[AMPLIAÇÃO V3 EM COLETA]} Inferência com OPT-125M, OPT-350M e
+OPT-1.3B pré-treinados, com pesos e dataset armazenados e smoke funcional aprovado.
 \item \textbf{[PODE SER FEITO DEPOIS]} Benchmark de bloco Transformer completo.
-\item \textbf{[PODE SER FEITO DEPOIS]} Cenários \texttt{torchao\_\allowbreak{}int8}, combinação de poda e
-quantização e kernels esparsos.
-\item \textbf{[PODE SER FEITO DEPOIS]} Ampliação para mais seeds, lotes, números de
-cabeças ou tamanhos de sequência.
+\item \textbf{[AMPLIAÇÃO V3 CONCLUÍDA NAS OPERAÇÕES]} Cenários TorchAO INT8 e
+pruning 2:4 confirmados pelo profiler na bateria física de 1.650 registros.
+\item \textbf{[AMPLIAÇÃO V3 CONCLUÍDA]} Cinco seeds, três repetições, múltiplos
+lotes, cabeças, larguras, sequências e distribuições foram avaliados na bateria
+sintética de 2.340 registros.
 \item \textbf{[PODE SER FEITO DEPOIS]} Comparação direta de desempenho entre
 TensorFlow e PyTorch; TensorFlow é apenas referência de correção nesta etapa.
 \end{itemize}
@@ -94,4 +96,11 @@ TensorFlow e PyTorch; TensorFlow é apenas referência de correção nesta etapa
 
 
 
-O benchmark principal só está liberado quando todos os itens obrigatórios controláveis pelo repositório estiverem concluídos e o hardware CUDA-alvo estiver disponível. Se o hardware não estiver disponível, a etapa deve encerrar com smoke/diagnóstico de CPU claramente identificado, sem alegação de desempenho de hardware.
+O benchmark físico de operações foi liberado e concluído após a aprovação da
+imagem fixada, do probe e do smoke. A coleta OPT final mantém o mesmo portão: jogo
+fechado, uso médio de cinco amostras abaixo de 10\%, até 2.048~MiB de VRAM ocupada
+e temperatura abaixo de 65~graus Celsius. Em WDDM, leitura residual só é aceita
+com processos abaixo de 10\%, potência até 35~W e clock até 300~MHz, mantendo os
+limites de memória e temperatura. O pico também é registrado no diagnóstico.
+Falhas e técnicas incompatíveis devem ser preservadas, sem alegação de desempenho
+de hardware quando o kernel correspondente não for confirmado.
