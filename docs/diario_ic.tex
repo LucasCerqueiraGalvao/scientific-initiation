@@ -402,3 +402,72 @@ extensão e a estrutura dos novos artefatos.
 Super, instalar o ambiente fixado, confirmar CUDA, executar toda a suíte,
 revalidar a atenção e coletar a grade de
 \texttt{experimentos/benchmark\_\allowbreak{}principal\_\allowbreak{}gpu.json} em uma pasta nova.
+
+\section{13/09/2026 - Validação multi-head e robustez sintética v3}
+
+\textbf{Validação conceitual.} A comparação entre frameworks foi ampliada de
+nove para dezoito casos. Além da scaled dot-product attention, passaram a ser
+comparadas as projeções Q/K/V/O, a separação e recombinação de cabeças e a saída
+completa da multi-head attention para uma, quatro e oito cabeças. NumPy manual,
+PyTorch manual, PyTorch SDPA e Keras/TensorFlow produziram resultados
+equivalentes dentro das tolerâncias pré-registradas. As 18 comparações foram
+aprovadas.
+
+\textbf{Ampliação das entradas.} O benchmark sintético v3 variou cinco seeds,
+11 perfis arquiteturais, três condições de distribuição e três repetições. Os
+perfis alteraram batch, comprimento da sequência, dimensão do modelo e número
+de cabeças. O pruning por magnitude foi medido em 10\%, 25\%, 50\% e 75\%, ao
+lado do baseline FP32 e da quantização INT8 fake por linha.
+
+\textbf{Coleta.} Foram preservados 2.340 registros agregados, 1.950 pares e
+117.000 amostras individuais de latência. Em todos os pares, o INT8 fake teve
+menor MSE que o pruning, e a degradação do pruning cresceu com a sparsity. Como
+esses cenários ainda usam tensores densos após a transformação, os tempos foram
+tratados como evidência algorítmica e não como prova de aceleração física.
+
+\section{14/09/2026 - Docker, kernels físicos e bateria de hardware}
+
+\textbf{Infraestrutura.} O Docker Desktop com backend WSL2 foi recuperado. O
+disco de dados foi realocado para \texttt{D:\textbackslash DockerDesktopData} e
+o cache Hugging Face para
+\texttt{D:\textbackslash Caches\textbackslash scientific-initiation\textbackslash huggingface}.
+A imagem científica foi construída com PyTorch 2.11/CUDA 12.8, TorchAO 0.17,
+cuSPARSELt 0.7.1, Transformers 5.17 e dependências fixadas. O cache offline
+contém OPT-125M, OPT-350M, OPT-1.3B e a revisão escolhida do WikiText-2.
+
+\textbf{Portões físicos.} O probe confirmou a RTX 4070 Ti SUPER, compute
+capability 8.9, CUDA, Triton, TorchAO INT8 e conversão 2:4. O profiler registrou
+os operadores INT8 e cuSPARSELt esperados. O INT8 weight-only foi mantido como
+evidência física de armazenamento, sem ser apresentado automaticamente como
+computação inteira.
+
+\textbf{Coleta física.} O smoke e a bateria completa terminaram com 1.650
+registros, 990 pares e 82.500 medições individuais. Os cinco cenários foram
+executados nas duas operações e nos 11 perfis, com cinco seeds e três
+repetições. Manifestos, hashes, pareamentos e artefatos de análise foram
+verificados antes da promoção para o diretório de evidências.
+
+\textbf{Resultado.} INT8 dinâmico, INT8 weight-only e pruning semiestruturado
+2:4 reduziram armazenamento e/ou pico de memória. Entretanto, nenhum dos seis
+grupos formados por técnica e operação atingiu o critério de speedup: todos os
+intervalos de 95\% ficaram abaixo de 1,0x em relação ao baseline compilado. O
+resultado negativo foi preservado e limita a conclusão ao hardware, shapes e
+composição de operações avaliados.
+
+\textbf{Modelos pré-treinados.} O runner OPT foi validado em uma execução
+diagnóstica com qualidade, perplexidade, logits, geração, prefill, TTFT, decode,
+memória, armazenamento e profiler. A falha conhecida do decode INT8 dinâmico
+para batch unitário foi registrada como \texttt{unsupported}, sem eliminar as
+medições compatíveis. As latências desse diagnóstico não foram promovidas,
+porque havia concorrência de aplicativos na GPU.
+
+\textbf{Automação e testes.} O script PowerShell ganhou ações
+\texttt{Status} e \texttt{Remaining}, identificador estável, retomada por hashes,
+cache explícito em \texttt{D:} e portão de GPU que nunca encerra processos. A
+suíte no contêiner terminou com \texttt{71 passed, 1 skipped}; o skip é a
+integração que exige GPU/download explícito.
+
+\textbf{Pendência.} Restam o smoke OPT limpo e a avaliação final dos três
+modelos. A execução foi corretamente adiada quando o portão observou 47\% de uso
+e 3.171 MiB de VRAM, acima do limite de 2.048 MiB. A retomada deverá usar o mesmo
+\texttt{RunId}, sem repetir as baterias sintética e física já concluídas.
