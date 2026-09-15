@@ -3,6 +3,8 @@ fases/01_validacao_conceitual/evidencias/benchmarks/robustez_sintetica_v3_2026-0
 fases/01_validacao_conceitual/evidencias/benchmarks/hardware_probe_2026-09-14/** -text
 fases/01_validacao_conceitual/evidencias/benchmarks/smoke_hardware_v3_2026-09-14/** -text
 fases/01_validacao_conceitual/evidencias/benchmarks/hardware_nativo_v3_2026-09-14/** -text
+fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_smoke_2026-09-15/** -text
+fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_v1_2026-09-15/** -text
 fases/01_validacao_conceitual/evidencias/comparacao_frameworks_v2_2026-09-13/** -text
 *.pdf binary
 *.png binary

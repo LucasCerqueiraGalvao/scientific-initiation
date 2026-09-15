@@ -1,0 +1,6 @@
+model_id,scenario,kind,comparison_group,optimization_scope,status,skip_reason,pruning_sparsity,observed_sparsity,perplexity,perplexity_increase_percent,logits_mse,logits_kl_divergence,top1_agreement,generated_token_agreement,storage_megabytes,quality_acceptable
+facebook/opt-125m,baseline_bf16,baseline,bf16,none,complete,,0.0,0.0,52.23152975276988,0.0,0.0,0.0,1.0,1.0,238.875,True
+facebook/opt-125m,baseline_fp16,baseline,fp16,none,complete,,0.0,0.0,52.36473436615776,0.0,0.0,-1.4901161193847655e-09,1.0,1.0,238.875,True
+facebook/opt-125m,attention_int8_weight_only,quantization_int8_weight_only,bf16,attention_only,complete,,0.0,0.0,52.39564318045738,0.31420375482835,0.0029037348926067,0.0010267422010656,0.95,0.95,211.9453125,True
+facebook/opt-125m,attention_int8_dynamic,quantization_int8_dynamic,bf16,attention_only,complete,,0.0,0.0,52.00863782169012,-0.42673827884188,0.0214827178977429,0.0077452695230022,1.0,1.0,211.9453125,True
+facebook/opt-125m,attention_pruning_2to4,pruning_2to4,fp16,attention_only,complete,,0.5,0.5,87.27678464148012,66.67092022505379,0.8103808015584946,0.3374305158853531,0.75,0.55,215.25,False

@@ -55,7 +55,7 @@ Benchmark GPU v1 & \statusok & Duas execucoes, 108 registros, hashes, analise e 
 Infraestrutura v3 & \statusok & Cinco seeds, 13 perfis, timings brutos, bootstrap, Docker, TorchAO, 2:4 e runners OPT. \\
 Benchmark sintetico v3 & \statusok & 2.340 registros completos, 1.950 comparacoes pareadas e 117 mil amostras de latencia na GPU. \\
 Caminhos fisicos & \statusok & Probe, smoke e 1.650 casos no container Linux; kernels INT8 e 2:4 confirmados pelo profiler. \\
-Modelos OPT & \statuspending & Smoke diagnostico aprovado; a coleta final dos tres modelos aguarda uma janela sem concorrencia da GPU. \\
+Modelos OPT & \statusok & Tres modelos pre-treinados avaliados: 45 registros de qualidade, 2.880 janelas, 900 prompts, 1.296 registros de desempenho e 10.080 timings; decode registrado como falha tecnica. \\
 \bottomrule
 \end{longtable}
 
@@ -65,5 +65,8 @@ equivalentes as referencias escolhidas. A bateria v3 sustenta que a fidelidade
 do INT8 fake foi superior a do pruning nos casos sinteticos pareados, mas nao
 prova aceleracao fisica. Na bateria com kernels confirmados, INT8 e pruning 2:4
 reduziram armazenamento e memoria, mas nenhum dos seis grupos obteve speedup
-sustentado. A generalizacao para pesos pre-treinados ainda depende da coleta OPT.
+sustentado. Nos modelos OPT, INT8 preservou qualidade muito melhor que pruning
+e reduziu memoria/armazenamento em varios cenarios, mas prefill e TTFT nao
+atingiram o criterio completo de speedup sustentado. A medicao de decode ficou
+limitada por interacao entre \texttt{torch.compile}, CUDA Graphs e KV cache.
 \end{icstatus}

@@ -18,9 +18,10 @@ Estão validados:
 
 O objeto principal agora é a self-attention multi-head completa, com projeção
 densa mantida como controle das operações Q/K/V/O. O benchmark GPU v1 está
-concluído, assim como as baterias sintética v3 e física. O estudo OPT ainda não
-autoriza conclusões finais antes da coleta completa em uma janela sem concorrência
-da GPU.
+concluído, assim como as baterias sintética v3, física v3 e OPT. A coleta OPT
+autoriza conclusões sobre qualidade, prefill e TTFT em modelos pré-treinados;
+a etapa de decode ficou preservada como falha técnica associada a
+`torch.compile`, CUDA Graphs e KV cache.
 
 ## Estrutura
 
@@ -95,7 +96,7 @@ Essa etapa valida correção, não velocidade.
 | `experimentos/smoke_hardware_v3.json` | Portão físico curto | Confirma compilação, INT8 e 2:4 antes da bateria. |
 | `experimentos/hardware_nativo_v3.json` | 1.650 casos físicos | Latência, memória e armazenamento com kernels compatíveis. |
 | `experimentos/modelos_opt_smoke.json` | OPT-125M reduzido | Portão funcional de qualidade, prefill, TTFT, decode e profiler. |
-| `experimentos/modelos_opt_v1.json` | OPT 125M, 350M e 1.3B | Qualidade e desempenho em pesos pré-treinados. |
+| `experimentos/modelos_opt_v1.json` | OPT 125M, 350M e 1.3B | Qualidade, prefill e TTFT em pesos pré-treinados; decode registrado como limitação técnica. |
 
 O schema v3 preserva leitura dos schemas v1/v2 e acrescenta perfis, múltiplas
 seeds, cenários parametrizados, grupos de baseline, timings brutos, memória,
@@ -125,6 +126,33 @@ profiler confirmou computação INT8 dinâmica e cuSPARSELt 2:4 nos cenários
 correspondentes. Mesmo assim, os seis grupos de operação e técnica ficaram mais
 lentos que o baseline compilado, com intervalos de 95% inteiramente abaixo de
 `1,0x`; portanto, o ganho de latência foi contradito neste recorte.
+
+## Resultado OPT v1
+
+O smoke final e a coleta completa estão em
+[`evidencias/benchmarks/modelos_opt_smoke_2026-09-15/`](evidencias/benchmarks/modelos_opt_smoke_2026-09-15/)
+e [`evidencias/benchmarks/modelos_opt_v1_2026-09-15/`](evidencias/benchmarks/modelos_opt_v1_2026-09-15/).
+Foram avaliados `facebook/opt-125m`, `facebook/opt-350m` e `facebook/opt-1.3b`
+em revisões fixadas, sem treinamento ou fine-tuning. A execução completa gerou
+45 registros de qualidade, 2.880 janelas de WikiText-2, 900 métricas de prompts,
+1.296 registros de desempenho e 10.080 amostras de timing.
+
+Na qualidade, 25 de 45 variantes ficaram dentro dos limites operacionais. As
+quantizações INT8 fake e weight-only permaneceram estáveis nos três modelos. O
+INT8 dinâmico ficou dentro do limite em OPT-125M e OPT-350M, mas excedeu o
+limite em OPT-1.3B. O pruning por magnitude em atenção só permaneceu aceitável
+em 10%; 25% já excedeu levemente o limite de 5%, e 50%/75% degradaram muito a
+perplexidade. O pruning 2:4 degradou qualidade em todos os modelos, sobretudo
+quando aplicado a todas as camadas lineares dos blocos.
+
+No desempenho, prefill e TTFT foram medidos com registros completos. Nenhuma
+comparação cumpriu simultaneamente speedup mediano de pelo menos `1,05x`,
+intervalo de 95% inteiramente acima de `1,0x` e kernel confirmado. A única
+tendência favorável apareceu em `blocks_int8_dynamic` no OPT-1.3B, mas o
+intervalo ainda cruzou o nulo; portanto o ganho foi classificado como misto,
+não sustentado. Todos os casos de `model_decode` foram preservados como
+`failed` ou `unsupported`: o erro principal foi acesso a saída sobrescrita de
+CUDA Graphs ao atualizar KV cache sob `torch.compile`.
 
 ## Executar as novas baterias
 
@@ -160,8 +188,9 @@ abaixo de 10%, até 2.048 MiB de VRAM ocupada e temperatura abaixo de 65 °C; o 
 também fica registrado no diagnóstico. Em WDDM, uma leitura residual pode ser
 aceita somente com processos abaixo de 10%, potência até 35 W e clock até 300 MHz,
 sem relaxar VRAM ou temperatura. Etapas completas e íntegras são ignoradas em
-`-Resume`. Restam cerca de 4–8 horas: 15–40 minutos de suíte/smoke OPT, 3–6 horas
-de OPT e 30–90 minutos de consolidação.
+`-Resume`. A execução final de 15/09/2026 completou suíte, smoke, hardware e OPT;
+o comando agora serve para revalidar integridade ou retomar apenas se algum
+manifesto for removido/incompleto.
 
 ## Documentos técnicos
 
@@ -177,7 +206,6 @@ de OPT e 30–90 minutos de consolidação.
 
 ## Próximo portão
 
-1. executar o smoke OPT final quando o portão de GPU permitir;
-2. executar OPT-125M, OPT-350M e OPT-1.3B;
-3. revisar hashes, pareamentos, intervalos e casos incompatíveis;
-4. atualizar RQ1–RQ8, compilar o PDF e versionar a evidência OPT.
+1. decidir se `model_decode` será reexecutado com ajuste para CUDA Graphs/KV cache;
+2. revisar a redação do paper curto e do relatório com o orientador;
+3. preparar a apresentação final destacando que resultado negativo também é evidência.

@@ -47,7 +47,7 @@ O runner de modelos carrega separadamente OPT-125M, OPT-350M e OPT-1.3B em
 revisoes imutaveis. Cada variante parte novamente dos pesos originais e altera
 somente inferencia. A qualidade usa 64 janelas uniformes de 512 tokens do
 WikiText-2 versionado e 20 prompts locais; o desempenho separa prefill, TTFT e
-decode com KV cache. Os tres modelos e o dataset ja foram armazenados em cache e
+decode com KV cache. Os tres modelos e o dataset foram armazenados em cache e
 reabertos durante o prefetch, totalizando 6,63~GB para a coleta offline.
 
 A suite no container desta revisao aprovou 71 testes; o unico skip e a integracao
@@ -147,6 +147,94 @@ computacao inteira de ativacoes e pesos.
   \caption{Speedup mediano e intervalos bootstrap de 95\%; nenhum candidato satisfaz o criterio de ganho fisico.}
 \end{figure}
 
+\section{Resultado dos modelos OPT pre-treinados}
+
+A coleta final dos modelos foi executada em 15/09/2026 apos o portao de GPU
+confirmar baixa ocupacao: uso medio de 0,4\%, pico de 2\%, 1.337~MiB de VRAM,
+47~graus Celsius, 10,3~W e clock de 210~MHz. A evidencia esta em
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_v1_2026-09-15/}.
+O smoke final tambem foi promovido para
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_smoke_2026-09-15/}.
+
+Foram avaliados \texttt{facebook/opt-125m}, \texttt{facebook/opt-350m} e
+\texttt{facebook/opt-1.3b}, sem treinamento ou fine-tuning. A execucao produziu
+45 registros agregados de qualidade, 2.880 janelas de qualidade/perplexidade,
+900 metricas de prompts, 1.296 registros de desempenho, 10.080 amostras de
+timing, subconjunto de avaliacao versionado, traces de operadores e manifesto
+de analise.
+
+\begin{longtable}{@{}lrrr@{}}
+\toprule
+\textbf{Modelo} & \textbf{Baseline BF16} & \textbf{INT8 fake atencao} & \textbf{Pruning 50\% atencao} \\
+\midrule
+OPT-125M & 42,371 & 42,313 & 65,796 \\
+OPT-350M & 33,345 & 33,348 & 50,668 \\
+OPT-1.3B & 21,394 & 21,384 & 28,644 \\
+\bottomrule
+\end{longtable}
+
+Na qualidade, 25 de 45 variantes ficaram dentro dos limites operacionais. As
+quantizacoes INT8 fake e weight-only permaneceram dentro do limite nos tres
+modelos. O INT8 dinamico foi aceitavel em OPT-125M e OPT-350M, mas excedeu o
+limite de 2\% no OPT-1.3B: 4,11\% quando aplicado apenas a atencao e 2,34\%
+quando aplicado ao controle global. O pruning por magnitude em atencao foi
+aceitavel apenas em 10\%. A partir de 25\%, a perplexidade ja excedeu levemente
+o limite de 5\%; em 50\% e 75\%, a degradacao tornou-se grande em todos os
+modelos. O pruning 2:4 tambem degradou qualidade nos tres modelos.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_v1_2026-09-15/analise_modelos/qualidade_por_sparsity_e_modelo.png}
+  \caption{Perplexidade por sparsity e modelo na avaliacao OPT.}
+\end{figure}
+
+No desempenho, prefill e TTFT foram coletados com registros completos. Nenhuma
+comparacao cumpriu simultaneamente speedup mediano de pelo menos 1,05, intervalo
+bootstrap de 95\% inteiramente acima de 1,0 e kernel confirmado. O caso mais
+favoravel foi \texttt{blocks\_int8\_dynamic} no OPT-1.3B, com speedup mediano de
+1,271 em prefill e 1,256 em TTFT, mas os intervalos ainda cruzaram o efeito
+nulo. Portanto, essa tendencia e mista, nao sustentada.
+
+\begin{center}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lllrrrr@{}}
+\toprule
+\textbf{Modelo} & \textbf{Operacao} & \textbf{Cenario} &
+\textbf{Speedup med.} & \textbf{IC95 baixo} & \textbf{IC95 alto} &
+\textbf{Memoria med.} \\
+\midrule
+OPT-125M & prefill & atencao INT8 dinamico & 0,806 & 0,677 & 0,932 & 0,869 \\
+OPT-125M & TTFT & atencao INT8 dinamico & 0,799 & 0,705 & 0,902 & 0,869 \\
+OPT-350M & prefill & atencao INT8 dinamico & 0,798 & 0,776 & 0,903 & 0,849 \\
+OPT-350M & TTFT & atencao INT8 dinamico & 0,794 & 0,692 & 0,882 & 0,849 \\
+OPT-1.3B & prefill & blocos INT8 dinamico & 1,271 & 0,958 & 1,400 & 0,542 \\
+OPT-1.3B & TTFT & blocos INT8 dinamico & 1,256 & 0,996 & 1,512 & 0,542 \\
+\bottomrule
+\end{tabular}% 
+}
+\end{center}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_v1_2026-09-15/analise_modelos/speedup_prefill_decode.png}
+  \caption{Speedup em prefill e TTFT dos modelos OPT; nenhum caso satisfaz todos os criterios pre-registrados.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_v1_2026-09-15/analise_modelos/memoria_pico_ci95.png}
+  \caption{Memoria de pico relativa nos modelos OPT.}
+\end{figure}
+
+Todos os 288 registros planejados de \texttt{model\_decode} foram preservados,
+mas nao usados como evidencia de latencia: 282 ficaram em \texttt{failed} e 6
+em \texttt{unsupported}. O erro predominante foi a interacao entre
+\texttt{torch.compile} em modo \texttt{reduce-overhead}, CUDA Graphs e a
+atualizacao do KV cache, que sobrescreveu saidas de grafos capturados durante a
+geracao token a token. Assim, a coleta OPT responde qualidade, prefill, TTFT,
+memoria, armazenamento e confirmacao de operadores, mas nao sustenta conclusoes
+de latencia por token em decode.
+
 \section{Respostas atuais as perguntas de pesquisa}
 
 \begin{longtable}{@{}lp{0.76\linewidth}@{}}
@@ -155,12 +243,12 @@ computacao inteira de ativacoes e pesos.
 \midrule
 RQ1 & No recorte sintetico, INT8 fake preservou melhor a saida que pruning por magnitude em 100\% dos pares. \\
 RQ2 & INT8 fisico reduziu armazenamento para cerca de 50\% do baseline; 2:4, para cerca de 56\%. A memoria de pico mediana tambem caiu nos seis grupos. \\
-RQ3 & Nenhuma tecnica sustentou ganho de latencia nas operacoes isoladas; todos os intervalos de speedup ficaram abaixo de 1. \\
+RQ3 & Nenhuma tecnica sustentou ganho de latencia nas operacoes isoladas. Nos OPT, prefill e TTFT tambem nao satisfizeram todos os criterios; decode ficou tecnicamente limitado. \\
 RQ4 & A separacao por nivel foi confirmada: quantizacao fake responde fidelidade, weight-only responde pesos compactos e INT8 dinamico/2:4 exigem trace do kernel. \\
 RQ5 & As tendencias numericas principais persistiram entre cinco seeds, distribuicoes e perfis; os efeitos temporais sinteticos permaneceram mistos. \\
 RQ6 & A degradacao por pruning cresceu monotonicamente entre 10\%, 25\%, 50\% e 75\% de sparsity. \\
-RQ7 & Permanece aberta ate a avaliacao final dos tres modelos OPT pre-treinados. \\
-RQ8 & INT8 e 2:4 reduziram armazenamento e memoria com caminhos compativeis, mas nao reduziram latencia neste hardware e nestes shapes. \\
+RQ7 & As tendencias sinteticas aparecem parcialmente nos OPT: INT8 preserva melhor a qualidade que pruning; pruning degrada com sparsity; ganho de latencia nao se sustenta. \\
+RQ8 & INT8 e 2:4 reduziram armazenamento e memoria com caminhos compativeis, mas nao reduziram latencia de forma sustentada neste hardware, nestes shapes e nestes modelos. \\
 \bottomrule
 \end{longtable}
 
@@ -177,10 +265,9 @@ para pruning sao limites operacionais deste estudo, nao regras universais.
 \section{Ordem restante de execucao}
 
 \begin{enumerate}
-  \item passar o smoke OPT final em uma janela sem concorrencia da GPU;
-  \item avaliar os tres modelos OPT ja armazenados, sem rede durante a coleta;
-  \item revisar casos suportados, incompativeis e falhos antes de resumir resultados;
-  \item incorporar a evidencia final de modelos ao PDF.
+  \item decidir se a medicao de decode sera reexecutada com ajuste especifico para CUDA Graphs e KV cache;
+  \item revisar a redacao do paper curto e do relatorio com o orientador;
+  \item preparar uma apresentacao destacando a separacao entre fidelidade, memoria, armazenamento e latencia.
 \end{enumerate}
 
 O Docker Desktop 4.63 voltou a operar com backend WSL2 apos a separacao segura
@@ -210,13 +297,13 @@ analises permanecem integros. Nenhum processo e encerrado automaticamente.
 
 \begin{longtable}{@{}ll@{}}
 \toprule
-\textbf{Etapa restante} & \textbf{Tempo esperado} \\
+\textbf{Etapa} & \textbf{Estado} \\
 \midrule
 Build, probe e bateria fisica & concluido \\
-Testes e smoke OPT final & 15--40 min \\
-OPT-125M, OPT-350M e OPT-1.3B & 3--6 h \\
-Analise, PDF e publicacao & 30--90 min \\
-\textbf{Total restante} & \textbf{4--8 h} \\
+Testes e smoke OPT final & concluido \\
+OPT-125M, OPT-350M e OPT-1.3B & concluido \\
+Analise, PDF e publicacao & consolidado nesta revisao \\
+\textbf{Pendente tecnico} & \textbf{decode com KV cache sob \texttt{torch.compile}} \\
 \bottomrule
 \end{longtable}
 
@@ -227,7 +314,8 @@ Analise, PDF e publicacao & 30--90 min \\
   \item weight-only INT8 prova armazenamento compacto, nao necessariamente computacao inteira;
   \item kernels otimizados podem depender do shape e tornar a tendencia mista;
   \item aquecimento, clocks e processos concorrentes podem ampliar a dispersao temporal;
-  \item os modelos OPT podem responder de forma diferente dos pesos sinteticos;
+  \item os modelos OPT responderam de forma diferente dos pesos sinteticos em qualidade absoluta e memoria;
+  \item o decode com KV cache precisa de tratamento proprio quando combinado a CUDA Graphs;
   \item resultados negativos e casos incompativeis devem permanecer na evidencia final.
 \end{itemize}
 

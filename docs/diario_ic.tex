@@ -471,3 +471,55 @@ integração que exige GPU/download explícito.
 modelos. A execução foi corretamente adiada quando o portão observou 47\% de uso
 e 3.171 MiB de VRAM, acima do limite de 2.048 MiB. A retomada deverá usar o mesmo
 \texttt{RunId}, sem repetir as baterias sintética e física já concluídas.
+
+\section{15/09/2026 - Execução final dos modelos OPT}
+
+\textbf{Condições de execução.} O comando \texttt{Remaining} retomou o
+\texttt{RunId final-20260913}. A imagem Docker, o probe de hardware e a bateria
+física foram reconhecidos como íntegros e não foram repetidos. Antes do smoke
+OPT, o portão registrou jogo fechado, uso médio de 1,0\%, pico de 3\%, 1.337 MiB
+de VRAM, 46 graus Celsius, 9,4 W e clock de 210 MHz. Antes da bateria completa,
+registrou uso médio de 0,4\%, pico de 2\%, 1.337 MiB de VRAM, 47 graus Celsius,
+10,3 W e clock de 210 MHz.
+
+\textbf{Cobertura.} O smoke OPT final foi aprovado e a bateria completa avaliou
+\texttt{facebook/opt-125m}, \texttt{facebook/opt-350m} e
+\texttt{facebook/opt-1.3b}, todos em revisões fixadas e sem treinamento. Foram
+gerados 45 registros de qualidade, 2.880 janelas de avaliação, 900 métricas de
+prompts, 1.296 registros de desempenho, 10.080 timings individuais, subconjunto
+versionado de avaliação, traces de operadores e manifestos de análise. As
+evidências foram promovidas para
+\texttt{fases/01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}evidencias/\allowbreak{}benchmarks/\allowbreak{}modelos\_\allowbreak{}opt\_\allowbreak{}v1\_\allowbreak{}2026-09-15/}
+e o smoke para
+\texttt{fases/01\_\allowbreak{}validacao\_\allowbreak{}conceitual/\allowbreak{}evidencias/\allowbreak{}benchmarks/\allowbreak{}modelos\_\allowbreak{}opt\_\allowbreak{}smoke\_\allowbreak{}2026-09-15/}.
+
+\textbf{Qualidade.} Vinte e cinco das 45 variantes ficaram dentro dos limites
+operacionais. As quantizações INT8 fake e weight-only permaneceram estáveis nos
+três modelos. O INT8 dinâmico permaneceu aceitável em OPT-125M e OPT-350M, mas
+excedeu o limite no OPT-1.3B. O pruning por magnitude em atenção foi aceitável
+em 10\%, ficou acima do limite já em 25\% e degradou fortemente em 50\% e 75\%.
+O pruning 2:4 degradou qualidade nos três modelos.
+
+\textbf{Desempenho.} Prefill e TTFT foram coletados com registros completos.
+Nenhuma comparação cumpriu todos os critérios de ganho físico. O caso mais
+favorável apareceu em \texttt{blocks\_\allowbreak{}int8\_\allowbreak{}dynamic}
+no OPT-1.3B, com speedup mediano acima de 1 em prefill e TTFT, mas os intervalos
+de 95\% cruzaram o efeito nulo; portanto a tendência foi classificada como
+mista, não sustentada.
+
+\textbf{Limitação do decode.} Os 288 casos planejados de
+\texttt{model\_\allowbreak{}decode} foram preservados: 282 como
+\texttt{failed} e 6 como \texttt{unsupported}. O erro predominante foi a
+interação entre \texttt{torch.compile} em modo \texttt{reduce-overhead}, CUDA
+Graphs e atualização do KV cache, com sobrescrita de saídas capturadas durante a
+geração token a token. Por isso, a pesquisa passa a ter evidência final para
+qualidade, prefill, TTFT, memória e armazenamento dos modelos OPT, mas não para
+latência por token em decode.
+
+\textbf{Conclusão parcial.} A avaliação em modelos pré-treinados confirma a
+tendência qualitativa principal: INT8 preserva melhor a perplexidade que
+pruning, e a degradação do pruning cresce com a sparsity. Ela também reforça o
+resultado físico negativo: reduzir representação e memória não garantiu
+speedup sustentado. A próxima decisão metodológica é escolher entre corrigir e
+reexecutar apenas o decode, ou registrar essa limitação como escopo da versão
+atual do trabalho.

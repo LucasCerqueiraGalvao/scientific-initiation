@@ -1,0 +1,463 @@
+{
+  "facebook/opt-125m|baseline_bf16|prefill": [
+    "## Call CompiledFxGraph fmp62guzi6oe3j47z4rj67onkhnjqlqa4wpartolvwsmjzdn2er2 ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "ampere_bf16_s16816gemm_bf16_128x64_ldg8_f2f_stages_64x3_tn",
+    "ampere_bf16_s16816gemm_bf16_64x64_ldg8_relu_f2f_stages_64x5_tn",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing",
+    "fmha_cutlassF_bf16_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<cutlass::bfloat16_t, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_10",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_3",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_5",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_6",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_7",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_8",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_9",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_1",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_2",
+    "triton_poi_fused_relu_4",
+    "triton_red_fused__to_copy_add_embedding_mul_native_layer_norm_sub_0",
+    "void at::native::(anonymous namespace)::multi_tensor_apply_kernel<at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<long, 2, 1, 1>, at::native::Copy<long, long> >(at::native::(anonymous namespace)::TensorListMetadata<2>, at::native::(anonymous namespace)::UnaryOpFunctor<long, 2, 1, 1>, at::native::Copy<long, long>)",
+    "void cublasLt::splitKreduce_kernel<32, 16, int, __nv_bfloat16, __nv_bfloat16, float, __nv_bfloat16, false, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, true, true, false>(cublasLt::cublasSplitKParams<float>, __nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, float const*, float const*, __nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, void*, long, float*, int*, float*, float*, float const*, float const*, float const*, float const*, float const*)",
+    "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x64_32x6_tn_align8>(cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x64_32x6_tn_align8::Params)",
+    "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_256x128_32x3_tn_align8>(cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_256x128_32x3_tn_align8::Params)"
+  ],
+  "facebook/opt-125m|baseline_bf16|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-125m|baseline_fp16|prefill": [
+    "## Call CompiledFxGraph fso5t4zi4mkmg3nd3g2w2wux75yhrqmlgqk6d4d22e2xhhs3qn4a ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "ampere_fp16_s16816gemm_fp16_128x64_ldg8_f2f_stages_64x3_tn",
+    "ampere_fp16_s16816gemm_fp16_64x64_ldg8_relu_f2f_stages_64x5_tn",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing",
+    "fmha_cutlassF_f16_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<cutlass::half_t, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_10",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_3",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_5",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_6",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_7",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_8",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_9",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_1",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_2",
+    "triton_poi_fused_relu_4",
+    "void cublasLt::splitKreduce_kernel<32, 16, int, __half, __half, float, __half, false, __half, __half, __half, true, true, false>(cublasLt::cublasSplitKParams<float>, __half const*, __half const*, __half*, __half*, float const*, float const*, __half const*, __half const*, __half*, void*, long, float*, int*, float*, float*, float const*, float const*, float const*, float const*, float const*)",
+    "void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_32x6_tn_align8>(cutlass_80_tensorop_f16_s16816gemm_relu_f16_128x64_32x6_tn_align8::Params)",
+    "void cutlass::Kernel2<cutlass_80_tensorop_f16_s16816gemm_relu_f16_256x128_32x3_tn_align8>(cutlass_80_tensorop_f16_s16816gemm_relu_f16_256x128_32x3_tn_align8::Params)"
+  ],
+  "facebook/opt-125m|baseline_fp16|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-125m|attention_int8_weight_only|prefill": [
+    "## Call CompiledFxGraph fk2hrfildohw6zfeu2vhesbqr4f2kfbl2lupiqietboogswoprp7 ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "ampere_bf16_s16816gemm_bf16_128x64_ldg8_f2f_stages_64x3_tn",
+    "at::native::weight_int8pack_mm_kernel(float const*, signed char const*, float const*, float*, int, int, int)",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing",
+    "fmha_cutlassF_bf16_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<cutlass::bfloat16_t, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_10",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_11",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_12",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_4",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_6",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_7",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_8",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_9",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_2",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_3",
+    "triton_poi_fused_add_view_1",
+    "triton_poi_fused_relu_5",
+    "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1> >(int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1>)",
+    "void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul> >(int, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul>)",
+    "void cublasLt::splitKreduce_kernel<32, 16, int, __nv_bfloat16, __nv_bfloat16, float, __nv_bfloat16, false, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, true, true, false>(cublasLt::cublasSplitKParams<float>, __nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, __nv_bfloat16*, float const*, float const*, __nv_bfloat16 const*, __nv_bfloat16 const*, __nv_bfloat16*, void*, long, float*, int*, float*, float*, float const*, float const*, float const*, float const*, float const*)",
+    "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x64_32x6_tn_align8>(cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x64_32x6_tn_align8::Params)",
+    "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_256x128_32x3_tn_align8>(cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_256x128_32x3_tn_align8::Params)"
+  ],
+  "facebook/opt-125m|attention_int8_weight_only|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-125m|attention_int8_dynamic|prefill": [
+    "## Call CompiledFxGraph f7zvmgglenc7e42fvnn2xk3fuw35u2nedaxo5sb3k2v3xhm6meen ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-125m|attention_int8_dynamic|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-125m|blocks_int8_weight_only|prefill": [
+    "## Call CompiledFxGraph f5mqhiunqc6osbzyoypobqdvyifmgkfsaa6uophyiijhaf3twmwv ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "at::native::weight_int8pack_mm_kernel(float const*, signed char const*, float const*, float*, int, int, int)",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing",
+    "fmha_cutlassF_bf16_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<cutlass::bfloat16_t, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_6",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_7",
+    "triton_per_fused__to_copy_add_embedding_mul_native_layer_norm_sub_view_8",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_2",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_3",
+    "triton_poi_fused_add_relu_5",
+    "triton_poi_fused_add_view_1",
+    "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1> >(int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1>)",
+    "void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul> >(int, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul>)",
+    "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_256x128_32x3_tn_align8>(cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_256x128_32x3_tn_align8::Params)"
+  ],
+  "facebook/opt-125m|blocks_int8_weight_only|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-125m|blocks_int8_dynamic|prefill": [
+    "## Call CompiledFxGraph f4gegqzcszzgpfylxbgkwub7paze3lkaijiv4clkvju2t56xmra6 ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-125m|blocks_int8_dynamic|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-125m|attention_pruning_2to4|prefill": [
+    "## Call CompiledFxGraph f5nr7abw4hgdplooefihpn7iaktpgpalxuzxvzgpg5lhpdqr3ano ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-125m|attention_pruning_2to4|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-125m|blocks_pruning_2to4|prefill": [
+    "## Call CompiledFxGraph f6x2n6w7donkgg6axduvsvm65dnqq7u5wqm2223ggp5ylg5cqcym ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-125m|blocks_pruning_2to4|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-350m|baseline_bf16|prefill": [
+    "## Call CompiledFxGraph fxaa7rk2egenl55gllmjwgxibscdaojj6dk2f37uoa6kd2s5t3ox ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-350m|baseline_bf16|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-350m|baseline_fp16|prefill": [
+    "## Call CompiledFxGraph faifzowq4usyesi2unwqzwsc55gvznja3ccw4lzkysukbmdxncny ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-350m|baseline_fp16|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-350m|attention_int8_weight_only|prefill": [
+    "## Call CompiledFxGraph fhy5qjxsgkqibjmcsx6gufqhl6oa6vefr2ku37ls2nhhvuyi46f7 ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-350m|attention_int8_weight_only|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-350m|attention_int8_dynamic|prefill": [
+    "## Call CompiledFxGraph fim3m5ncnpgv4jr3w3kniwyrcgvg7xhphr7o7xsknkt544fdgizq ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-350m|attention_int8_dynamic|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-350m|blocks_int8_weight_only|prefill": [
+    "## Call CompiledFxGraph fiaoerrpav7crwrigcizgj67pnuwnhgsiykm6riuf555sksxy77x ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "ampere_bf16_s1688gemm_bf16_128x128_ldg8_f2f_stages_32x1_tn",
+    "at::native::weight_int8pack_mm_kernel(float const*, signed char const*, float const*, float*, int, int, int)",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing",
+    "fmha_cutlassF_bf16_aligned_64x64_rf_sm80(PyTorchMemEffAttention::AttentionKernel<cutlass::bfloat16_t, cutlass::arch::Sm80, true, 64, 64, 64, true, true>::Params)",
+    "triton_per_fused_add_native_layer_norm_view_5",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_3",
+    "triton_poi_fused__scaled_dot_product_efficient_attention__to_copy_add_arange_bitwise_and_expand_index_le_mul_new_ones_scalar_tensor_transpose_unsqueeze_view_where_4",
+    "triton_poi_fused_add_relu_6",
+    "triton_poi_fused_add_view_2",
+    "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1> >(int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1>)",
+    "void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul> >(int, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda(float)#1}, std::array<char*, 2ul>)",
+    "void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x2_tn_align8>(cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_32x32_128x2_tn_align8::Params)"
+  ],
+  "facebook/opt-350m|blocks_int8_weight_only|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-350m|blocks_int8_dynamic|prefill": [
+    "## Call CompiledFxGraph fyt5msnturoz3ypjjwjamm45ya6p7vul442gejnx2365hdoud34d ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-350m|blocks_int8_dynamic|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-350m|attention_pruning_2to4|prefill": [
+    "## Call CompiledFxGraph f3qcwari5henehnjo7lvbcjyceox66yn5pzzi4gp3cjgmuloky7s ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-350m|attention_pruning_2to4|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-350m|blocks_pruning_2to4|prefill": [
+    "## Call CompiledFxGraph fo2vfjiip5cl2vgultwuj7o27ccbyymchvsoxbtvpapimfvwucmm ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-350m|blocks_pruning_2to4|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-1.3b|baseline_bf16|prefill": [
+    "## Call CompiledFxGraph frd47hlhyux2esdbdc2cdx7saky3nwqtfvi57zbke7ck6qnzhz2t ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-1.3b|baseline_bf16|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-1.3b|baseline_fp16|prefill": [
+    "## Call CompiledFxGraph f4kjfd6fdja7ybbf6oefiqqak6h4eza4hwzglcr4jllkhk2jdq7l ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-1.3b|baseline_fp16|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-1.3b|attention_int8_weight_only|prefill": [
+    "## Call CompiledFxGraph fanfrxy223o7wcjapuryux3hn75ohj3y3djjtavwnpsmzytk7g5y ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-1.3b|attention_int8_weight_only|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-1.3b|attention_int8_dynamic|prefill": [
+    "## Call CompiledFxGraph fpqk7driqnsc2bt5mcyis4cvucda3jmjey43w2upg7jt7vb7a26k ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-1.3b|attention_int8_dynamic|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-1.3b|blocks_int8_weight_only|prefill": [
+    "## Call CompiledFxGraph fliexsp6w6qikdolpp5kmvavayymozknu2ibbikoly6komacqkcw ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-1.3b|blocks_int8_weight_only|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-1.3b|blocks_int8_dynamic|prefill": [
+    "## Call CompiledFxGraph fbzmaotazhxno6sbxtfjsbcu35265asv5fcr7j3ypbqb7joa5aod ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-1.3b|blocks_int8_dynamic|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-1.3b|attention_pruning_2to4|prefill": [
+    "## Call CompiledFxGraph fiwinv7e63lmxd5c4rgkyxe34be5l2e36hhnmhlqhx4b4f5w5wrb ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-1.3b|attention_pruning_2to4|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ],
+  "facebook/opt-1.3b|blocks_pruning_2to4|prefill": [
+    "## Call CompiledFxGraph fym7vqkq4oz6dqv3mhfdguu2k6zombtbg53b5e4n76tn4as5qqyh ##",
+    "AOTDispatcher Runtime Wrapper Prologue",
+    "Activity Buffer Request",
+    "Pregraph bytecode",
+    "Torch-Compiled Region: 0/0",
+    "TorchDynamo Cache Lookup",
+    "aten::_foreach_copy_",
+    "cudaDeviceSynchronize",
+    "cudaGraphLaunch",
+    "cudaLaunchKernel",
+    "cudaStreamIsCapturing"
+  ],
+  "facebook/opt-1.3b|blocks_pruning_2to4|decode": [
+    "PROFILE_FAILED: RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 939, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 499, in forward\n    outputs: BaseModelOutputWithPast = self.model.decoder(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py\", line 1068, in wrapper\n    output = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py\", line 286, in wrapper\n    outputs = func(self, *args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 378, in forward\n    hidden_states = decoder_layer(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py\", line 109, in __call__\n    return super().__call__(*args, **kwargs)\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 218, in forward\n    hidden_states, _ = self.self_attn(\n  File \"/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py\", line 156, in forward\n    key_states = key_states.view(bsz, -1, self.num_heads, self.head_dim).transpose(1, 2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+  ]
+}

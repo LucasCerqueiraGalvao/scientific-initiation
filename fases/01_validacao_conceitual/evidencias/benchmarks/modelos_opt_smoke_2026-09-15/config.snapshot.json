@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_pretrained_smoke",
+  "device": "cuda",
+  "required_gpu_name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "models": [
+    {
+      "identifier": "facebook/opt-125m",
+      "revision": "27dcfa74d334bc871f3234de431e71c6eeba5dd6"
+    }
+  ],
+  "dataset": {
+    "identifier": "Salesforce/wikitext",
+    "configuration": "wikitext-2-raw-v1",
+    "revision": "f776294184f13b8ff2337b3841cf9269a6216d1e",
+    "split": "validation"
+  },
+  "scenarios": [
+    {
+      "identifier": "baseline_bf16",
+      "kind": "baseline",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "none",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_int8_weight_only",
+      "kind": "quantization_int8_weight_only",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_int8_dynamic",
+      "kind": "quantization_int8_dynamic",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "baseline_fp16",
+      "kind": "baseline",
+      "comparison_group": "fp16",
+      "dtype": "float16",
+      "optimization_scope": "none",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_pruning_2to4",
+      "kind": "pruning_2to4",
+      "comparison_group": "fp16",
+      "dtype": "float16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.5,
+      "measure_performance": true
+    }
+  ],
+  "quality": {
+    "windows": 2,
+    "window_tokens": 64,
+    "prompts_file": "fases/01_validacao_conceitual/experimentos/prompts_opt_v1.json",
+    "generation_tokens": 2,
+    "quantization_perplexity_limit": 0.02,
+    "pruning_perplexity_limit": 0.05
+  },
+  "performance": {
+    "prefill_lengths": [
+      64
+    ],
+    "decode_prompt_lengths": [
+      64
+    ],
+    "batch_sizes": [
+      1
+    ],
+    "decode_tokens": 2,
+    "warmup_iterations": 1,
+    "measure_iterations": 1,
+    "repetitions": 1,
+    "use_kv_cache": true
+  },
+  "execution": {
+    "compile": true,
+    "compile_mode": "reduce-overhead",
+    "local_files_only": true,
+    "capabilities_file": "resultados/hardware_capabilities.json"
+  }
+}

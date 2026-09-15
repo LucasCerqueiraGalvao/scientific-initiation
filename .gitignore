@@ -7,3 +7,14 @@ __pycache__/
 resultados/
 tmp/
 /$buildDir/
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.out
+*.run.xml
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz

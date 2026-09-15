@@ -1,0 +1,15 @@
+case_id,model_id,scenario,operation,repeat_index,iteration,latency_ms
+b61b5b8b924532acdc9d,facebook/opt-125m,baseline_bf16,model_prefill,1,1,36.17830276489258
+01d303407c4aa03d4185,facebook/opt-125m,baseline_bf16,model_ttft,1,1,21.260448455810547
+1b038dc80ed030c2f228,facebook/opt-125m,baseline_bf16,model_decode,1,1,10.893823623657227
+bd5c84acdbf4d83c94b8,facebook/opt-125m,baseline_fp16,model_prefill,1,1,30.78883171081543
+664058b7eee2ed51c8c7,facebook/opt-125m,baseline_fp16,model_ttft,1,1,20.61676788330078
+f073354be4f7f14090a9,facebook/opt-125m,baseline_fp16,model_decode,1,1,12.265600204467773
+ac59a6362f460d0ea1f9,facebook/opt-125m,attention_int8_weight_only,model_prefill,1,1,113.12258911132812
+06d31e9a7b9581e851b2,facebook/opt-125m,attention_int8_weight_only,model_ttft,1,1,22.980703353881836
+a043fe637f1442d31a71,facebook/opt-125m,attention_int8_weight_only,model_decode,1,1,17.054847717285156
+9c0668a91715b08575c8,facebook/opt-125m,attention_int8_dynamic,model_prefill,1,1,37.743553161621094
+58edf44225cebadf01e2,facebook/opt-125m,attention_int8_dynamic,model_ttft,1,1,22.24777603149414
+f7cdfb450217c195ceed,facebook/opt-125m,attention_pruning_2to4,model_prefill,1,1,63.71503829956055
+06f2239bc7d5584a0bea,facebook/opt-125m,attention_pruning_2to4,model_ttft,1,1,24.25699234008789
+583400292853371f15da,facebook/opt-125m,attention_pruning_2to4,model_decode,1,1,41.76345443725586

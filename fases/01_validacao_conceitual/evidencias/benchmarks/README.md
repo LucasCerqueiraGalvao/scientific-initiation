@@ -13,8 +13,10 @@ interpretação; smoke e diagnósticos em CPU não são resultados de hardware.
 | [hardware_probe_2026-09-14](hardware_probe_2026-09-14/) | Confirmar ambiente e kernels físicos | CUDA 12.8, SM 8.9, TorchAO e cuSPARSELt | Completo | Forward e traces aprovados para INT8 weight-only, INT8 dinâmico e sparse 2:4. |
 | [smoke_hardware_v3_2026-09-14](smoke_hardware_v3_2026-09-14/) | Validar a bateria física ponta a ponta | Um perfil, 2 operações e 5 cenários | Completo | 10 registros, 30 timings e análise íntegra. |
 | [hardware_nativo_v3_2026-09-14](hardware_nativo_v3_2026-09-14/) | Medir representações físicas nas operações isoladas | 11 perfis, 2 operações, 5 seeds, 5 cenários e 3 repetições | Completo | 1.650 registros e 82.500 timings; nenhum dos seis grupos otimizados obteve speedup sustentado. |
+| [modelos_opt_smoke_2026-09-15](modelos_opt_smoke_2026-09-15/) | Validar runner OPT final | OPT-125M reduzido, qualidade, prefill, TTFT, decode e profiler | Completo | 5 variantes, 15 registros de desempenho e manifestos íntegros. |
+| [modelos_opt_v1_2026-09-15](modelos_opt_v1_2026-09-15/) | Avaliar modelos pré-treinados | OPT-125M, OPT-350M e OPT-1.3B, 15 variantes por modelo | Completo com limitação de decode | 45 registros de qualidade, 1.296 registros de desempenho e 10.080 timings; prefill/TTFT completos, decode preservado como falha técnica. |
 
 Cada coleta deve preservar configuração, ambiente, manifesto, CSVs por execução,
 timings e análise. Não sobrescreva uma pasta existente. Coletas v1/v2 usam
-`analise/`; coletas v3 usam `analise_v3/`. Markdown é usado somente neste README
-de navegação.
+`analise/`; coletas v3 usam `analise_v3/`; modelos OPT usam `analise_modelos/`.
+Markdown é usado somente neste README de navegação.

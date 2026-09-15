@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_pretrained_smoke",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "bc0a441b5aac84fdf0dab8fba9e3a7441d7b48130ea9b3033e8d9bdba9077da1",
+  "code_sha256": "bdea858cbff1dded4ad77f5291282e317234f81b3a921667860374a09a274f50",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "models": [
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "baseline_fp16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_2to4",
+      "status": "complete"
+    }
+  ],
+  "resumed_at": [],
+  "artifacts": [
+    {
+      "path": "quality.csv",
+      "sha256": "ba80dd0c70dbe7dde54cd8e6e8eff1aa93962b2a68103cb5655219ba3008ac64",
+      "records": 5
+    },
+    {
+      "path": "quality_windows.csv",
+      "sha256": "a6a00953ebda52c025fa5ff546128850af6c4ee2f89fbd4c6cb874c5925d7566",
+      "records": 10
+    },
+    {
+      "path": "prompt_metrics.csv",
+      "sha256": "3947390ed619551b85acf59c9104f67994b472d12bee80da48a3451ebeeff73c",
+      "records": 100
+    },
+    {
+      "path": "performance.csv",
+      "sha256": "034898ef1ee2dfbe49c074a61a66ced99ff6831c63ff2f24104a3612e9de7752",
+      "records": 15
+    },
+    {
+      "path": "timings.csv",
+      "sha256": "683572db52d830ef5e5b306496b8d1c5ae5768c86a25e69d23a30bec4098f951",
+      "records": 14
+    },
+    {
+      "path": "evaluation_subset.json",
+      "sha256": "e50a9069e9bfaf117704c773080fd99cdff7b9c3f5a960d6344f4e1c44c11d24",
+      "records": 1
+    },
+    {
+      "path": "model_operators.json",
+      "sha256": "c7ff3a5a988608be8ea670500799daa4e8f2dca5ab6fd2faccf919b26ccb0f41",
+      "records": 10
+    }
+  ],
+  "completed_at": "2026-09-15T02:39:36+00:00"
+}

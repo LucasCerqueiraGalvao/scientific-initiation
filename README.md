@@ -5,11 +5,11 @@ Transformers em inferência, com comparação controlada entre baseline, pruning
 por magnitude e quantização linear INT8.
 
 O benchmark GPU v1 foi concluído na NVIDIA GeForce RTX 4070 Ti SUPER e sua
-evidência foi preservada com hashes. A infraestrutura v3 amplia o estudo para
+evidência foi preservada com hashes. A infraestrutura v3 ampliou o estudo para
 cinco seeds, três distribuições, 13 perfis, multi-head attention, kernels reais
-e modelos OPT pré-treinados. A bateria sintética v3 também foi concluída; as
-operações físicas foram coletadas com kernels confirmados, enquanto a bateria
-OPT final permanece separada até uma janela sem concorrência da GPU.
+e modelos OPT pré-treinados. As baterias sintética v3, física v3 e OPT final
+foram executadas; a etapa OPT validou qualidade, prefill e TTFT, preservando a
+falha técnica da medição de decode com KV cache e CUDA Graphs.
 
 O Docker Desktop voltou a operar com backend WSL2. Seu disco de dados foi
 realocado para `D:\DockerDesktopData`, preservando os contêineres existentes e
@@ -29,16 +29,18 @@ probe físico, o smoke e a bateria de 1.650 casos foram concluídos.
 | Benchmark GPU v1 | Concluído | Duas execuções, 108 registros, hashes, análise e gráficos versionados. |
 | Benchmark sintético v3 | Concluído | 2.340 registros completos, 1.950 pares e 117 mil timings na GPU. |
 | Caminhos físicos | Concluído | 1.650 registros, 82.500 timings, TorchAO INT8 e pruning 2:4 auditados pelo profiler. |
-| Modelos OPT | Smoke diagnóstico validado | Runner, cache offline e separação entre prefill, TTFT e decode validados; smoke limpo e coleta final pendentes. |
-| Ganho real nas operações | Não observado | Os seis grupos físicos tiveram intervalo de speedup inteiramente abaixo de `1,0x`. |
+| Modelos OPT | Concluído com limitação de decode | 45 registros de qualidade, 2.880 janelas, 900 métricas de prompts, 1.296 registros de desempenho e 10.080 timings; decode preservado como falha técnica. |
+| Ganho real nas operações/modelos | Não sustentado | Operações isoladas contradisseram speedup; nos OPT, nenhum ganho cumpriu todos os critérios pré-registrados. |
 
 A posição científica correta é: a evidência v1 demonstra comportamento numérico
 e a v3 sustenta a robustez numérica em múltiplas entradas. Em todos os casos
 pareados, INT8 fake apresentou MSE menor que pruning, e o erro do pruning cresceu
 com a sparsity. Na bateria física, INT8 dinâmico e 2:4 usaram os kernels esperados,
-mas nenhum cenário foi mais rápido que seu baseline compilado. Resultado físico
-negativo também é evidência: representação menor não implica menor latência para
-todo shape ou composição de operação.
+mas nenhum cenário foi mais rápido que seu baseline compilado. Nos modelos OPT,
+INT8 manteve melhor qualidade que pruning e reduziu memória/armazenamento em
+vários cenários, mas não houve speedup sustentado pelos critérios completos.
+Resultado físico negativo também é evidência: representação menor não implica
+menor latência para todo shape ou composição de operação.
 
 ## Documentação LaTeX
 
@@ -110,7 +112,8 @@ $cacheRoot = "D:\Caches\scientific-initiation\huggingface"
 .\scripts\run_benchmarks_docker.ps1 -Action Status -CacheRoot $cacheRoot
 ```
 
-Para executar somente o trabalho pendente, sem repetir a bateria sintética v3:
+Para revalidar somente o trabalho pendente ou retomar uma execução interrompida,
+sem repetir a bateria sintética v3:
 
 ```powershell
 .\scripts\run_benchmarks_docker.ps1 `
@@ -137,15 +140,15 @@ um segundo critério conservador: soma dos processos abaixo de 10%, potência at
 35 W e clock gráfico até 300 MHz, mantendo os mesmos limites de VRAM e temperatura.
 O script nunca encerra processos para atender a esses limites.
 
-Estimativa para a sequência restante na RTX 4070 Ti SUPER:
+Estado da sequência final na RTX 4070 Ti SUPER:
 
 | Etapa | Tempo esperado |
 | --- | ---: |
 | Build, probe e bateria física | Concluídos |
-| Suíte e smoke OPT final | 15–40 min |
-| OPT-125M, OPT-350M e OPT-1.3B | 3–6 h |
-| Análise, PDF e publicação | 30–90 min |
-| **Total restante** | **4–8 h** |
+| Suíte e smoke OPT final | Concluídos |
+| OPT-125M, OPT-350M e OPT-1.3B | Concluídos |
+| Análise, PDF e publicação | Atualizados nesta consolidação |
+| **Pendência técnica** | investigar/reexecutar decode se necessário |
 
 ## Compilar o relatório
 
@@ -165,9 +168,10 @@ Arquivos auxiliares ficam em `tmp/pdfs/latex/` e não são versionados.
 
 ## Próximos passos
 
-1. executar o smoke OPT final quando o portão de GPU permitir;
-2. avaliar os três OPT sem treinamento ou fine-tuning;
-3. revisar os manifestos OPT, compilar o PDF e publicar a consolidação.
+1. decidir se a medição de decode será reexecutada com ajuste específico para
+   CUDA Graphs/KV cache ou registrada como limitação técnica;
+2. revisar o paper curto criado em `docs/paper_ic_transformers/`;
+3. preparar apresentação/discussão dos resultados finais com o orientador.
 
 ## Cuidados de interpretação
 

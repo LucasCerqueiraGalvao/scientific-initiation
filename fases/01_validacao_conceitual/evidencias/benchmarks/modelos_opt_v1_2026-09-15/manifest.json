@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_pretrained_v1",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "fc65e81cb0fb0234b0c737355505ea6c53ffe883859c1e6085240ecfa16fd137",
+  "code_sha256": "bdea858cbff1dded4ad77f5291282e317234f81b3a921667860374a09a274f50",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "models": [
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "baseline_fp16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_10",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_25",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_75",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "blocks_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "blocks_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "blocks_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "blocks_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_2to4",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "blocks_pruning_2to4",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "baseline_fp16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_10",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_25",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_75",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "blocks_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "blocks_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "blocks_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "blocks_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_2to4",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "blocks_pruning_2to4",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "baseline_fp16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_10",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_25",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_75",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "blocks_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "blocks_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "blocks_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "blocks_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_2to4",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "blocks_pruning_2to4",
+      "status": "complete"
+    }
+  ],
+  "resumed_at": [],
+  "artifacts": [
+    {
+      "path": "quality.csv",
+      "sha256": "8e5543199c59842f3ae8635f254bf018d3f1d710623033e8369cbdaffa9c3ac5",
+      "records": 45
+    },
+    {
+      "path": "quality_windows.csv",
+      "sha256": "a1637d831c49454a46d53123bbc53c7d4248323c2b800aac7c35244ab80fca63",
+      "records": 2880
+    },
+    {
+      "path": "prompt_metrics.csv",
+      "sha256": "f66a58470ac4ffb3f493e1342d5b90e401e485376b8de89504f0f0928c200c2a",
+      "records": 900
+    },
+    {
+      "path": "performance.csv",
+      "sha256": "7c767a57355638e8a5507a8dcdb63c96b82cc693bc86ddf682bf55decbfabec0",
+      "records": 1296
+    },
+    {
+      "path": "timings.csv",
+      "sha256": "ad82c468280219e19a8e49dc6d1babd85edc5ccceddef7879b0ba90a3cea083e",
+      "records": 10080
+    },
+    {
+      "path": "evaluation_subset.json",
+      "sha256": "24f417fd81e385e16ee38aae8727eeda8fe2dad8793fa54c6dbb92c6f0986c98",
+      "records": 3
+    },
+    {
+      "path": "model_operators.json",
+      "sha256": "f23708b4f717472966421223dfdc663e1d49df87cd8ba0241ccfabe7d3b7a18a",
+      "records": 48
+    }
+  ],
+  "completed_at": "2026-09-15T07:48:12+00:00"
+}
