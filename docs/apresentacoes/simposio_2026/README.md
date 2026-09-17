@@ -28,3 +28,8 @@ Fontes textuais:
 
 Os arquivos `.pptx`, previews e o gerador PowerShell são artefatos da
 apresentação; a documentação textual canônica foi migrada para LaTeX.
+
+Para uma apresentação atualizada ao orientador, use o relatório consolidado em
+`../../../output/pdf/relatorio_ic_transformers.pdf` e o paper curto em
+`../../../output/pdf/paper_ic_transformers.pdf`, pois estes já incluem OPT-2.7B
+e OPT-6.7B.

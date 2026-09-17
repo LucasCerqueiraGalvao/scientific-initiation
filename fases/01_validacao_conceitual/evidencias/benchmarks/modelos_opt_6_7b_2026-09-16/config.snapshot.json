@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_6_7b_incremental_guarded",
+  "device": "cuda",
+  "required_gpu_name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "models": [
+    {
+      "identifier": "facebook/opt-6.7b",
+      "revision": "a45aa65bbeb77c1558bc99bedc6779195462dab0"
+    }
+  ],
+  "dataset": {
+    "identifier": "Salesforce/wikitext",
+    "configuration": "wikitext-2-raw-v1",
+    "revision": "f776294184f13b8ff2337b3841cf9269a6216d1e",
+    "split": "validation"
+  },
+  "scenarios": [
+    {
+      "identifier": "baseline_bf16",
+      "kind": "baseline",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "none",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_pruning_10",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.1,
+      "measure_performance": false
+    },
+    {
+      "identifier": "attention_pruning_25",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.25,
+      "measure_performance": false
+    },
+    {
+      "identifier": "attention_pruning_50",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.5,
+      "measure_performance": false
+    },
+    {
+      "identifier": "attention_pruning_75",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.75,
+      "measure_performance": false
+    },
+    {
+      "identifier": "attention_int8_fake",
+      "kind": "quantization_int8_fake_per_row",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.0,
+      "measure_performance": false
+    },
+    {
+      "identifier": "blocks_pruning_50",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "transformer_blocks",
+      "pruning_sparsity": 0.5,
+      "measure_performance": false
+    },
+    {
+      "identifier": "blocks_int8_fake",
+      "kind": "quantization_int8_fake_per_row",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "transformer_blocks",
+      "pruning_sparsity": 0.0,
+      "measure_performance": false
+    },
+    {
+      "identifier": "attention_int8_weight_only",
+      "kind": "quantization_int8_weight_only",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_int8_dynamic",
+      "kind": "quantization_int8_dynamic",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "blocks_int8_weight_only",
+      "kind": "quantization_int8_weight_only",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "transformer_blocks",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "blocks_int8_dynamic",
+      "kind": "quantization_int8_dynamic",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "transformer_blocks",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "baseline_fp16",
+      "kind": "baseline",
+      "comparison_group": "fp16",
+      "dtype": "float16",
+      "optimization_scope": "none",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_pruning_2to4",
+      "kind": "pruning_2to4",
+      "comparison_group": "fp16",
+      "dtype": "float16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.5,
+      "measure_performance": true
+    },
+    {
+      "identifier": "blocks_pruning_2to4",
+      "kind": "pruning_2to4",
+      "comparison_group": "fp16",
+      "dtype": "float16",
+      "optimization_scope": "transformer_blocks",
+      "pruning_sparsity": 0.5,
+      "measure_performance": true
+    }
+  ],
+  "quality": {
+    "windows": 64,
+    "window_tokens": 512,
+    "prompts_file": "fases/01_validacao_conceitual/experimentos/prompts_opt_v1.json",
+    "generation_tokens": 64,
+    "quantization_perplexity_limit": 0.02,
+    "pruning_perplexity_limit": 0.05
+  },
+  "performance": {
+    "prefill_lengths": [
+      128,
+      512,
+      1024
+    ],
+    "decode_prompt_lengths": [
+      128,
+      512,
+      1024
+    ],
+    "batch_sizes": [
+      1
+    ],
+    "decode_tokens": 64,
+    "warmup_iterations": 5,
+    "measure_iterations": 10,
+    "repetitions": 3,
+    "use_kv_cache": true
+  },
+  "execution": {
+    "compile": true,
+    "compile_mode": "reduce-overhead",
+    "local_files_only": true,
+    "capabilities_file": "resultados/hardware_capabilities.json"
+  }
+}

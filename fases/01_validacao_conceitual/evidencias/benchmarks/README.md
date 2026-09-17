@@ -15,8 +15,50 @@ interpretação; smoke e diagnósticos em CPU não são resultados de hardware.
 | [hardware_nativo_v3_2026-09-14](hardware_nativo_v3_2026-09-14/) | Medir representações físicas nas operações isoladas | 11 perfis, 2 operações, 5 seeds, 5 cenários e 3 repetições | Completo | 1.650 registros e 82.500 timings; nenhum dos seis grupos otimizados obteve speedup sustentado. |
 | [modelos_opt_smoke_2026-09-15](modelos_opt_smoke_2026-09-15/) | Validar runner OPT final | OPT-125M reduzido, qualidade, prefill, TTFT, decode e profiler | Completo | 5 variantes, 15 registros de desempenho e manifestos íntegros. |
 | [modelos_opt_v1_2026-09-15](modelos_opt_v1_2026-09-15/) | Avaliar modelos pré-treinados | OPT-125M, OPT-350M e OPT-1.3B, 15 variantes por modelo | Completo com limitação de decode | 45 registros de qualidade, 1.296 registros de desempenho e 10.080 timings; prefill/TTFT completos, decode preservado como falha técnica. |
+| [modelos_opt_2_7b_2026-09-15](modelos_opt_2_7b_2026-09-15/) | Extensão de escala | OPT-2.7B, 15 variantes | Completo | 15 registros de qualidade, 216 registros de desempenho e 1.440 timings; speedups mistos e qualidade preservada melhor por INT8. |
+| [modelos_opt_6_7b_2026-09-16](modelos_opt_6_7b_2026-09-16/) | Extensão de escala guardada | OPT-6.7B, 15 variantes, guarda de VRAM em 15.800 MiB | Completo | 15 registros de qualidade, 216 registros de desempenho e 1.440 timings; speedup físico em alguns caminhos, mas sem qualidade aceitável nos blocos. |
 
 Cada coleta deve preservar configuração, ambiente, manifesto, CSVs por execução,
 timings e análise. Não sobrescreva uma pasta existente. Coletas v1/v2 usam
 `analise/`; coletas v3 usam `analise_v3/`; modelos OPT usam `analise_modelos/`.
 Markdown é usado somente neste README de navegação.
+
+## Speedup e VRAM nos modelos OPT
+
+As tabelas abaixo usam as medianas pareadas e os intervalos bootstrap de 95%
+dos arquivos `analise_modelos/resumo_desempenho.csv`. A coluna `Padrão` é o
+baseline associado de cada comparação. Valores acima de `1,0` em speedup são
+mais rápidos que o baseline; valores abaixo de `1,0` em VRAM indicam menor uso
+relativo de memória. A leitura científica precisa considerar também qualidade:
+no OPT-6.7B, por exemplo, `blocks_int8_dynamic` acelerou, mas aumentou a
+perplexidade em `165,05%`.
+
+### Speedup mediano em prefill
+
+| Modelo | Padrão | Attn INT8 dyn | Attn INT8 WO | Attn 2:4 | Blocos INT8 dyn | Blocos INT8 WO | Blocos 2:4 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| OPT-125M | 1.000 | 0.806 [0.677; 0.932] | 0.055 [0.051; 0.065] | 0.658 [0.621; 0.680] | 0.770 [0.610; 0.942] | 0.019 [0.018; 0.024] | 0.604 [0.553; 0.690] |
+| OPT-350M | 1.000 | 0.798 [0.776; 0.903] | 0.035 [0.033; 0.044] | 0.665 [0.587; 0.752] | 0.816 [0.713; 1.008] | 0.012 [0.011; 0.016] | 0.711 [0.560; 0.758] |
+| OPT-1.3B | 1.000 | 0.982 [0.878; 1.049] | 0.028 [0.027; 0.029] | 0.834 [0.780; 0.875] | 1.271 [0.958; 1.400] | 0.010 [0.009; 0.010] | 0.893 [0.807; 0.924] |
+| OPT-2.7B | 1.000 | 1.024 [0.844; 1.134] | 0.030 [0.028; 0.039] | 0.873 [0.798; 0.907] | 1.305 [0.907; 1.588] | 0.010 [0.009; 0.014] | 1.061 [0.975; 1.078] |
+| OPT-6.7B | 1.000 | 1.169 [1.009; 1.249] | 0.026 [0.025; 0.034] | 1.030 [0.974; 1.111] | 1.756 [1.171; 2.137] | 0.009 [0.009; 0.012] | 1.073 [1.017; 1.228] |
+
+### Speedup mediano em TTFT
+
+| Modelo | Padrão | Attn INT8 dyn | Attn INT8 WO | Attn 2:4 | Blocos INT8 dyn | Blocos INT8 WO | Blocos 2:4 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| OPT-125M | 1.000 | 0.799 [0.705; 0.902] | 0.053 [0.047; 0.074] | 0.688 [0.641; 0.743] | 0.757 [0.629; 0.929] | 0.019 [0.016; 0.026] | 0.720 [0.548; 0.751] |
+| OPT-350M | 1.000 | 0.794 [0.692; 0.882] | 0.034 [0.031; 0.047] | 0.674 [0.627; 0.751] | 0.821 [0.663; 1.009] | 0.012 [0.011; 0.017] | 0.742 [0.627; 0.827] |
+| OPT-1.3B | 1.000 | 0.983 [0.877; 1.073] | 0.027 [0.027; 0.034] | 0.818 [0.779; 0.887] | 1.256 [0.996; 1.512] | 0.009 [0.009; 0.012] | 0.915 [0.873; 0.932] |
+| OPT-2.7B | 1.000 | 1.030 [0.848; 1.131] | 0.030 [0.028; 0.039] | 0.870 [0.797; 0.908] | 1.310 [0.915; 1.589] | 0.010 [0.009; 0.014] | 1.059 [0.971; 1.069] |
+| OPT-6.7B | 1.000 | 1.166 [1.003; 1.247] | 0.026 [0.025; 0.034] | 1.035 [0.975; 1.140] | 1.744 [1.186; 2.140] | 0.009 [0.009; 0.012] | 1.072 [1.016; 1.246] |
+
+### VRAM relativa mediana em prefill
+
+| Modelo | Padrão | Attn INT8 dyn | Attn INT8 WO | Attn 2:4 | Blocos INT8 dyn | Blocos INT8 WO | Blocos 2:4 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| OPT-125M | 1.000 | 0.869 [0.869; 0.886] | 0.873 [0.873; 0.897] | 0.882 [0.882; 0.907] | 0.647 [0.646; 0.647] | 0.647 [0.647; 0.684] | 0.697 [0.697; 0.746] |
+| OPT-350M | 1.000 | 0.849 [0.849; 0.855] | 0.849 [0.849; 0.855] | 0.999 [0.999; 0.999] | 0.546 [0.546; 0.546] | 0.546 [0.546; 0.577] | 0.679 [0.679; 0.698] |
+| OPT-1.3B | 1.000 | 0.847 [0.847; 0.851] | 0.847 [0.847; 0.848] | 0.866 [0.866; 0.870] | 0.542 [0.542; 0.543] | 0.542 [0.542; 0.551] | 0.602 [0.602; 0.612] |
+| OPT-2.7B | 1.000 | 0.842 [0.842; 0.849] | 0.842 [0.842; 0.849] | 0.862 [0.862; 0.868] | 0.526 [0.526; 0.546] | 0.526 [0.526; 0.545] | 0.585 [0.585; 0.602] |
+| OPT-6.7B | 1.000 | 0.839 [0.839; 0.843] | 0.839 [0.839; 0.843] | 0.859 [0.859; 0.863] | 0.516 [0.516; 0.529] | 0.516 [0.516; 0.528] | 0.577 [0.577; 0.587] |

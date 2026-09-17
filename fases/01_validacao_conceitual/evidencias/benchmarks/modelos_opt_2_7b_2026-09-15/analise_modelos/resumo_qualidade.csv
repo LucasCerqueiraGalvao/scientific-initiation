@@ -1,0 +1,16 @@
+model_id,scenario,kind,comparison_group,optimization_scope,status,skip_reason,pruning_sparsity,observed_sparsity,perplexity,perplexity_increase_percent,logits_mse,logits_kl_divergence,top1_agreement,generated_token_agreement,storage_megabytes,quality_acceptable
+facebook/opt-2.7b,baseline_bf16,baseline,bf16,none,complete,,0.0,0.0,18.17803210104967,0.0,0.0,-1.4901161193847655e-09,1.0,1.0,5057.51953125,True
+facebook/opt-2.7b,baseline_fp16,baseline,fp16,none,complete,,0.0,0.0,18.207474437166475,0.0,0.0,3.725290298461913e-10,1.0,1.0,5057.51953125,True
+facebook/opt-2.7b,attention_pruning_10,pruning_magnitude,bf16,attention_only,complete,,0.1,0.1,18.382600272943545,1.12535928397916,0.2438358483836054,0.0146409192238934,1.0,0.4796875,5057.51953125,True
+facebook/opt-2.7b,attention_pruning_25,pruning_magnitude,bf16,attention_only,complete,,0.25,0.25,19.13588909834085,5.26931073708398,0.5186970479786396,0.0357528400141745,0.85,0.403125,5057.51953125,False
+facebook/opt-2.7b,attention_pruning_50,pruning_magnitude,bf16,attention_only,complete,,0.5,0.5,41.530459235353206,128.46510009713913,1.7146550759673118,0.4061330352909863,0.7,0.1306261777877807,5057.51953125,False
+facebook/opt-2.7b,attention_pruning_75,pruning_magnitude,bf16,attention_only,complete,,0.75,0.75,391.8358237684338,2055.545889622495,6.136519289016723,1.6827072136104106,0.55,0.0301339287310838,5057.51953125,False
+facebook/opt-2.7b,attention_int8_fake,quantization_int8_fake_per_row,bf16,attention_only,complete,,0.0,0.0,18.238395969588456,0.33207042546317,0.0032848821196239,0.0012694774195551,0.95,0.59296875,5057.51953125,True
+facebook/opt-2.7b,blocks_pruning_50,pruning_magnitude,bf16,transformer_blocks,complete,,0.5,0.5,60.28978411478091,231.6628762653552,2.315462106466293,0.7981880575418472,0.6,0.0680837396532297,5057.51953125,False
+facebook/opt-2.7b,blocks_int8_fake,quantization_int8_fake_per_row,bf16,transformer_blocks,complete,,0.0,0.0,18.1876738362928,0.05304058871462,0.004488271503942,0.0012191996676847,1.0,0.56640625,5057.51953125,True
+facebook/opt-2.7b,attention_int8_weight_only,quantization_int8_weight_only,bf16,attention_only,complete,,0.0,0.0,18.235790325599684,0.31773639868684,0.002690471423557,0.0010383641652879,1.0,0.79296875,4258.14453125,True
+facebook/opt-2.7b,attention_int8_dynamic,quantization_int8_dynamic,bf16,attention_only,complete,,0.0,0.0,18.954860838261723,4.27344793371333,1.6802503421902657,0.0945807652547955,0.8,0.1171875,4258.14453125,False
+facebook/opt-2.7b,blocks_int8_weight_only,quantization_int8_weight_only,bf16,transformer_blocks,complete,,0.0,0.0,18.18592328326293,0.04341054174288,0.0042019889748189,0.0014279881448601,1.0,0.63125,2658.92578125,True
+facebook/opt-2.7b,blocks_int8_dynamic,quantization_int8_dynamic,bf16,transformer_blocks,complete,,0.0,0.0,18.980512584718703,4.41456192401981,0.465625075995922,0.1396967268548906,0.8,0.10859375,2658.92578125,False
+facebook/opt-2.7b,attention_pruning_2to4,pruning_2to4,fp16,attention_only,complete,,0.5,0.5,27.669754720749363,51.969208119648734,1.818259119987488,0.2277872448787093,0.7,0.1995975390076637,4357.51953125,False
+facebook/opt-2.7b,blocks_pruning_2to4,pruning_2to4,fp16,transformer_blocks,complete,,0.5,0.5,519.0741139884922,2750.884760430688,5.476041066646576,2.0650147587060927,0.3,0.0394965277984738,2957.51953125,False

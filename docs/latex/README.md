@@ -10,8 +10,15 @@ Para compilar no Windows com MiKTeX e XeLaTeX, execute na raiz:
 .\scripts\build_docs.ps1
 ```
 
-O PDF final é gravado em `output/pdf/relatorio_ic_transformers.pdf`. Arquivos
+O PDF final é gravado em `output/pdf/relatorio_ic_transformers.pdf`. O paper
+curto derivado fica em `output/pdf/paper_ic_transformers.pdf`. Arquivos
 auxiliares ficam em `tmp/pdfs/latex/` e não são versionados.
+
+Estado da documentação em 17/09/2026: os PDFs incluem validações conceituais
+18/18, benchmark sintético v3, benchmark físico v3, OPT v1, OPT-2.7B e OPT-6.7B.
+O relatório principal preserva a limitação técnica de decode com KV cache/CUDA
+Graphs e registra que o speedup físico observado no OPT-6.7B não foi aceito como
+configuração final por degradação de perplexidade.
 
 Política documental:
 

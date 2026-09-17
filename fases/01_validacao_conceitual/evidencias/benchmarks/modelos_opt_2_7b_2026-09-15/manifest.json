@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_2_7b_incremental",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "6faf40651bb361fad2e5ed7970178ed035de681534bf74c807bb1ab04d3996e0",
+  "code_sha256": "bdea858cbff1dded4ad77f5291282e317234f81b3a921667860374a09a274f50",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "models": [
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "baseline_fp16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_10",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_25",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_75",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "blocks_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "blocks_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "blocks_int8_weight_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "blocks_int8_dynamic",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_2to4",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "blocks_pruning_2to4",
+      "status": "complete"
+    }
+  ],
+  "resumed_at": [],
+  "artifacts": [
+    {
+      "path": "quality.csv",
+      "sha256": "e612d37b89fcb63fd303d0f1ebfec0d221cda897c609c6b63630168db488cace",
+      "records": 15
+    },
+    {
+      "path": "quality_windows.csv",
+      "sha256": "275d7d8efdf9535854899de743c80f101a50b753ba4da08b83eefc72cf3176a5",
+      "records": 960
+    },
+    {
+      "path": "prompt_metrics.csv",
+      "sha256": "2673235ab06ad83cb80e0a5a0170e32b8b6a127690e22796994de273eb0805ce",
+      "records": 300
+    },
+    {
+      "path": "performance.csv",
+      "sha256": "6b13900f8a8d08f13195ebdc93b818b3eb9426e141d4846eb6fb07f462c6818b",
+      "records": 216
+    },
+    {
+      "path": "timings.csv",
+      "sha256": "5a935811d67eaec4b148b2f682a17b889f81ad4dc5b598e976a15a771e3b076b",
+      "records": 1440
+    },
+    {
+      "path": "evaluation_subset.json",
+      "sha256": "35060465629263bf277a2c0cdbd0eb2f865692783a92e618b60596a8211953cf",
+      "records": 1
+    },
+    {
+      "path": "model_operators.json",
+      "sha256": "9f6310427f6545720108a071d3c42599092a8cc684620476419bf4440f72bfac",
+      "records": 16
+    }
+  ],
+  "completed_at": "2026-09-15T17:40:09+00:00"
+}

@@ -16,3 +16,7 @@ andamento do projeto.
 | Data | Tema principal | Síntese | Registro integral |
 | --- | --- | --- | --- |
 | 31/07/2026 | Validação da implementação, recorte da autoatenção e benchmarks | [Registro LaTeX](2026-07-31/registro.tex) | [Original](2026-07-31/transcricao-completa.md) / [LaTeX](2026-07-31/transcricao-completa.tex) |
+
+O relatório consolidado em `output/pdf/relatorio_ic_transformers.pdf` já
+incorpora os desdobramentos posteriores desta reunião: validações conceituais,
+benchmarks v3, modelos OPT e extensões OPT-2.7B/OPT-6.7B.

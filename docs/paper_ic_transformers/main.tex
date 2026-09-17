@@ -135,6 +135,9 @@ perplexidade, 900 metricas de prompts e 1.296 registros de desempenho. Nos
 modelos pre-treinados, INT8 preservou melhor qualidade que pruning; prefill e
 TTFT nao sustentaram speedup pelos criterios completos, e decode permaneceu
 limitado por interacao entre CUDA Graphs, KV cache e \texttt{torch.compile}.
+Uma extensao exploratoria com OPT-2.7B e OPT-6.7B mostrou que a escala pode
+favorecer alguns caminhos de prefill, mas tambem aumentou o risco de degradacao
+de qualidade quando a tecnica foi aplicada aos blocos Transformer inteiros.
 
 \noindent\textbf{Palavras-chave:} Transformer; self-attention; quantiza\c{c}\~ao; pruning; benchmark; inferencia.
 
@@ -465,6 +468,61 @@ entre torch.compile, CUDA Graphs e atualizacao de KV cache.
   \caption{Speedup em prefill e TTFT dos modelos OPT.}
 \end{figure}
 
+\subsection{Extensao de escala com OPT-2.7B e OPT-6.7B}
+
+Apos a bateria principal, dois modelos maiores foram executados como extensao
+exploratoria: OPT-2.7B e OPT-6.7B. Eles seguem o mesmo protocolo de qualidade e
+desempenho, mas sao tratados separadamente para nao alterar os criterios
+pre-registrados da bateria OPT v1. O objetivo foi verificar se o aumento de
+parametros torna algum caminho fisico mais favoravel.
+
+\begin{table}[H]
+\centering
+\caption{Qualidade e desempenho em modelos OPT maiores}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{Modelo} & \textbf{Cenario} & \textbf{Perplexidade} &
+\textbf{Aumento vs baseline} & \textbf{Speedup prefill} & \textbf{IC95 prefill} \\
+\midrule
+OPT-2.7B & baseline BF16 & 18,178 & 0,0\% & -- & -- \\
+OPT-2.7B & atencao INT8 dinamico & 18,955 & 4,27\% & 1,024 & [0,844; 1,134] \\
+OPT-2.7B & blocos INT8 dinamico & 18,981 & 4,42\% & 1,305 & [0,907; 1,588] \\
+OPT-2.7B & atencao 2:4 & 27,670 & 52,22\% & 0,873 & [0,798; 0,907] \\
+OPT-2.7B & blocos 2:4 & 519,074 & 2755,50\% & 1,061 & [0,975; 1,078] \\
+\midrule
+OPT-6.7B & baseline BF16 & 15,346 & 0,0\% & -- & -- \\
+OPT-6.7B & atencao INT8 dinamico & 16,659 & 8,55\% & 1,169 & [1,009; 1,249] \\
+OPT-6.7B & blocos INT8 dinamico & 40,675 & 165,05\% & 1,756 & [1,171; 2,137] \\
+OPT-6.7B & atencao 2:4 & 21,311 & 38,87\% & 1,030 & [0,974; 1,111] \\
+OPT-6.7B & blocos 2:4 & 168,097 & 995,38\% & 1,073 & [1,017; 1,228] \\
+\bottomrule
+\end{tabular}% 
+}
+\end{table}
+
+O resultado muda a leitura da hipotese de escala. Em OPT-6.7B, o INT8 dinamico
+aplicado aos blocos atingiu speedup mediano de 1,756 em prefill e 1,744 em
+TTFT, com intervalos de 95\% acima de 1,0. Contudo, a perplexidade subiu de
+15,346 para 40,675, aumento de 165\%. Portanto, ha ganho fisico, mas ele nao e
+aceitavel pelo criterio operacional de qualidade. O mesmo vale para 2:4 aplicado
+aos blocos: o speedup de prefill fica acima de 1,05 com intervalo acima de 1,0,
+mas a perplexidade sobe para 168,097. A conclusao correta e que a escala pode
+tornar alguns kernels mais rapidos, mas nao garante uma configuracao util se a
+qualidade colapsar.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{figuras/opt_escala_2_7b_6_7b_tradeoff.png}
+  \caption{Comparacao entre OPT-2.7B e OPT-6.7B no compromisso entre speedup de prefill e aumento de perplexidade.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\textwidth]{figuras/opt_6_7b_speedup_prefill_decode.png}
+  \caption{Speedup em prefill e TTFT na extensao OPT-6.7B.}
+\end{figure}
+
 \subsection{Kernels confirmados}
 
 O profiler registrou caminhos distintos para cada tecnica fisica. O INT8
@@ -499,14 +557,18 @@ fake preservou melhor a saida que pruning denso. No plano fisico, tecnicas com
 representa\c{c}\~ao real reduziram armazenamento e memoria, mas o custo de
 convers\~ao, empacotamento, kernel e shape impediu ganho de latencia nas
 opera\c{c}\~oes isoladas. Nos modelos OPT, a mesma tendencia de qualidade foi
-observada parcialmente: INT8 preservou perplexidade, enquanto pruning degradou
-rapidamente conforme a sparsity aumentou.
+observada parcialmente: INT8 preservou perplexidade melhor que pruning, enquanto
+pruning degradou rapidamente conforme a sparsity aumentou. A extensao de escala
+mostrou um resultado mais nuancado: em OPT-6.7B, INT8 dinamico e pruning 2:4
+aplicados aos blocos tiveram speedup de prefill com intervalo acima de 1,0, mas
+ambos ficaram fora dos limites de qualidade.
 
 Isso nao significa que INT8 ou pruning 2:4 sejam tecnicas ineficazes de modo
-geral. A conclus\~ao correta e mais estreita: neste recorte, com estas entradas,
-opera\c{c}\~oes isoladas, modelos OPT e GPU, nao houve speedup sustentado pelos
-criterios completos. Essa leitura e importante para evitar extrapola\c{c}\~oes
-indevidas a partir de benchmarks sinteticos ou de zeros logicos.
+geral. A conclus\~ao correta e mais estreita: na bateria principal, nao houve
+speedup sustentado e aceitavel pelos criterios completos; na extensao OPT-6.7B,
+houve speedup fisico em alguns caminhos, mas acompanhado de degradacao de
+perplexidade. Essa leitura evita extrapolar benchmarks sinteticos, zeros
+logicos ou speedup isolado sem verificar qualidade.
 
 \subsection{Respostas parciais as perguntas de pesquisa}
 
@@ -520,8 +582,8 @@ indevidas a partir de benchmarks sinteticos ou de zeros logicos.
 \RQ{4} & A separa\c{c}\~ao entre fidelidade, armazenamento, computa\c{c}\~ao inteira e sparse fisico foi confirmada. \\
 \RQ{5} & As tendencias numericas persistiram entre cinco seeds, perfis e distribui\c{c}\~oes. \\
 \RQ{6} & A degrada\c{c}\~ao aumentou conforme a sparsity passou de 10\% para 75\%. \\
-\RQ{7} & Nos OPT, INT8 preservou melhor qualidade que pruning; a degradacao de pruning cresceu com sparsity; speedup nao foi sustentado. \\
-\RQ{8} & INT8 e 2:4 reduziram armazenamento e memoria com caminhos compativeis, mas nao latencia sustentada. \\
+\RQ{7} & Nos OPT, INT8 preservou melhor qualidade que pruning; a degradacao de pruning cresceu com sparsity; na extensao 6.7B o speedup apareceu, mas nao permaneceu aceitavel quando a qualidade foi considerada. \\
+\RQ{8} & INT8 e 2:4 reduziram armazenamento e memoria com caminhos compativeis; apenas na extensao 6.7B alguns caminhos tiveram speedup fisico, sem cumprir simultaneamente os limites de qualidade. \\
 \bottomrule
 \end{longtable}
 
@@ -559,9 +621,11 @@ A contribui\c{c}\~ao principal e metodologica e experimental: o
 trabalho evita misturar equivalencia matematica, representa\c{c}\~ao compacta e
 acelera\c{c}\~ao fisica como se fossem a mesma evid\^encia. A conclus\~ao final
 mostra que os efeitos observados nos benchmarks controlados aparecem
-parcialmente em modelos pre-treinados: INT8 preserva qualidade, pruning degrada
-com sparsity, e redu\c{c}\~ao de representa\c{c}\~ao ou memoria nao garante
-latencia menor.
+parcialmente em modelos pre-treinados: INT8 preserva qualidade melhor que
+pruning, pruning degrada com sparsity, e redu\c{c}\~ao de representa\c{c}\~ao
+ou memoria nao garante latencia menor. A extensao com OPT-6.7B acrescenta que
+speedup pode surgir em escala maior, mas esse ganho so e cientificamente util
+quando a qualidade tambem permanece dentro dos limites definidos.
 
 % -----------------------------------------------------------
 \printbibliography[title={Refer\^encias}]

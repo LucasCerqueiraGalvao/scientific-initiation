@@ -1,0 +1,12 @@
+\chapter{Analise dos modelos OPT pre-treinados}
+\section{Escopo}
+Foram configurados 1 modelos OPT e 15 variantes por modelo, sem treinamento ou fine-tuning.
+A avaliacao usa loss, perplexidade, divergencia dos logits e concordancia de geracao; desempenho e separado em prefill, TTFT e decode com KV cache.
+\section{Cobertura}
+Casos de qualidade completos: 15; incompativeis preservados: 0; falhos: 0; dentro do limite operacional: 8.
+Casos de desempenho completos: 144; incompativeis preservados: 2; falhos: 70.
+\section{Desempenho fisico}
+Comparacoes com ganho sustentado pelos criterios pre-registrados: 6.
+Ganho fisico so e aceito com speedup mediano de pelo menos 1,05, intervalo de 95\% acima de 1 e kernel confirmado.
+\section{Limites}
+Os limites de 2\% para quantizacao e 5\% para pruning sao criterios deste experimento, nao regras universais.

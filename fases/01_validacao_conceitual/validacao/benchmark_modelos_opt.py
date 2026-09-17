@@ -1050,6 +1050,66 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _baseline_cache_name(model_id: str, comparison_group: str) -> str:
+    key = hashlib.sha256(f"{model_id}|{comparison_group}".encode("utf-8")).hexdigest()[:16]
+    return f"baseline_prompts_{key}.pt"
+
+
+def _save_baseline_cache(
+    output: Path,
+    *,
+    model_id: str,
+    scenario_id: str,
+    comparison_group: str,
+    perplexity: float,
+    prompts: Mapping[str, BaselinePrompt],
+) -> None:
+    payload = {
+        "schema_version": 1,
+        "model_id": model_id,
+        "scenario": scenario_id,
+        "comparison_group": comparison_group,
+        "perplexity": perplexity,
+        "prompts": {
+            prompt_id: {
+                "logits": baseline.logits.cpu(),
+                "generated_ids": baseline.generated_ids.cpu(),
+            }
+            for prompt_id, baseline in prompts.items()
+        },
+    }
+    torch.save(payload, output / _baseline_cache_name(model_id, comparison_group))
+
+
+def _load_baseline_cache(
+    output: Path,
+    *,
+    model_id: str,
+    comparison_group: str,
+) -> tuple[dict[str, BaselinePrompt], float] | None:
+    path = output / _baseline_cache_name(model_id, comparison_group)
+    if not path.exists():
+        return None
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if not isinstance(payload, Mapping):
+        raise ExperimentEnvironmentError(f"cache de baseline invalido: {path.name}")
+    if payload.get("model_id") != model_id or payload.get("comparison_group") != comparison_group:
+        raise ExperimentEnvironmentError(f"cache de baseline pertence a outro grupo: {path.name}")
+    raw_prompts = payload.get("prompts")
+    if not isinstance(raw_prompts, Mapping):
+        raise ExperimentEnvironmentError(f"cache de prompts invalido: {path.name}")
+    prompts: dict[str, BaselinePrompt] = {}
+    for prompt_id, raw in raw_prompts.items():
+        if not isinstance(raw, Mapping):
+            raise ExperimentEnvironmentError(f"prompt baseline invalido em {path.name}")
+        logits = raw.get("logits")
+        generated_ids = raw.get("generated_ids")
+        if not isinstance(logits, torch.Tensor) or not isinstance(generated_ids, torch.Tensor):
+            raise ExperimentEnvironmentError(f"tensores baseline invalidos em {path.name}")
+        prompts[str(prompt_id)] = BaselinePrompt(logits=logits.cpu(), generated_ids=generated_ids.cpu())
+    return prompts, float(payload["perplexity"])
+
+
 def _model_config_hash(config: ModelExperimentConfig) -> str:
     canonical = json.dumps(config.to_dict(), sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -1119,6 +1179,14 @@ def _write_model_checkpoint(
             "records": len(operator_traces),
         }
     )
+    for cache_path in sorted(output.glob("baseline_prompts_*.pt")):
+        entries.append(
+            {
+                "path": cache_path.name,
+                "sha256": _sha256(cache_path),
+                "records": 1,
+            }
+        )
     manifest["artifacts"] = entries
 
 
@@ -1127,7 +1195,11 @@ def execute_model_experiment(
     output_dir: str | Path,
     *,
     resume: bool = False,
+    allow_code_hash_migration: bool = False,
+    max_new_scenarios: int | None = None,
 ) -> Path:
+    if max_new_scenarios is not None and max_new_scenarios <= 0:
+        raise ExperimentConfigurationError("max_new_scenarios deve ser positivo")
     if not torch.cuda.is_available():
         raise ExperimentEnvironmentError("benchmark OPT exige CUDA")
     gpu_name = torch.cuda.get_device_name(0)
@@ -1164,7 +1236,19 @@ def execute_model_experiment(
         if manifest.get("config_sha256") != config_hash:
             raise ExperimentEnvironmentError("configuracao diverge da execucao OPT retomada")
         if manifest.get("code_sha256") != code_hash:
-            raise ExperimentEnvironmentError("codigo diverge da execucao OPT retomada")
+            if not allow_code_hash_migration:
+                raise ExperimentEnvironmentError("codigo diverge da execucao OPT retomada")
+            migrations = manifest.setdefault("code_sha256_migrations", [])
+            if isinstance(migrations, list):
+                migrations.append(
+                    {
+                        "from": manifest.get("code_sha256"),
+                        "to": code_hash,
+                        "reason": "retomada com cache persistente de baseline para reduzir recarregamentos",
+                        "migrated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+                    }
+                )
+            manifest["code_sha256"] = code_hash
         if manifest.get("environment_sha256") != environment_hash:
             raise ExperimentEnvironmentError("ambiente diverge da execucao OPT retomada")
         for item in manifest.get("artifacts", []):
@@ -1252,6 +1336,7 @@ def execute_model_experiment(
         operator_traces,
     )
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    new_scenarios = 0
     try:
         for model_spec in config.models:
             baseline_prompts_by_group: dict[str, dict[str, BaselinePrompt]] = {}
@@ -1261,6 +1346,16 @@ def execute_model_experiment(
             for scenario in ordered:
                 scenario_key = (model_spec.identifier, scenario.identifier)
                 already_completed = scenario_key in completed
+                if already_completed and scenario.kind == "baseline":
+                    cached_baseline = _load_baseline_cache(
+                        output,
+                        model_id=model_spec.identifier,
+                        comparison_group=scenario.comparison_group,
+                    )
+                    if cached_baseline is not None:
+                        baseline_prompts_by_group[scenario.comparison_group] = cached_baseline[0]
+                        baseline_perplexity_by_group[scenario.comparison_group] = cached_baseline[1]
+                        continue
                 if already_completed and scenario.kind != "baseline":
                     continue
                 dtype = torch.bfloat16 if scenario.dtype == "bfloat16" else torch.float16
@@ -1449,6 +1544,14 @@ def execute_model_experiment(
                     if scenario.kind == "baseline":
                         baseline_prompts_by_group[scenario.comparison_group] = produced
                         baseline_perplexity_by_group[scenario.comparison_group] = metrics["perplexity"]
+                        _save_baseline_cache(
+                            output,
+                            model_id=model_spec.identifier,
+                            scenario_id=scenario.identifier,
+                            comparison_group=scenario.comparison_group,
+                            perplexity=metrics["perplexity"],
+                            prompts=produced,
+                        )
                     if not already_completed:
                         quality_rows.append(quality_record)
                         window_rows.extend(windows)
@@ -1459,6 +1562,7 @@ def execute_model_experiment(
                             {"model_id": model_spec.identifier, "scenario": scenario.identifier, "status": "complete"}
                         )
                         completed.add(scenario_key)
+                        new_scenarios += 1
                 except Exception as exc:
                     if already_completed and scenario.kind == "baseline":
                         raise ExperimentEnvironmentError(
@@ -1488,6 +1592,7 @@ def execute_model_experiment(
                         }
                     )
                     completed.add(scenario_key)
+                    new_scenarios += 1
                 finally:
                     benchmark_model = None
                     if model is not None:
@@ -1508,6 +1613,14 @@ def execute_model_experiment(
                     operator_traces,
                 )
                 manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+                if max_new_scenarios is not None and new_scenarios >= max_new_scenarios:
+                    manifest["status"] = "running"
+                    manifest["last_partial_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+                    manifest_path.write_text(
+                        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+                        encoding="utf-8",
+                    )
+                    return manifest_path
 
         _write_model_checkpoint(
             output,
@@ -1537,6 +1650,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir")
     parser.add_argument("--prefetch", action="store_true")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--allow-code-hash-migration", action="store_true")
+    parser.add_argument("--max-new-scenarios", type=int)
     return parser
 
 
@@ -1550,7 +1665,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if not args.output_dir:
             raise ExperimentConfigurationError("--output-dir e obrigatorio sem --prefetch")
-        manifest = execute_model_experiment(config, args.output_dir, resume=args.resume)
+        manifest = execute_model_experiment(
+            config,
+            args.output_dir,
+            resume=args.resume,
+            allow_code_hash_migration=args.allow_code_hash_migration,
+            max_new_scenarios=args.max_new_scenarios,
+        )
     except (ExperimentConfigurationError, ExperimentEnvironmentError, FileExistsError) as exc:
         print(f"erro: {exc}", file=sys.stderr)
         return 2

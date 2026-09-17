@@ -18,10 +18,10 @@ Estão validados:
 
 O objeto principal agora é a self-attention multi-head completa, com projeção
 densa mantida como controle das operações Q/K/V/O. O benchmark GPU v1 está
-concluído, assim como as baterias sintética v3, física v3 e OPT. A coleta OPT
-autoriza conclusões sobre qualidade, prefill e TTFT em modelos pré-treinados;
-a etapa de decode ficou preservada como falha técnica associada a
-`torch.compile`, CUDA Graphs e KV cache.
+concluído, assim como as baterias sintética v3, física v3, OPT v1, OPT-2.7B e
+OPT-6.7B. A coleta OPT autoriza conclusões sobre qualidade, prefill e TTFT em
+modelos pré-treinados; a etapa de decode ficou preservada como falha técnica
+associada a `torch.compile`, CUDA Graphs e KV cache.
 
 ## Estrutura
 
@@ -97,6 +97,8 @@ Essa etapa valida correção, não velocidade.
 | `experimentos/hardware_nativo_v3.json` | 1.650 casos físicos | Latência, memória e armazenamento com kernels compatíveis. |
 | `experimentos/modelos_opt_smoke.json` | OPT-125M reduzido | Portão funcional de qualidade, prefill, TTFT, decode e profiler. |
 | `experimentos/modelos_opt_v1.json` | OPT 125M, 350M e 1.3B | Qualidade, prefill e TTFT em pesos pré-treinados; decode registrado como limitação técnica. |
+| `experimentos/modelos_opt_2_7b_incremental.json` | OPT-2.7B | Extensão de escala com qualidade, prefill e TTFT. |
+| `experimentos/modelos_opt_6_7b_incremental_guarded.json` | OPT-6.7B | Extensão de escala com guarda de VRAM em 15.800 MiB e retomada por cenário. |
 
 O schema v3 preserva leitura dos schemas v1/v2 e acrescenta perfis, múltiplas
 seeds, cenários parametrizados, grupos de baseline, timings brutos, memória,
@@ -154,6 +156,35 @@ não sustentado. Todos os casos de `model_decode` foram preservados como
 `failed` ou `unsupported`: o erro principal foi acesso a saída sobrescrita de
 CUDA Graphs ao atualizar KV cache sob `torch.compile`.
 
+## Extensão exploratória OPT-2.7B e OPT-6.7B
+
+O `facebook/opt-2.7b` e o `facebook/opt-6.7b` são extensões adicionais para
+observar se as tendências de qualidade, memória e latência mudam quando o número
+de parâmetros cresce além da bateria OPT v1. Eles não substituem a bateria OPT
+v1 já concluída e devem ser interpretados como análise incremental de escala.
+
+O OPT-2.7B terminou 15 cenários, 216 registros de desempenho e 1.440 timings.
+O OPT-6.7B também terminou 15 cenários, 216 registros de desempenho e 1.440
+timings, usando guarda de VRAM em 15.800 MiB, retomada por cenário e execução
+isolada por container. As evidências promovidas ficam em
+[`evidencias/benchmarks/modelos_opt_2_7b_2026-09-15/`](evidencias/benchmarks/modelos_opt_2_7b_2026-09-15/)
+e [`evidencias/benchmarks/modelos_opt_6_7b_2026-09-16/`](evidencias/benchmarks/modelos_opt_6_7b_2026-09-16/).
+
+No OPT-6.7B, `blocks_int8_dynamic` teve speedup mediano de `1,756x` em prefill
+e `1,744x` em TTFT, com intervalos de 95% acima de `1,0x`. Mesmo assim, a
+perplexidade aumentou de `15,346` para `40,675`, ou `165,05%`; portanto, houve
+speedup físico, mas não uma configuração final aceitável pelos limites de
+qualidade.
+
+Para reproduzir a extensão OPT-6.7B do zero, prepare o runtime se o Docker
+Desktop voltar a falhar na inicialização por sockets temporários em `AppData` e
+rode o wrapper guardado:
+
+```powershell
+.\scripts\prepare_docker_desktop_runtime.ps1 -StartDocker
+.\scripts\run_opt_6_7b_complete_guarded.ps1
+```
+
 ## Executar as novas baterias
 
 O Docker Desktop está funcional com backend WSL2, e seu disco de dados está em
@@ -166,8 +197,7 @@ $cacheRoot = "D:\Caches\scientific-initiation\huggingface"
 .\scripts\run_benchmarks_docker.ps1 -Action Status -CacheRoot $cacheRoot
 ```
 
-A sequência abaixo executa somente as etapas pendentes e usa nomes estáveis para
-retomada:
+A sequência abaixo revalida as etapas finais e usa nomes estáveis para retomada:
 
 ```powershell
 .\scripts\run_benchmarks_docker.ps1 `
@@ -208,4 +238,5 @@ manifesto for removido/incompleto.
 
 1. decidir se `model_decode` será reexecutado com ajuste para CUDA Graphs/KV cache;
 2. revisar a redação do paper curto e do relatório com o orientador;
-3. preparar a apresentação final destacando que resultado negativo também é evidência.
+3. preparar a apresentação final destacando que speedup físico e utilidade com
+   qualidade preservada são conclusões diferentes.

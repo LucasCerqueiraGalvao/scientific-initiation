@@ -235,6 +235,96 @@ geracao token a token. Assim, a coleta OPT responde qualidade, prefill, TTFT,
 memoria, armazenamento e confirmacao de operadores, mas nao sustenta conclusoes
 de latencia por token em decode.
 
+\section{Extensao de escala OPT-2.7B e OPT-6.7B}
+
+Depois da bateria OPT principal, foram executadas duas extensoes exploratorias
+para observar a hipotese de escala: \texttt{facebook/opt-2.7b} e
+\texttt{facebook/opt-6.7b}. Essas execucoes nao substituem a bateria principal,
+mas ajudam a responder se tecnicas fisicas tendem a ficar mais vantajosas
+quando o modelo cresce. As evidencias foram preservadas em
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_2_7b_2026-09-15/}
+e
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_6_7b_2026-09-16/}.
+
+O OPT-2.7B terminou 15 cenarios, 216 registros de desempenho e 1.440 amostras
+de timing. O OPT-6.7B tambem terminou 15 cenarios, 216 registros de desempenho
+e 1.440 amostras de timing, usando guarda de VRAM em 15.800~MiB e retomada por
+cenario. O cenario mais demorado foi \texttt{blocks\_int8\_weight\_only}, que
+levou quase uma hora somente para consolidar uma variante no OPT-6.7B; esse
+tempo e uma evidencia importante de custo operacional do caminho weight-only
+quando aplicado globalmente.
+
+\begin{center}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Modelo} & \textbf{Cenario} & \textbf{Perplexidade} &
+\textbf{Aumento vs baseline} & \textbf{Aceitavel} \\
+\midrule
+OPT-2.7B & baseline BF16 & 18,178 & 0,00\% & -- \\
+OPT-2.7B & atencao INT8 dinamico & 18,955 & 4,27\% & nao \\
+OPT-2.7B & blocos INT8 dinamico & 18,981 & 4,42\% & nao \\
+OPT-2.7B & atencao 2:4 & 27,670 & 52,22\% & nao \\
+OPT-2.7B & blocos 2:4 & 519,074 & 2755,50\% & nao \\
+\midrule
+OPT-6.7B & baseline BF16 & 15,346 & 0,00\% & -- \\
+OPT-6.7B & atencao INT8 dinamico & 16,659 & 8,55\% & nao \\
+OPT-6.7B & blocos INT8 dinamico & 40,675 & 165,05\% & nao \\
+OPT-6.7B & atencao 2:4 & 21,311 & 38,87\% & nao \\
+OPT-6.7B & blocos 2:4 & 168,097 & 995,38\% & nao \\
+\bottomrule
+\end{tabular}%
+}
+\end{center}
+
+\begin{center}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lllrrrr@{}}
+\toprule
+\textbf{Modelo} & \textbf{Operacao} & \textbf{Cenario} &
+\textbf{Speedup med.} & \textbf{IC95 baixo} & \textbf{IC95 alto} &
+\textbf{Memoria med.} \\
+\midrule
+OPT-2.7B & prefill & atencao INT8 dinamico & 1,024 & 0,844 & 1,134 & 0,842 \\
+OPT-2.7B & prefill & blocos INT8 dinamico & 1,305 & 0,907 & 1,588 & 0,526 \\
+OPT-2.7B & prefill & atencao 2:4 & 0,873 & 0,798 & 0,907 & 0,862 \\
+OPT-2.7B & prefill & blocos 2:4 & 1,061 & 0,975 & 1,078 & 0,585 \\
+OPT-6.7B & prefill & atencao INT8 dinamico & 1,169 & 1,009 & 1,249 & 0,839 \\
+OPT-6.7B & prefill & blocos INT8 dinamico & 1,756 & 1,171 & 2,137 & 0,516 \\
+OPT-6.7B & prefill & atencao 2:4 & 1,030 & 0,974 & 1,111 & 0,859 \\
+OPT-6.7B & prefill & blocos 2:4 & 1,073 & 1,017 & 1,228 & 0,577 \\
+\bottomrule
+\end{tabular}% 
+}
+\end{center}
+
+A extensao muda a resposta sobre escala. No OPT-6.7B, o INT8 dinamico aplicado
+aos blocos teve speedup mediano de 1,756 em prefill e 1,744 em TTFT, com
+intervalos bootstrap inteiramente acima de 1,0. O pruning 2:4 aplicado aos
+blocos tambem teve speedup acima do criterio em prefill. Mesmo assim, nenhum
+dos dois fica cientificamente aceitavel como tecnica final nesta configuracao,
+porque a perplexidade aumentou 165,05\% e 995,38\%,
+respectivamente. A conclusao e que modelos maiores podem tornar alguns kernels
+mais favoraveis, mas o ganho de desempenho precisa ser lido junto da qualidade.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{docs/paper_ic_transformers/figuras/opt_escala_2_7b_6_7b_tradeoff.png}
+  \caption{Compromisso entre speedup de prefill e aumento de perplexidade nas extensoes OPT-2.7B e OPT-6.7B.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{docs/paper_ic_transformers/figuras/opt_6_7b_speedup_prefill_decode.png}
+  \caption{Speedup em prefill e TTFT na extensao OPT-6.7B.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.88\linewidth]{docs/paper_ic_transformers/figuras/opt_6_7b_memoria_pico_ci95.png}
+  \caption{Memoria de pico relativa na extensao OPT-6.7B.}
+\end{figure}
+
 \section{Respostas atuais as perguntas de pesquisa}
 
 \begin{longtable}{@{}lp{0.76\linewidth}@{}}
@@ -243,12 +333,12 @@ de latencia por token em decode.
 \midrule
 RQ1 & No recorte sintetico, INT8 fake preservou melhor a saida que pruning por magnitude em 100\% dos pares. \\
 RQ2 & INT8 fisico reduziu armazenamento para cerca de 50\% do baseline; 2:4, para cerca de 56\%. A memoria de pico mediana tambem caiu nos seis grupos. \\
-RQ3 & Nenhuma tecnica sustentou ganho de latencia nas operacoes isoladas. Nos OPT, prefill e TTFT tambem nao satisfizeram todos os criterios; decode ficou tecnicamente limitado. \\
+RQ3 & Nenhuma tecnica sustentou ganho de latencia nas operacoes isoladas. Nos OPT v1, prefill e TTFT tambem nao satisfizeram todos os criterios; na extensao OPT-6.7B houve speedup fisico em alguns caminhos, mas sem qualidade aceitavel. Decode ficou tecnicamente limitado. \\
 RQ4 & A separacao por nivel foi confirmada: quantizacao fake responde fidelidade, weight-only responde pesos compactos e INT8 dinamico/2:4 exigem trace do kernel. \\
 RQ5 & As tendencias numericas principais persistiram entre cinco seeds, distribuicoes e perfis; os efeitos temporais sinteticos permaneceram mistos. \\
 RQ6 & A degradacao por pruning cresceu monotonicamente entre 10\%, 25\%, 50\% e 75\% de sparsity. \\
-RQ7 & As tendencias sinteticas aparecem parcialmente nos OPT: INT8 preserva melhor a qualidade que pruning; pruning degrada com sparsity; ganho de latencia nao se sustenta. \\
-RQ8 & INT8 e 2:4 reduziram armazenamento e memoria com caminhos compativeis, mas nao reduziram latencia de forma sustentada neste hardware, nestes shapes e nestes modelos. \\
+RQ7 & As tendencias sinteticas aparecem parcialmente nos OPT: INT8 preserva melhor a qualidade que pruning; pruning degrada com sparsity; em escala maior surgiu speedup, mas acompanhado de degradacao de perplexidade. \\
+RQ8 & INT8 e 2:4 reduziram armazenamento e memoria com caminhos compativeis. No OPT-6.7B, alguns caminhos tambem reduziram latencia de prefill/TTFT, mas nao cumpriram simultaneamente os limites de qualidade. \\
 \bottomrule
 \end{longtable}
 
@@ -266,8 +356,8 @@ para pruning sao limites operacionais deste estudo, nao regras universais.
 
 \begin{enumerate}
   \item decidir se a medicao de decode sera reexecutada com ajuste especifico para CUDA Graphs e KV cache;
-  \item revisar a redacao do paper curto e do relatorio com o orientador;
-  \item preparar uma apresentacao destacando a separacao entre fidelidade, memoria, armazenamento e latencia.
+  \item revisar com o orientador a interpretacao da extensao OPT-6.7B, separando speedup fisico de utilidade com qualidade preservada;
+  \item preparar uma apresentacao destacando a separacao entre fidelidade, memoria, armazenamento, latencia e perplexidade.
 \end{enumerate}
 
 O Docker Desktop 4.63 voltou a operar com backend WSL2 apos a separacao segura
@@ -302,7 +392,8 @@ analises permanecem integros. Nenhum processo e encerrado automaticamente.
 Build, probe e bateria fisica & concluido \\
 Testes e smoke OPT final & concluido \\
 OPT-125M, OPT-350M e OPT-1.3B & concluido \\
-Analise, PDF e publicacao & consolidado nesta revisao \\
+OPT-2.7B e OPT-6.7B & concluido \\
+Analise, PDF e publicacao & em atualizacao nesta revisao \\
 \textbf{Pendente tecnico} & \textbf{decode com KV cache sob \texttt{torch.compile}} \\
 \bottomrule
 \end{longtable}

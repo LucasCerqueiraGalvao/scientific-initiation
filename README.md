@@ -7,9 +7,10 @@ por magnitude e quantização linear INT8.
 O benchmark GPU v1 foi concluído na NVIDIA GeForce RTX 4070 Ti SUPER e sua
 evidência foi preservada com hashes. A infraestrutura v3 ampliou o estudo para
 cinco seeds, três distribuições, 13 perfis, multi-head attention, kernels reais
-e modelos OPT pré-treinados. As baterias sintética v3, física v3 e OPT final
-foram executadas; a etapa OPT validou qualidade, prefill e TTFT, preservando a
-falha técnica da medição de decode com KV cache e CUDA Graphs.
+e modelos OPT pré-treinados. As baterias sintética v3, física v3, OPT v1,
+OPT-2.7B e OPT-6.7B foram executadas; a etapa OPT validou qualidade, prefill e
+TTFT, preservando a falha técnica da medição de decode com KV cache e CUDA
+Graphs.
 
 O Docker Desktop voltou a operar com backend WSL2. Seu disco de dados foi
 realocado para `D:\DockerDesktopData`, preservando os contêineres existentes e
@@ -29,8 +30,9 @@ probe físico, o smoke e a bateria de 1.650 casos foram concluídos.
 | Benchmark GPU v1 | Concluído | Duas execuções, 108 registros, hashes, análise e gráficos versionados. |
 | Benchmark sintético v3 | Concluído | 2.340 registros completos, 1.950 pares e 117 mil timings na GPU. |
 | Caminhos físicos | Concluído | 1.650 registros, 82.500 timings, TorchAO INT8 e pruning 2:4 auditados pelo profiler. |
-| Modelos OPT | Concluído com limitação de decode | 45 registros de qualidade, 2.880 janelas, 900 métricas de prompts, 1.296 registros de desempenho e 10.080 timings; decode preservado como falha técnica. |
-| Ganho real nas operações/modelos | Não sustentado | Operações isoladas contradisseram speedup; nos OPT, nenhum ganho cumpriu todos os critérios pré-registrados. |
+| Modelos OPT v1 | Concluído com limitação de decode | OPT-125M, OPT-350M e OPT-1.3B: 45 registros de qualidade, 2.880 janelas, 900 métricas de prompts, 1.296 registros de desempenho e 10.080 timings. |
+| Extensão OPT-2.7B e OPT-6.7B | Concluída | Cada modelo adicional gerou 15 registros de qualidade, 216 registros de desempenho e 1.440 timings. |
+| Ganho real nas operações/modelos | Parcial e condicionado | Operações isoladas contradisseram speedup; no OPT-6.7B houve speedup físico em alguns caminhos, mas sem qualidade aceitável nos blocos. |
 
 A posição científica correta é: a evidência v1 demonstra comportamento numérico
 e a v3 sustenta a robustez numérica em múltiplas entradas. Em todos os casos
@@ -38,9 +40,12 @@ pareados, INT8 fake apresentou MSE menor que pruning, e o erro do pruning cresce
 com a sparsity. Na bateria física, INT8 dinâmico e 2:4 usaram os kernels esperados,
 mas nenhum cenário foi mais rápido que seu baseline compilado. Nos modelos OPT,
 INT8 manteve melhor qualidade que pruning e reduziu memória/armazenamento em
-vários cenários, mas não houve speedup sustentado pelos critérios completos.
-Resultado físico negativo também é evidência: representação menor não implica
-menor latência para todo shape ou composição de operação.
+vários cenários. O OPT-6.7B mostrou que a escala pode favorecer alguns caminhos
+físicos: `blocks_int8_dynamic` atingiu speedup mediano de `1,756x` em prefill e
+`1,744x` em TTFT. Contudo, a perplexidade subiu `165,05%`, portanto esse ganho
+não é uma configuração final aceitável pelos critérios operacionais. Resultado
+físico negativo também é evidência: representação menor não implica menor
+latência para todo shape ou composição de operação.
 
 ## Documentação LaTeX
 
@@ -50,6 +55,7 @@ CSV, JSON, logs e imagens são evidências; a transcrição original em Markdown
 o formulário institucional em Word são preservados como fontes brutas.
 
 - [Relatório compilado](output/pdf/relatorio_ic_transformers.pdf)
+- [Paper curto compilado](output/pdf/paper_ic_transformers.pdf)
 - [Fonte principal](docs/latex/relatorio_ic.tex)
 - [Como compilar](docs/latex/README.md)
 - [Índice dos documentos](docs/README.md)
@@ -112,8 +118,8 @@ $cacheRoot = "D:\Caches\scientific-initiation\huggingface"
 .\scripts\run_benchmarks_docker.ps1 -Action Status -CacheRoot $cacheRoot
 ```
 
-Para revalidar somente o trabalho pendente ou retomar uma execução interrompida,
-sem repetir a bateria sintética v3:
+Para revalidar a sequência final ou retomar uma execução interrompida, sem
+repetir a bateria sintética v3:
 
 ```powershell
 .\scripts\run_benchmarks_docker.ps1 `
@@ -150,6 +156,17 @@ Estado da sequência final na RTX 4070 Ti SUPER:
 | Análise, PDF e publicação | Atualizados nesta consolidação |
 | **Pendência técnica** | investigar/reexecutar decode se necessário |
 
+Extensão exploratória de escala: o OPT-2.7B e o OPT-6.7B foram executados
+separadamente da bateria OPT v1. O OPT-6.7B usou guarda de VRAM em 15.800 MiB,
+retomada por cenário e execução isolada por container para reduzir risco de
+travamento.
+
+Se o Docker Desktop falhar na inicialização por sockets temporários, rode antes:
+
+```powershell
+.\scripts\prepare_docker_desktop_runtime.ps1 -StartDocker
+```
+
 ## Compilar o relatório
 
 Com MiKTeX e XeLaTeX instalados:
@@ -169,8 +186,9 @@ Arquivos auxiliares ficam em `tmp/pdfs/latex/` e não são versionados.
 ## Próximos passos
 
 1. decidir se a medição de decode será reexecutada com ajuste específico para
-   CUDA Graphs/KV cache ou registrada como limitação técnica;
-2. revisar o paper curto criado em `docs/paper_ic_transformers/`;
+   CUDA Graphs/KV cache ou registrada definitivamente como limitação técnica;
+2. revisar com o orientador a interpretação do OPT-6.7B, separando speedup
+   físico de utilidade com qualidade preservada;
 3. preparar apresentação/discussão dos resultados finais com o orientador.
 
 ## Cuidados de interpretação
