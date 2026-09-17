@@ -33,6 +33,66 @@ relativo de memória. A leitura científica precisa considerar também qualidade
 no OPT-6.7B, por exemplo, `blocks_int8_dynamic` acelerou, mas aumentou a
 perplexidade em `165,05%`.
 
+### Como ler as colunas
+
+- `Padrão`: baseline pareado da própria linha. Em speedup, ele vale `1,000`
+  por definição. Em VRAM relativa, também vale `1,000`.
+- `INT8 fake`: quantização simulada por linha com dequantização para FP32. Ela
+  mede fidelidade numérica, não kernel físico INT8.
+- `Pruning 10%` a `Pruning 75%`: pruning denso por magnitude. Ele zera pesos,
+  mas continua usando armazenamento e kernels densos.
+- `INT8 din. operação/atenção`: INT8 dinâmico físico aplicado à operação isolada
+  ou somente às projeções de atenção do OPT.
+- `INT8 weight-only operação/atenção`: pesos INT8 empacotados, com evidência
+  principal de armazenamento compacto.
+- `2:4 operação/atenção`: pruning semiestruturado 2:4 aplicado à operação
+  isolada ou somente às projeções de atenção do OPT.
+- `INT8 din. blocos`, `INT8 weight-only blocos` e `2:4 blocos`: mesmas técnicas
+  aplicadas ao conjunto das camadas lineares dos blocos Transformer. Essas
+  colunas só existem para modelos OPT, por isso aparecem como `n/d` nas
+  operações isoladas.
+
+### Speedup geral por linha experimental
+
+Esta tabela usa uma linha por benchmark ou modelo. Os valores são medianas de
+speedup em relação ao baseline pareado. `n/d` significa que a técnica não fazia
+parte daquele experimento.
+
+| Linha experimental | Padrão | INT8 fake | Pruning 10% | Pruning 25% | Pruning 50% | Pruning 75% |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sintético v3 - projeção densa | 1.000 | 1.003 | 1.038 | 1.021 | 1.017 | 0.982 |
+| Sintético v3 - multi-head attention | 1.000 | 0.995 | 0.999 | 0.997 | 1.015 | 0.994 |
+
+| Linha experimental | Padrão | INT8 din. operação/atenção | INT8 weight-only operação/atenção | 2:4 operação/atenção | INT8 din. blocos | INT8 weight-only blocos | 2:4 blocos |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Físico v3 - projeção densa | 1.000 | 0.808 | 0.136 | 0.823 | n/d | n/d | n/d |
+| Físico v3 - multi-head attention | 1.000 | 0.650 | 0.097 | 0.645 | n/d | n/d | n/d |
+| OPT-125M prefill | 1.000 | 0.806 | 0.055 | 0.658 | 0.770 | 0.019 | 0.604 |
+| OPT-350M prefill | 1.000 | 0.798 | 0.035 | 0.665 | 0.816 | 0.012 | 0.711 |
+| OPT-1.3B prefill | 1.000 | 0.982 | 0.028 | 0.834 | 1.271 | 0.010 | 0.893 |
+| OPT-2.7B prefill | 1.000 | 1.024 | 0.030 | 0.873 | 1.305 | 0.010 | 1.061 |
+| OPT-6.7B prefill | 1.000 | 1.169 | 0.026 | 1.030 | 1.756 | 0.009 | 1.073 |
+
+### VRAM relativa geral por linha experimental
+
+Esta tabela mostra uso relativo de VRAM em relação ao baseline pareado. Valores
+menores que `1,000` usam menos memória que o baseline.
+
+| Linha experimental | Padrão | INT8 fake | Pruning 10% | Pruning 25% | Pruning 50% | Pruning 75% |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sintético v3 - projeção densa | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| Sintético v3 - multi-head attention | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+
+| Linha experimental | Padrão | INT8 din. operação/atenção | INT8 weight-only operação/atenção | 2:4 operação/atenção | INT8 din. blocos | INT8 weight-only blocos | 2:4 blocos |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Físico v3 - projeção densa | 1.000 | 0.801 | 0.801 | 0.825 | n/d | n/d | n/d |
+| Físico v3 - multi-head attention | 1.000 | 0.639 | 0.639 | 0.728 | n/d | n/d | n/d |
+| OPT-125M prefill | 1.000 | 0.869 | 0.873 | 0.882 | 0.647 | 0.647 | 0.697 |
+| OPT-350M prefill | 1.000 | 0.849 | 0.849 | 0.999 | 0.546 | 0.546 | 0.679 |
+| OPT-1.3B prefill | 1.000 | 0.847 | 0.847 | 0.866 | 0.542 | 0.542 | 0.602 |
+| OPT-2.7B prefill | 1.000 | 0.842 | 0.842 | 0.862 | 0.526 | 0.526 | 0.585 |
+| OPT-6.7B prefill | 1.000 | 0.839 | 0.839 | 0.859 | 0.516 | 0.516 | 0.577 |
+
 ### Speedup mediano em prefill
 
 | Modelo | Padrão | Attn INT8 dyn | Attn INT8 WO | Attn 2:4 | Blocos INT8 dyn | Blocos INT8 WO | Blocos 2:4 |
