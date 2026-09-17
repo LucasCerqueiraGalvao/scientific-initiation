@@ -56,6 +56,7 @@ o formulário institucional em Word são preservados como fontes brutas.
 
 - [Relatório compilado](output/pdf/relatorio_ic_transformers.pdf)
 - [Paper curto compilado](output/pdf/paper_ic_transformers.pdf)
+- [Planilha editável dos benchmarks](output/spreadsheets/benchmarks_transformers_resumo.xlsx)
 - [Fonte principal](docs/latex/relatorio_ic.tex)
 - [Como compilar](docs/latex/README.md)
 - [Índice dos documentos](docs/README.md)

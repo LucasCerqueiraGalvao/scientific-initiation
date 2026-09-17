@@ -23,6 +23,11 @@ timings e análise. Não sobrescreva uma pasta existente. Coletas v1/v2 usam
 `analise/`; coletas v3 usam `analise_v3/`; modelos OPT usam `analise_modelos/`.
 Markdown é usado somente neste README de navegação.
 
+As tabelas consolidadas também estão em formato editável em
+[`output/spreadsheets/benchmarks_transformers_resumo.xlsx`](../../../../output/spreadsheets/benchmarks_transformers_resumo.xlsx),
+com abas para speedup, VRAM relativa, VRAM absoluta, erro acumulado e dicionário
+das colunas.
+
 ## Speedup e VRAM nos modelos OPT
 
 As tabelas abaixo usam as medianas pareadas e os intervalos bootstrap de 95%
