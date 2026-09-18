@@ -1,0 +1,13 @@
+\chapter{Analise dos benchmarks de operacoes v3}
+\section{Contrato experimental}
+Foram analisados 300 registros, com 3 repeticoes e 5 seeds de dados.
+As comparacoes sao pareadas por entrada, seed, perfil, operacao, repeticao e grupo de baseline.
+\section{Desempenho}
+Classificacoes sustentadas: 0; mistas: 0; contraditas: 6.
+Uma alegacao de hardware exige speedup mediano de pelo menos 1,05, intervalo de 95\% acima de 1 e kernel confirmado.
+\section{Hipoteses}
+\begin{itemize}
+\item \texttt{H6}: \texttt{mse\_vs\_sparsity} -- \texttt{sustentada}.
+\end{itemize}
+\section{Limites}
+Resultados numericos sem kernel confirmado nao sustentam ganho fisico. Os intervalos bootstrap e todos os casos individuais permanecem nos CSVs.

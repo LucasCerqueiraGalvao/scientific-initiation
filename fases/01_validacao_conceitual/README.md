@@ -18,10 +18,11 @@ Estão validados:
 
 O objeto principal agora é a self-attention multi-head completa, com projeção
 densa mantida como controle das operações Q/K/V/O. O benchmark GPU v1 está
-concluído, assim como as baterias sintética v3, física v3, OPT v1, OPT-2.7B e
-OPT-6.7B. A coleta OPT autoriza conclusões sobre qualidade, prefill e TTFT em
-modelos pré-treinados; a etapa de decode ficou preservada como falha técnica
-associada a `torch.compile`, CUDA Graphs e KV cache.
+concluído, assim como as baterias sintética v3, física v3, OPT v1, OPT-2.7B,
+OPT-6.7B e o complemento de 17/09/2026. A coleta OPT autoriza conclusões sobre
+qualidade, prefill e TTFT em modelos pré-treinados; a etapa de decode ficou
+preservada como falha técnica associada a `torch.compile`, CUDA Graphs e KV
+cache.
 
 ## Estrutura
 
@@ -99,6 +100,9 @@ Essa etapa valida correção, não velocidade.
 | `experimentos/modelos_opt_v1.json` | OPT 125M, 350M e 1.3B | Qualidade, prefill e TTFT em pesos pré-treinados; decode registrado como limitação técnica. |
 | `experimentos/modelos_opt_2_7b_incremental.json` | OPT-2.7B | Extensão de escala com qualidade, prefill e TTFT. |
 | `experimentos/modelos_opt_6_7b_incremental_guarded.json` | OPT-6.7B | Extensão de escala com guarda de VRAM em 15.800 MiB e retomada por cenário. |
+| `experimentos/hardware_stress_v3_complementar.json` | Perfis uniforme/outlier | Complemento físico dos perfis de stress para INT8/2:4. |
+| `experimentos/modelos_opt_complementar_performance.json` | OPT 125M, 350M, 1.3B e 2.7B | Medição de desempenho/VRAM dos prunings percentuais e INT8 fake que antes tinham só qualidade. |
+| `experimentos/modelos_opt_6_7b_complementar_guarded.json` | OPT-6.7B complementar | Mesma lacuna do complemento, mas com guarda de VRAM em 15.800 MiB e um cenário por container. |
 
 O schema v3 preserva leitura dos schemas v1/v2 e acrescenta perfis, múltiplas
 seeds, cenários parametrizados, grupos de baseline, timings brutos, memória,
@@ -176,6 +180,24 @@ perplexidade aumentou de `15,346` para `40,675`, ou `165,05%`; portanto, houve
 speedup físico, mas não uma configuração final aceitável pelos limites de
 qualidade.
 
+## Complemento de lacunas
+
+A execução complementar de 17/09/2026 foi feita para responder por que a planilha
+tinha células vazias em pruning percentual/INT8 fake dos modelos OPT e nos perfis
+físicos de stress. As evidências promovidas estão em
+[`evidencias/benchmarks/hardware_stress_complementar_v3_2026-09-17/`](evidencias/benchmarks/hardware_stress_complementar_v3_2026-09-17/),
+[`evidencias/benchmarks/modelos_opt_complementar_lacunas_2026-09-17/`](evidencias/benchmarks/modelos_opt_complementar_lacunas_2026-09-17/)
+e [`evidencias/benchmarks/modelos_opt_6_7b_complementar_lacunas_2026-09-17/`](evidencias/benchmarks/modelos_opt_6_7b_complementar_lacunas_2026-09-17/).
+
+O hardware stress acrescentou 300 registros e 15.000 timings. A bateria OPT de
+lacunas acrescentou 40 registros de qualidade, 1.080 registros de desempenho e
+7.200 timings. O resultado mais importante é negativo e útil: pruning denso
+percentual e INT8 fake não reduziram VRAM nos modelos, porque continuam em
+caminhos densos. No OPT-6.7B, `attention_pruning_10` preservou qualidade e ficou
+em `0,9997x` de speedup mediano em prefill; `attention_pruning_25` preservou o
+limite de qualidade, mas caiu para `0,924x`; 50% e 75% degradaram fortemente a
+perplexidade.
+
 Para reproduzir a extensão OPT-6.7B do zero, prepare o runtime se o Docker
 Desktop voltar a falhar na inicialização por sockets temporários em `AppData` e
 rode o wrapper guardado:
@@ -207,6 +229,16 @@ A sequência abaixo revalida as etapas finais e usa nomes estáveis para retomad
   -Resume
 ```
 
+Para reproduzir somente a bateria complementar:
+
+```powershell
+.\scripts\run_benchmarks_docker.ps1 `
+  -Action Complementary `
+  -CacheRoot $cacheRoot `
+  -RunId "complementar-20260917" `
+  -Resume
+```
+
 Os runners escrevem checkpoints e manifestos. As análises geram intervalos
 bootstrap, curvas por sparsity, heatmaps, boxplots por seed, speedup, memória,
 armazenamento, Pareto e tabelas de casos suportados ou incompatíveis. Arquivos
@@ -218,9 +250,10 @@ abaixo de 10%, até 2.048 MiB de VRAM ocupada e temperatura abaixo de 65 °C; o 
 também fica registrado no diagnóstico. Em WDDM, uma leitura residual pode ser
 aceita somente com processos abaixo de 10%, potência até 35 W e clock até 300 MHz,
 sem relaxar VRAM ou temperatura. Etapas completas e íntegras são ignoradas em
-`-Resume`. A execução final de 15/09/2026 completou suíte, smoke, hardware e OPT;
-o comando agora serve para revalidar integridade ou retomar apenas se algum
-manifesto for removido/incompleto.
+`-Resume`. A execução final de 15/09/2026 completou suíte, smoke, hardware e
+OPT; a execução complementar de 17/09/2026 completou hardware stress e lacunas
+OPT até 6.7B. Os comandos agora servem para revalidar integridade ou retomar
+apenas se algum manifesto for removido/incompleto.
 
 ## Documentos técnicos
 

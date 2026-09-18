@@ -2,7 +2,7 @@
 param(
     [ValidateSet(
         "Status", "Build", "Probe", "Prefetch", "Test", "Smoke", "Synthetic",
-        "Hardware", "ModelSmoke", "Models", "Remaining", "All"
+        "Hardware", "ModelSmoke", "Models", "Remaining", "Complementary", "All"
     )]
     [string]$Action = "All",
     [string]$CacheRoot = "",
@@ -201,6 +201,8 @@ function Test-ModelCache {
         (Join-Path $hfCache "hub\models--facebook--opt-125m\snapshots\27dcfa74d334bc871f3234de431e71c6eeba5dd6"),
         (Join-Path $hfCache "hub\models--facebook--opt-350m\snapshots\08ab08cc4b72ff5593870b5d527cf4230323703c"),
         (Join-Path $hfCache "hub\models--facebook--opt-1.3b\snapshots\3f5c25d0bc631cb57ac65913f76e22c2dfb61d62"),
+        (Join-Path $hfCache "hub\models--facebook--opt-2.7b\snapshots\905a4b602cda5c501f1b3a2650a4152680238254"),
+        (Join-Path $hfCache "hub\models--facebook--opt-6.7b\snapshots\a45aa65bbeb77c1558bc99bedc6779195462dab0"),
         (Join-Path $hfCache "datasets\Salesforce___wikitext\wikitext-2-raw-v1\0.0.0\f776294184f13b8ff2337b3841cf9269a6216d1e")
     )
     return @($required | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Container) }).Count -eq 0
@@ -435,17 +437,17 @@ if ($Action -eq "Status") {
 Assert-Docker
 New-Item -ItemType Directory -Force -Path $hfCache, $resultRoot | Out-Null
 
-if ($Action -in @("Build", "All") -or ($Action -eq "Remaining" -and -not (Test-BenchmarkImage))) {
+if ($Action -in @("Build", "All") -or ($Action -in @("Remaining", "Complementary") -and -not (Test-BenchmarkImage))) {
     Invoke-Build
 }
-elseif ($Action -eq "Remaining") {
+elseif ($Action -in @("Remaining", "Complementary")) {
     Write-Stage "Imagem Docker ja esta pronta; build ignorado."
 }
 
 if ($Action -notin @("Build")) { Assert-BenchmarkImage }
 
-if ($Action -in @("Probe", "Remaining", "All")) {
-    if ($Action -eq "Remaining" -and (Test-HardwareProbe)) {
+if ($Action -in @("Probe", "Remaining", "Complementary", "All")) {
+    if ($Action -in @("Remaining", "Complementary") -and (Test-HardwareProbe)) {
         Write-Stage "Probe de hardware ja foi aprovado; execucao ignorada."
     }
     else {
@@ -456,7 +458,7 @@ if ($Action -in @("Probe", "Remaining", "All")) {
         )
     }
 }
-if ($Action -in @("Test", "Remaining", "All")) {
+if ($Action -in @("Test", "Remaining", "Complementary", "All")) {
     Invoke-Container -Offline -Command @(
         "python", "-m", "pytest", "fases/01_validacao_conceitual/tests", "-q", "-W", "error"
     )
@@ -499,4 +501,36 @@ if ($Action -in @("Models", "Remaining", "All")) {
         "fases/01_validacao_conceitual/experimentos/modelos_opt_v1.json" `
         "modelos-opt-v1" `
         "a bateria OPT"
+}
+if ($Action -eq "Complementary") {
+    Assert-ModelCache
+    Invoke-OperationSuite `
+        "fases/01_validacao_conceitual/experimentos/smoke_hardware_stress_complementar.json" `
+        "smoke-hardware-stress-complementar" `
+        "o smoke fisico complementar"
+    Invoke-ModelSuite `
+        "fases/01_validacao_conceitual/experimentos/modelos_opt_complementar_smoke.json" `
+        "modelos-opt-complementar-smoke" `
+        "o smoke OPT complementar"
+    Invoke-OperationSuite `
+        "fases/01_validacao_conceitual/experimentos/hardware_stress_v3_complementar.json" `
+        "hardware-stress-complementar-v3" `
+        "a bateria fisica complementar de estresse"
+    Invoke-ModelSuite `
+        "fases/01_validacao_conceitual/experimentos/modelos_opt_complementar_performance.json" `
+        "modelos-opt-complementar-lacunas" `
+        "a bateria OPT complementar ate 2.7B"
+    Assert-IdleGpu "a bateria OPT 6.7B complementar guardada"
+    & (Join-Path $PSScriptRoot "run_opt_6_7b_complete_guarded.ps1") `
+        -RunId ("modelos-opt-6-7b-complementar-lacunas-" + $RunId) `
+        -Config "fases\01_validacao_conceitual\experimentos\modelos_opt_6_7b_complementar_guarded.json" `
+        -CacheRoot $hfCache `
+        -GpuMemoryStopMiB 15800 `
+        -GpuMemoryWarnMiB 15200 `
+        -ExpectedScenarios 8 `
+        -MaxAttempts 20 `
+        -MaxNewScenariosPerContainer 1
+    if ($LASTEXITCODE -ne 0) {
+        throw "A bateria OPT 6.7B complementar guardada falhou."
+    }
 }

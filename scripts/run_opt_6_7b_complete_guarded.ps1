@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$RunId = "opt-6-7b-complete-guarded-20260916-run2",
+    [string]$Config = "",
     [string]$CacheRoot = "D:\Caches\scientific-initiation\huggingface",
     [int]$GpuMemoryStopMiB = 15800,
     [int]$GpuMemoryWarnMiB = 15200,
@@ -14,7 +15,11 @@ $ErrorActionPreference = "Stop"
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptRoot
 
-$config = Join-Path $repoRoot "fases\01_validacao_conceitual\experimentos\modelos_opt_6_7b_incremental_guarded.json"
+$config = if ($Config) {
+    if ([System.IO.Path]::IsPathRooted($Config)) { $Config } else { Join-Path $repoRoot $Config }
+} else {
+    Join-Path $repoRoot "fases\01_validacao_conceitual\experimentos\modelos_opt_6_7b_incremental_guarded.json"
+}
 $outputDir = Join-Path $repoRoot ("resultados\" + $RunId)
 $qualityPath = Join-Path $outputDir "quality.csv"
 $guardScript = Join-Path $scriptRoot "run_model_benchmark_guarded.ps1"
@@ -29,6 +34,30 @@ function Get-QualityCount {
 
 function Get-RelativeDockerPath([string]$Path) {
     return [System.IO.Path]::GetRelativePath($repoRoot, $Path).Replace("\", "/")
+}
+
+function Invoke-FinalizeManifest {
+    $relativeConfig = Get-RelativeDockerPath $config
+    $relativeOutput = Get-RelativeDockerPath $outputDir
+    Write-Host "[opt-6.7b] finalizando manifesto completo."
+    & docker run --rm --gpus all `
+        --volume "${repoRoot}:/workspace" `
+        --volume "${CacheRoot}:/cache/huggingface" `
+        --env HF_HOME=/cache/huggingface `
+        --env HF_DATASETS_CACHE=/cache/huggingface/datasets `
+        --env HF_HUB_OFFLINE=1 `
+        --env HF_DATASETS_OFFLINE=1 `
+        --env TRANSFORMERS_OFFLINE=1 `
+        --workdir /workspace `
+        $imageName `
+        python -m validacao.benchmark_modelos_opt `
+            --config $relativeConfig `
+            --output-dir $relativeOutput `
+            --resume `
+            --allow-code-hash-migration
+    if ($LASTEXITCODE -ne 0) {
+        throw "Nao foi possivel finalizar o manifesto OPT 6.7B."
+    }
 }
 
 if (-not (Test-Path -LiteralPath $config)) {
@@ -83,6 +112,7 @@ if ($completed -lt $ExpectedScenarios) {
 }
 
 Write-Host ("[opt-6.7b] benchmark completo: {0}/{1} cenarios." -f $completed, $ExpectedScenarios)
+Invoke-FinalizeManifest
 
 if (-not $SkipAnalysis) {
     $relativeOutput = Get-RelativeDockerPath $outputDir

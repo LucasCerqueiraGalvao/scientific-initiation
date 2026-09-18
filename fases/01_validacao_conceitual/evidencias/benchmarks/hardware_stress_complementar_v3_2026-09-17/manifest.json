@@ -1,0 +1,43 @@
+{
+  "schema_version": 3,
+  "experiment_id": "hardware_stress_complementar_v3",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "d8618ece525fab19f0d0840557464673200172b05fa22355a4d7ebd9f93e036a",
+  "code_sha256": "a0b6d201def66a997223fcd977a378247928edee2e30afb2deff2b2efa83c982",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "runs": [
+    {
+      "repeat_index": 1,
+      "csv": "run_01.csv",
+      "csv_sha256": "503d50f6c92637ed8a5c0cb03ed14eb9be24d9a5661050957aa744f8fa6783b6",
+      "timings": "run_01.timings.csv",
+      "timings_sha256": "2fcde830146aefce9ee60fb69100f3bcf9e1c8ab94ee16ba84b22ce1c3801d6e",
+      "records": 100,
+      "timing_samples": 5000
+    },
+    {
+      "repeat_index": 2,
+      "csv": "run_02.csv",
+      "csv_sha256": "8ad7a7bd6f4b0d153d13f5046d9d124885fd0f73bac6861eecf13bf0218f4896",
+      "timings": "run_02.timings.csv",
+      "timings_sha256": "f30c1dbde2857bbf5c62f9f296264576ffa05dbae9531b383fcfe98a004ff794",
+      "records": 100,
+      "timing_samples": 5000
+    },
+    {
+      "repeat_index": 3,
+      "csv": "run_03.csv",
+      "csv_sha256": "2b35081f415afa8e2cd25def633360712bb264629388919109589c9c55f6fcd8",
+      "timings": "run_03.timings.csv",
+      "timings_sha256": "89c01448a8405746eca324bf3c013ed09f97966e86083e6cd0abccf5d5e47951",
+      "records": 100,
+      "timing_samples": 5000
+    }
+  ],
+  "resumed_at": [],
+  "timings": "timings.csv",
+  "timings_sha256": "ef5de2ac1622e1b3e57e1ccb8e0893c11086e4b96baebde725419f1ca03b261a",
+  "completed_at": "2026-09-18T00:00:35+00:00"
+}

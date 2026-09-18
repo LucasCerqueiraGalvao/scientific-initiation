@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_complementar_performance",
+  "device": "cuda",
+  "required_gpu_name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "models": [
+    {
+      "identifier": "facebook/opt-125m",
+      "revision": "27dcfa74d334bc871f3234de431e71c6eeba5dd6"
+    },
+    {
+      "identifier": "facebook/opt-350m",
+      "revision": "08ab08cc4b72ff5593870b5d527cf4230323703c"
+    },
+    {
+      "identifier": "facebook/opt-1.3b",
+      "revision": "3f5c25d0bc631cb57ac65913f76e22c2dfb61d62"
+    },
+    {
+      "identifier": "facebook/opt-2.7b",
+      "revision": "905a4b602cda5c501f1b3a2650a4152680238254"
+    }
+  ],
+  "dataset": {
+    "identifier": "Salesforce/wikitext",
+    "configuration": "wikitext-2-raw-v1",
+    "revision": "f776294184f13b8ff2337b3841cf9269a6216d1e",
+    "split": "validation"
+  },
+  "scenarios": [
+    {
+      "identifier": "baseline_bf16",
+      "kind": "baseline",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "none",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_pruning_10",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.1,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_pruning_25",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.25,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_pruning_50",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.5,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_pruning_75",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.75,
+      "measure_performance": true
+    },
+    {
+      "identifier": "attention_int8_fake",
+      "kind": "quantization_int8_fake_per_row",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "attention_only",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    },
+    {
+      "identifier": "blocks_pruning_50",
+      "kind": "pruning_magnitude",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "transformer_blocks",
+      "pruning_sparsity": 0.5,
+      "measure_performance": true
+    },
+    {
+      "identifier": "blocks_int8_fake",
+      "kind": "quantization_int8_fake_per_row",
+      "comparison_group": "bf16",
+      "dtype": "bfloat16",
+      "optimization_scope": "transformer_blocks",
+      "pruning_sparsity": 0.0,
+      "measure_performance": true
+    }
+  ],
+  "quality": {
+    "windows": 64,
+    "window_tokens": 512,
+    "prompts_file": "fases/01_validacao_conceitual/experimentos/prompts_opt_v1.json",
+    "generation_tokens": 64,
+    "quantization_perplexity_limit": 0.02,
+    "pruning_perplexity_limit": 0.05
+  },
+  "performance": {
+    "prefill_lengths": [
+      128,
+      512,
+      1024
+    ],
+    "decode_prompt_lengths": [
+      128,
+      512,
+      1024
+    ],
+    "batch_sizes": [
+      1
+    ],
+    "decode_tokens": 64,
+    "warmup_iterations": 5,
+    "measure_iterations": 10,
+    "repetitions": 3,
+    "use_kv_cache": true
+  },
+  "execution": {
+    "compile": true,
+    "compile_mode": "reduce-overhead",
+    "local_files_only": true,
+    "capabilities_file": "resultados/hardware_capabilities.json"
+  }
+}

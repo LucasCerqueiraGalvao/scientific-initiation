@@ -523,3 +523,64 @@ resultado físico negativo: reduzir representação e memória não garantiu
 speedup sustentado. A próxima decisão metodológica é escolher entre corrigir e
 reexecutar apenas o decode, ou registrar essa limitação como escopo da versão
 atual do trabalho.
+
+\section{16/09/2026 - Extensão de escala OPT-2.7B e OPT-6.7B}
+
+\textbf{Motivação.} A extensão foi criada para testar a hipótese levantada na
+discussão: caminhos físicos de otimização poderiam se tornar mais vantajosos em
+modelos maiores. Foram avaliados \texttt{facebook/opt-2.7b} e
+\texttt{facebook/opt-6.7b}, sem treinamento ou fine-tuning, mantendo o mesmo
+protocolo de qualidade, prefill, TTFT, armazenamento, memória e hashes.
+
+\textbf{Guarda operacional.} O OPT-6.7B foi executado com limite de VRAM em
+15.800 MiB, retomada por cenário e execução isolada por container. Essa decisão
+permitiu coletar o modelo maior sem travar a máquina e preservou checkpoints
+válidos entre tentativas.
+
+\textbf{Resultado.} Cada modelo adicional terminou 15 cenários, 216 registros de
+desempenho e 1.440 timings. No OPT-6.7B, \texttt{blocks\_\allowbreak{}int8\_\allowbreak{}dynamic}
+atingiu speedup mediano de 1,756x em prefill e 1,744x em TTFT, com intervalos
+acima de 1,0. Entretanto, a perplexidade aumentou 165,05\%, tornando o ganho
+fisico insuficiente como recomendação final. O \texttt{blocks\_\allowbreak{}2:4}
+também acelerou no modelo maior, mas degradou ainda mais a perplexidade.
+
+\textbf{Interpretação.} A escala passou a favorecer alguns kernels físicos, mas
+não resolveu o conflito entre latência e qualidade. A conclusão correta é que a
+hipótese de escala ganhou evidência parcial para desempenho, não para utilidade
+final.
+
+\section{17/09/2026 - Benchmarks complementares de lacunas}
+
+\textbf{Objetivo.} A rodada complementar foi criada para preencher células
+vazias reais da planilha: desempenho e VRAM dos prunings percentuais e INT8 fake
+nos modelos OPT, além dos perfis físicos de stress nas operações isoladas. As
+coletas antigas foram preservadas, e novas evidências foram promovidas com
+\texttt{RunId complementar-20260917}.
+
+\textbf{Execução.} O script Docker ganhou a ação \texttt{Complementary}, com
+status/probe, smoke complementar, hardware stress, OPT complementar até 2.7B e
+OPT-6.7B guardado. O hardware stress produziu 300 registros e 15.000 timings.
+A bateria OPT de lacunas produziu 40 registros de qualidade, 1.080 registros de
+desempenho e 7.200 timings, somando 125M, 350M, 1.3B, 2.7B e 6.7B.
+
+\textbf{Correção técnica.} Durante o OPT-6.7B, a coleta chegou a 8/8 cenários,
+mas o manifesto permaneceu como \texttt{running} porque o runner encerrava após
+cada checkpoint parcial. O wrapper foi corrigido para fazer uma passagem final
+sem limite de cenários, fechar \texttt{status=complete}, recalcular checksums e
+só então executar a análise. Após a correção, todos os manifestos complementares
+ficaram completos e íntegros.
+
+\textbf{Resultado científico.} O complemento mostrou que pruning denso
+percentual e INT8 fake nos OPT não reduzem VRAM, pois continuam em caminhos
+densos. No OPT-6.7B, pruning de 10\% em atenção preservou qualidade e ficou
+praticamente neutro em latência, com 0,9997x em prefill. Pruning de 25\% ainda
+ficou dentro do limite operacional de perplexidade, mas caiu para 0,924x. Os
+níveis de 50\% e 75\% degradaram fortemente a perplexidade. Assim, zeros densos
+servem para estudar degradação numérica, mas não sustentam aceleração física.
+
+\textbf{Artefatos.} A planilha
+\texttt{output/\allowbreak{}spreadsheets/\allowbreak{}benchmarks\_\allowbreak{}transformers\_\allowbreak{}resumo.xlsx}
+foi regenerada com abas separadas de speedup, VRAM, erro, qualidade, mapa
+experimental, dicionário e fontes. As células agora usam status explícitos:
+\texttt{medido}, \texttt{não medido}, \texttt{não aplicável},
+\texttt{unsupported} e \texttt{failed}.

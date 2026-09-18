@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "source_manifest_sha256": "2a2a14ade9a885fe948c5c831e9046cd6576c2c063acd498e07a0a2a0a764a7d",
+  "generated_at": "2026-09-17T23:56:43.183744+00:00",
+  "artifacts": [
+    {
+      "path": "resultados_completos.csv",
+      "sha256": "325e6d5594818e219926364299f1a2d0cef8240da1c1815be243b8519c1b13b3",
+      "bytes": 7950
+    },
+    {
+      "path": "comparacoes_pareadas.csv",
+      "sha256": "6299465d5b4d94b05c36bc3bd557e8a77ffecca3477dc7d4d935b8eb11027bc9",
+      "bytes": 2328
+    },
+    {
+      "path": "resumo_estatistico.csv",
+      "sha256": "613e20bba6ad7c237d2f55dd1459f5180a9ff181f124aa85d1157cc22f8011b1",
+      "bytes": 2391
+    },
+    {
+      "path": "hipoteses.csv",
+      "sha256": "d57381a164467fb34fca73502c2ed1cced2badf9fba85eba93166427b1444f79",
+      "bytes": 171
+    },
+    {
+      "path": "casos_nao_executados.csv",
+      "sha256": "4714d501ad795ce46ee665a199cb3aee14594f22ae16b47b25c612dfbe6f764a",
+      "bytes": 697
+    },
+    {
+      "path": "timings.csv",
+      "sha256": "3b63465a9a8c6932ffbeb7bc05f5c5cde8c3b196296660d6505573dc57ba872f",
+      "bytes": 4363
+    },
+    {
+      "path": "relatorio_v3.tex",
+      "sha256": "159e5fde043310702568523a7656986f494aff9973e3ae3ed5433deb329396be",
+      "bytes": 724
+    },
+    {
+      "path": "speedup_ci95.png",
+      "sha256": "d8764f012e435f4b8d262d01d625f7ec41ed41c9470b79a561f7d18e66638408",
+      "bytes": 77372
+    },
+    {
+      "path": "memoria_pico_ci95.png",
+      "sha256": "6f63e1837d91c5c46689156322c4d0300d75a2d241fb71634881be1ffdd37c60",
+      "bytes": 80779
+    },
+    {
+      "path": "qualidade_por_sparsity.png",
+      "sha256": "2d3192d87c40f5afe7f1870b4a9695612ea2c9a1b6d741959c280a8f7b6de2b3",
+      "bytes": 33412
+    },
+    {
+      "path": "dispersao_entre_seeds.png",
+      "sha256": "65c6c0415f449766eefb3c44ad0fe5a87b53b5dc8a8c5728a33ad1c850e9aa06",
+      "bytes": 40842
+    },
+    {
+      "path": "heatmap_sequencia_dimensao.png",
+      "sha256": "5d69d27274eb5892c02020be6d76ee8adef94b825d006fad5ab8465842edfcbc",
+      "bytes": 17191
+    },
+    {
+      "path": "pareto_qualidade_desempenho.png",
+      "sha256": "5b0c66785f039911ca3aa823f75387675110288ce18b346489c5b37169ea6cac",
+      "bytes": 59709
+    }
+  ]
+}

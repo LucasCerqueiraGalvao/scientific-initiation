@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_complementar_performance",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "81b673a3f172d6db07466ffa25e65d440d1bfbe3c017764e0de8318a49938ff1",
+  "code_sha256": "a0b6d201def66a997223fcd977a378247928edee2e30afb2deff2b2efa83c982",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "models": [
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_10",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_25",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_pruning_75",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "attention_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "blocks_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-125m",
+      "scenario": "blocks_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_10",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_25",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_pruning_75",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "attention_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "blocks_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "blocks_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_10",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_25",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_pruning_75",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "attention_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "blocks_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "blocks_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_10",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_25",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_pruning_75",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "attention_int8_fake",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "blocks_pruning_50",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-2.7b",
+      "scenario": "blocks_int8_fake",
+      "status": "complete"
+    }
+  ],
+  "resumed_at": [],
+  "artifacts": [
+    {
+      "path": "quality.csv",
+      "sha256": "a939186dada776285da3742b3cdfab39f6518caee77206a54b97f94323798413",
+      "records": 32
+    },
+    {
+      "path": "quality_windows.csv",
+      "sha256": "5011169c6347304dde57378f446008f7ed901ea2a959bcc54cbd7d7396523391",
+      "records": 2048
+    },
+    {
+      "path": "prompt_metrics.csv",
+      "sha256": "9ab0dfb216b484651d2d011ba53320b077bd87f63990006693de1020f8656ec8",
+      "records": 640
+    },
+    {
+      "path": "performance.csv",
+      "sha256": "2847767d5ce18dd5b85d6e40f56877eaed21a678e6486a35f331c4ca6fb84cca",
+      "records": 864
+    },
+    {
+      "path": "timings.csv",
+      "sha256": "e63bd36c09fd560d477675fc9cef6e5f1b360db353d17a5f6447413219576407",
+      "records": 5760
+    },
+    {
+      "path": "evaluation_subset.json",
+      "sha256": "2df481ab47f966792b43b93ec83b9b8bbc85fef0a34dde9a5709a2f21ea16939",
+      "records": 4
+    },
+    {
+      "path": "model_operators.json",
+      "sha256": "17b0fd8fabd64f1e8543ec92f6174fe4b4a034f85cf317d2562342f51be6d9d5",
+      "records": 64
+    },
+    {
+      "path": "baseline_prompts_3a56a4cc532229db.pt",
+      "sha256": "13ab35732f5e5a6559e7a56c37621593c4b43a11de67db2175d73b32adab9d13",
+      "records": 1
+    },
+    {
+      "path": "baseline_prompts_4389deaece61711e.pt",
+      "sha256": "fd808a774b3f9792f355b60b198aff10ce0311a0f3ddc537faff7a32188d9973",
+      "records": 1
+    },
+    {
+      "path": "baseline_prompts_81c1443c96cec356.pt",
+      "sha256": "4b964e5c162adf08e43579b8d633b5d03b22cd5503c309c053b7a9592ec2f18b",
+      "records": 1
+    },
+    {
+      "path": "baseline_prompts_e3ef40fe526f3f80.pt",
+      "sha256": "e296d97f0d494798f19ad583f2a35f328f29953eebf08d0e1ad95a2091fdb02b",
+      "records": 1
+    }
+  ],
+  "completed_at": "2026-09-18T01:12:06+00:00"
+}

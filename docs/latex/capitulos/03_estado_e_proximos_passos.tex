@@ -210,7 +210,7 @@ OPT-350M & TTFT & atencao INT8 dinamico & 0,794 & 0,692 & 0,882 & 0,849 \\
 OPT-1.3B & prefill & blocos INT8 dinamico & 1,271 & 0,958 & 1,400 & 0,542 \\
 OPT-1.3B & TTFT & blocos INT8 dinamico & 1,256 & 0,996 & 1,512 & 0,542 \\
 \bottomrule
-\end{tabular}% 
+\end{tabular}%
 }
 \end{center}
 
@@ -294,7 +294,7 @@ OPT-6.7B & prefill & blocos INT8 dinamico & 1,756 & 1,171 & 2,137 & 0,516 \\
 OPT-6.7B & prefill & atencao 2:4 & 1,030 & 0,974 & 1,111 & 0,859 \\
 OPT-6.7B & prefill & blocos 2:4 & 1,073 & 1,017 & 1,228 & 0,577 \\
 \bottomrule
-\end{tabular}% 
+\end{tabular}%
 }
 \end{center}
 
@@ -325,6 +325,52 @@ mais favoraveis, mas o ganho de desempenho precisa ser lido junto da qualidade.
   \caption{Memoria de pico relativa na extensao OPT-6.7B.}
 \end{figure}
 
+\section{Complemento de lacunas experimentais}
+
+A bateria complementar de 17/09/2026 foi executada para remover celulas vazias
+ambiguas da planilha de resultados. Ela preserva as evidencias antigas e
+acrescenta tres blocos: perfis fisicos de stress para operacoes isoladas,
+desempenho/VRAM de pruning percentual e INT8 fake nos modelos OPT-125M,
+OPT-350M, OPT-1.3B e OPT-2.7B, e a mesma lacuna no OPT-6.7B com guarda de VRAM
+em 15.800~MiB. As evidencias ficam em
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/hardware_stress_complementar_v3_2026-09-17/},
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_complementar_lacunas_2026-09-17/}
+e
+\path{fases/01_validacao_conceitual/evidencias/benchmarks/modelos_opt_6_7b_complementar_lacunas_2026-09-17/}.
+
+O complemento fisico de stress produziu 300 registros e 15.000 amostras de
+timing. O complemento OPT produziu 40 registros de qualidade, 1.080 registros
+de desempenho e 7.200 amostras de timing. A conclusao principal e negativa:
+pruning denso percentual e INT8 fake nao ativam caminhos fisicos de memoria ou
+latencia. Por isso, a VRAM mediana permaneceu essencialmente em 1,000 vez o
+baseline e os speedups ficaram mistos ou contraditos.
+
+\begin{center}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+\textbf{Modelo} & \textbf{Operacao} & \textbf{Pruning 10\%} &
+\textbf{Pruning 25\%} & \textbf{Pruning 50\%} & \textbf{Pruning 75\%} &
+\textbf{INT8 fake attn.} & \textbf{INT8 fake blocos} \\
+\midrule
+OPT-125M & prefill & 0,993 & 0,981 & 0,984 & 0,979 & 0,973 & 0,976 \\
+OPT-350M & prefill & 0,997 & 0,859 & 0,997 & 0,983 & 1,003 & 1,010 \\
+OPT-1.3B & prefill & 1,004 & 1,008 & 1,002 & 1,009 & 1,007 & 1,005 \\
+OPT-2.7B & prefill & 0,999 & 1,000 & 1,002 & 0,975 & 0,976 & 0,975 \\
+OPT-6.7B & prefill & 1,000 & 0,924 & 0,923 & 0,926 & 0,922 & 0,924 \\
+\bottomrule
+\end{tabular}%
+}
+\end{center}
+
+No OPT-6.7B, o pruning de 10\% em atencao preservou qualidade e ficou
+praticamente neutro em latencia. O pruning de 25\% ainda permaneceu dentro do
+limite operacional de perplexidade, mas reduziu o desempenho para 0,924 vez o
+baseline em prefill. Em 50\% e 75\%, a perplexidade cresceu 50,59\% e
+1.328,60\%, respectivamente. Assim, o complemento reforca que zeros densos
+podem ser uteis como estudo de degradacao numerica, mas nao devem ser vendidos
+como aceleracao fisica sem representacao e kernel correspondentes.
+
 \section{Respostas atuais as perguntas de pesquisa}
 
 \begin{longtable}{@{}lp{0.76\linewidth}@{}}
@@ -333,11 +379,11 @@ mais favoraveis, mas o ganho de desempenho precisa ser lido junto da qualidade.
 \midrule
 RQ1 & No recorte sintetico, INT8 fake preservou melhor a saida que pruning por magnitude em 100\% dos pares. \\
 RQ2 & INT8 fisico reduziu armazenamento para cerca de 50\% do baseline; 2:4, para cerca de 56\%. A memoria de pico mediana tambem caiu nos seis grupos. \\
-RQ3 & Nenhuma tecnica sustentou ganho de latencia nas operacoes isoladas. Nos OPT v1, prefill e TTFT tambem nao satisfizeram todos os criterios; na extensao OPT-6.7B houve speedup fisico em alguns caminhos, mas sem qualidade aceitavel. Decode ficou tecnicamente limitado. \\
+RQ3 & Nenhuma tecnica sustentou ganho de latencia nas operacoes isoladas. Nos OPT v1 e no complemento de pruning percentual/INT8 fake, prefill e TTFT tambem nao satisfizeram todos os criterios; na extensao OPT-6.7B houve speedup fisico em alguns caminhos, mas sem qualidade aceitavel. Decode ficou tecnicamente limitado. \\
 RQ4 & A separacao por nivel foi confirmada: quantizacao fake responde fidelidade, weight-only responde pesos compactos e INT8 dinamico/2:4 exigem trace do kernel. \\
 RQ5 & As tendencias numericas principais persistiram entre cinco seeds, distribuicoes e perfis; os efeitos temporais sinteticos permaneceram mistos. \\
-RQ6 & A degradacao por pruning cresceu monotonicamente entre 10\%, 25\%, 50\% e 75\% de sparsity. \\
-RQ7 & As tendencias sinteticas aparecem parcialmente nos OPT: INT8 preserva melhor a qualidade que pruning; pruning degrada com sparsity; em escala maior surgiu speedup, mas acompanhado de degradacao de perplexidade. \\
+RQ6 & A degradacao por pruning cresceu com a sparsity. No complemento OPT, 10\% foi geralmente o unico nivel aceitavel; no OPT-6.7B, 25\% ainda ficou dentro do limite operacional, mas ja reduziu latencia. \\
+RQ7 & As tendencias sinteticas aparecem parcialmente nos OPT: INT8 preserva melhor a qualidade que pruning; pruning degrada com sparsity; o complemento mostrou que pruning denso nao traz economia fisica; em escala maior surgiu speedup apenas em caminhos fisicos, acompanhado de degradacao de perplexidade. \\
 RQ8 & INT8 e 2:4 reduziram armazenamento e memoria com caminhos compativeis. No OPT-6.7B, alguns caminhos tambem reduziram latencia de prefill/TTFT, mas nao cumpriram simultaneamente os limites de qualidade. \\
 \bottomrule
 \end{longtable}
@@ -356,7 +402,7 @@ para pruning sao limites operacionais deste estudo, nao regras universais.
 
 \begin{enumerate}
   \item decidir se a medicao de decode sera reexecutada com ajuste especifico para CUDA Graphs e KV cache;
-  \item revisar com o orientador a interpretacao da extensao OPT-6.7B, separando speedup fisico de utilidade com qualidade preservada;
+  \item revisar com o orientador a interpretacao do pruning denso e da extensao OPT-6.7B, separando speedup fisico de utilidade com qualidade preservada;
   \item preparar uma apresentacao destacando a separacao entre fidelidade, memoria, armazenamento, latencia e perplexidade.
 \end{enumerate}
 
@@ -385,6 +431,10 @@ analises permanecem integros. Nenhum processo e encerrado automaticamente.
 .\scripts\run_benchmarks_docker.ps1 -Action Remaining -CacheRoot "D:\Caches\scientific-initiation\huggingface" -RunId "final-20260913" -Resume
 \end{Verbatim}
 
+\begin{Verbatim}[fontsize=\small,breaklines=true,label=powershell]
+.\scripts\run_benchmarks_docker.ps1 -Action Complementary -CacheRoot "D:\Caches\scientific-initiation\huggingface" -RunId "complementar-20260917" -Resume
+\end{Verbatim}
+
 \begin{longtable}{@{}ll@{}}
 \toprule
 \textbf{Etapa} & \textbf{Estado} \\
@@ -393,7 +443,8 @@ Build, probe e bateria fisica & concluido \\
 Testes e smoke OPT final & concluido \\
 OPT-125M, OPT-350M e OPT-1.3B & concluido \\
 OPT-2.7B e OPT-6.7B & concluido \\
-Analise, PDF e publicacao & em atualizacao nesta revisao \\
+Complemento de lacunas & concluido \\
+Analise, PDF e publicacao & atualizado nesta revisao \\
 \textbf{Pendente tecnico} & \textbf{decode com KV cache sob \texttt{torch.compile}} \\
 \bottomrule
 \end{longtable}

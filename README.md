@@ -8,9 +8,10 @@ O benchmark GPU v1 foi concluído na NVIDIA GeForce RTX 4070 Ti SUPER e sua
 evidência foi preservada com hashes. A infraestrutura v3 ampliou o estudo para
 cinco seeds, três distribuições, 13 perfis, multi-head attention, kernels reais
 e modelos OPT pré-treinados. As baterias sintética v3, física v3, OPT v1,
-OPT-2.7B e OPT-6.7B foram executadas; a etapa OPT validou qualidade, prefill e
-TTFT, preservando a falha técnica da medição de decode com KV cache e CUDA
-Graphs.
+OPT-2.7B e OPT-6.7B foram executadas; a etapa complementar de 17/09/2026
+preencheu desempenho/VRAM dos prunings percentuais e INT8 fake nos OPT, além
+dos perfis físicos de stress. A etapa OPT valida qualidade, prefill e TTFT,
+preservando a falha técnica da medição de decode com KV cache e CUDA Graphs.
 
 O Docker Desktop voltou a operar com backend WSL2. Seu disco de dados foi
 realocado para `D:\DockerDesktopData`, preservando os contêineres existentes e
@@ -32,6 +33,7 @@ probe físico, o smoke e a bateria de 1.650 casos foram concluídos.
 | Caminhos físicos | Concluído | 1.650 registros, 82.500 timings, TorchAO INT8 e pruning 2:4 auditados pelo profiler. |
 | Modelos OPT v1 | Concluído com limitação de decode | OPT-125M, OPT-350M e OPT-1.3B: 45 registros de qualidade, 2.880 janelas, 900 métricas de prompts, 1.296 registros de desempenho e 10.080 timings. |
 | Extensão OPT-2.7B e OPT-6.7B | Concluída | Cada modelo adicional gerou 15 registros de qualidade, 216 registros de desempenho e 1.440 timings. |
+| Benchmarks complementares | Concluídos | Hardware stress: 300 registros e 15.000 timings. OPT lacunas: 40 registros de qualidade, 1.080 registros de desempenho e 7.200 timings. |
 | Ganho real nas operações/modelos | Parcial e condicionado | Operações isoladas contradisseram speedup; no OPT-6.7B houve speedup físico em alguns caminhos, mas sem qualidade aceitável nos blocos. |
 
 A posição científica correta é: a evidência v1 demonstra comportamento numérico
@@ -40,12 +42,17 @@ pareados, INT8 fake apresentou MSE menor que pruning, e o erro do pruning cresce
 com a sparsity. Na bateria física, INT8 dinâmico e 2:4 usaram os kernels esperados,
 mas nenhum cenário foi mais rápido que seu baseline compilado. Nos modelos OPT,
 INT8 manteve melhor qualidade que pruning e reduziu memória/armazenamento em
-vários cenários. O OPT-6.7B mostrou que a escala pode favorecer alguns caminhos
-físicos: `blocks_int8_dynamic` atingiu speedup mediano de `1,756x` em prefill e
-`1,744x` em TTFT. Contudo, a perplexidade subiu `165,05%`, portanto esse ganho
-não é uma configuração final aceitável pelos critérios operacionais. Resultado
-físico negativo também é evidência: representação menor não implica menor
-latência para todo shape ou composição de operação.
+vários cenários. O complemento mostrou que pruning denso percentual e INT8 fake
+nos OPT não reduzem VRAM, pois continuam executando em caminhos densos. No
+OPT-6.7B, pruning de 10% em atenção preservou qualidade e ficou praticamente
+neutro em latência (`0,9997x` em prefill), enquanto 25% ainda preservou o limite
+de qualidade, mas caiu para `0,924x`; 50% e 75% degradaram a perplexidade. O
+OPT-6.7B mostrou que a escala pode favorecer alguns caminhos físicos:
+`blocks_int8_dynamic` atingiu speedup mediano de `1,756x` em prefill e `1,744x`
+em TTFT. Contudo, a perplexidade subiu `165,05%`, portanto esse ganho não é uma
+configuração final aceitável pelos critérios operacionais. Resultado físico
+negativo também é evidência: representação menor não implica menor latência para
+todo shape ou composição de operação.
 
 ## Documentação LaTeX
 
@@ -139,6 +146,22 @@ e coletas posteriores usam rede desativada. `-Resume` só retoma resultados com
 o mesmo `RunId` quando configuração, código, ambiente e artefatos preservados
 possuem hashes coincidentes.
 
+Para reproduzir somente a bateria complementar que preencheu as lacunas da
+planilha:
+
+```powershell
+.\scripts\run_benchmarks_docker.ps1 `
+  -Action Complementary `
+  -CacheRoot $cacheRoot `
+  -RunId "complementar-20260917" `
+  -Resume
+```
+
+`Complementary` roda status/probe, smoke complementar, hardware stress, OPT
+complementar para 125M/350M/1.3B/2.7B e OPT-6.7B com guarda de VRAM em
+15.800 MiB. Etapas completas são ignoradas se manifesto e checksums continuarem
+válidos.
+
 Antes de `Probe`, `Smoke`, `ModelSmoke`, `Hardware` e `Models`, o script amostra a GPU cinco
 vezes e exige: processo do jogo fechado, uso médio abaixo de 10%, no máximo 2.048 MiB
 de VRAM ocupada e temperatura abaixo de 65 °C. O pico de uso também é registrado
@@ -154,6 +177,7 @@ Estado da sequência final na RTX 4070 Ti SUPER:
 | Build, probe e bateria física | Concluídos |
 | Suíte e smoke OPT final | Concluídos |
 | OPT-125M, OPT-350M e OPT-1.3B | Concluídos |
+| Complemento de hardware stress e OPT lacunas | Concluído |
 | Análise, PDF e publicação | Atualizados nesta consolidação |
 | **Pendência técnica** | investigar/reexecutar decode se necessário |
 
@@ -188,8 +212,8 @@ Arquivos auxiliares ficam em `tmp/pdfs/latex/` e não são versionados.
 
 1. decidir se a medição de decode será reexecutada com ajuste específico para
    CUDA Graphs/KV cache ou registrada definitivamente como limitação técnica;
-2. revisar com o orientador a interpretação do OPT-6.7B, separando speedup
-   físico de utilidade com qualidade preservada;
+2. revisar com o orientador a interpretação do pruning denso nos OPT e do
+   OPT-6.7B, separando speedup físico de utilidade com qualidade preservada;
 3. preparar apresentação/discussão dos resultados finais com o orientador.
 
 ## Cuidados de interpretação

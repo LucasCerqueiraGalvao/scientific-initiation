@@ -1,0 +1,25 @@
+{
+  "schema_version": 3,
+  "experiment_id": "smoke_hardware_stress_complementar",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "e917a7afc6c3e5b16fd08b8e014a368359894a3ca55a31020c470575a71c6664",
+  "code_sha256": "a0b6d201def66a997223fcd977a378247928edee2e30afb2deff2b2efa83c982",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "runs": [
+    {
+      "repeat_index": 1,
+      "csv": "run_01.csv",
+      "csv_sha256": "c88391b41c52b2eec3e94d3d2dd3f993de51af356c5592cf3a3a8d5177e5d9e1",
+      "timings": "run_01.timings.csv",
+      "timings_sha256": "893401d99981c3a3e1c8b13eee7f090726893c215278cac06f77224a64850a39",
+      "records": 10,
+      "timing_samples": 30
+    }
+  ],
+  "resumed_at": [],
+  "timings": "timings.csv",
+  "timings_sha256": "893401d99981c3a3e1c8b13eee7f090726893c215278cac06f77224a64850a39",
+  "completed_at": "2026-09-17T23:56:37+00:00"
+}

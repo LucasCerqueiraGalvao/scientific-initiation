@@ -17,6 +17,11 @@ interpretação; smoke e diagnósticos em CPU não são resultados de hardware.
 | [modelos_opt_v1_2026-09-15](modelos_opt_v1_2026-09-15/) | Avaliar modelos pré-treinados | OPT-125M, OPT-350M e OPT-1.3B, 15 variantes por modelo | Completo com limitação de decode | 45 registros de qualidade, 1.296 registros de desempenho e 10.080 timings; prefill/TTFT completos, decode preservado como falha técnica. |
 | [modelos_opt_2_7b_2026-09-15](modelos_opt_2_7b_2026-09-15/) | Extensão de escala | OPT-2.7B, 15 variantes | Completo | 15 registros de qualidade, 216 registros de desempenho e 1.440 timings; speedups mistos e qualidade preservada melhor por INT8. |
 | [modelos_opt_6_7b_2026-09-16](modelos_opt_6_7b_2026-09-16/) | Extensão de escala guardada | OPT-6.7B, 15 variantes, guarda de VRAM em 15.800 MiB | Completo | 15 registros de qualidade, 216 registros de desempenho e 1.440 timings; speedup físico em alguns caminhos, mas sem qualidade aceitável nos blocos. |
+| [smoke_hardware_stress_complementar_2026-09-17](smoke_hardware_stress_complementar_2026-09-17/) | Validar complemento físico | Perfis de stress reduzidos, 2 operações e 5 cenários físicos | Completo | Smoke complementar aprovado antes da bateria longa. |
+| [hardware_stress_complementar_v3_2026-09-17](hardware_stress_complementar_v3_2026-09-17/) | Medir stress físico | Perfis uniforme e outlier, 2 operações, 5 seeds, 5 cenários físicos e 3 repetições | Completo | 300 registros e 15.000 timings; INT8/2:4 continuaram sem speedup sustentado nos perfis de stress. |
+| [modelos_opt_complementar_smoke_2026-09-17](modelos_opt_complementar_smoke_2026-09-17/) | Validar complemento OPT | OPT-125M reduzido com pruning percentual e INT8 fake | Completo | Smoke complementar aprovado antes da bateria longa. |
+| [modelos_opt_complementar_lacunas_2026-09-17](modelos_opt_complementar_lacunas_2026-09-17/) | Preencher lacunas OPT 125M-2.7B | Pruning 10/25/50/75, INT8 fake, pruning 50% blocos e INT8 fake blocos | Completo | 32 registros de qualidade, 864 registros de desempenho e 5.760 timings; VRAM permaneceu densa e speedups foram mistos/contraditos. |
+| [modelos_opt_6_7b_complementar_lacunas_2026-09-17](modelos_opt_6_7b_complementar_lacunas_2026-09-17/) | Preencher lacunas OPT-6.7B | Mesmos cenários complementares, com guarda de VRAM em 15.800 MiB | Completo | 8 registros de qualidade, 216 registros de desempenho e 1.440 timings; pruning 10% preservou qualidade mas ficou neutro em latência. |
 
 Cada coleta deve preservar configuração, ambiente, manifesto, CSVs por execução,
 timings e análise. Não sobrescreva uma pasta existente. Coletas v1/v2 usam
@@ -25,8 +30,23 @@ Markdown é usado somente neste README de navegação.
 
 As tabelas consolidadas também estão em formato editável em
 [`output/spreadsheets/benchmarks_transformers_resumo.xlsx`](../../../../output/spreadsheets/benchmarks_transformers_resumo.xlsx),
-com abas para speedup, VRAM relativa, VRAM absoluta, erro acumulado e dicionário
-das colunas.
+com abas para `Speedup - Operações Numéricas`, `Speedup - Hardware`,
+`Speedup - OPT`, `VRAM - Hardware`, `VRAM - OPT`, `Erro - Operações`,
+`Qualidade - OPT`, `Mapa Experimental`, `Dicionário` e `Fontes`. A planilha
+usa explicitamente `medido`, `não medido`, `não aplicável`, `unsupported` e
+`failed`, evitando células vazias ambíguas.
+
+## Complemento de 17/09/2026
+
+A bateria complementar foi criada para responder aos buracos reais da planilha.
+Ela não substitui as coletas anteriores: combina evidências antigas e novas. O
+resultado principal foi confirmar que pruning denso percentual e INT8 fake nos
+modelos OPT não ativam caminhos físicos de economia de memória ou latência; por
+isso a VRAM mediana ficou essencialmente `1,000x` do baseline e os speedups
+ficaram mistos ou contraditos. No OPT-6.7B, `attention_pruning_10` preservou
+qualidade e ficou em `0,9997x` de speedup mediano em prefill; `attention_pruning_25`
+ainda ficou dentro do limite operacional de perplexidade, mas caiu para `0,924x`.
+Os níveis de 50% e 75% degradaram fortemente a qualidade.
 
 ## Speedup e VRAM nos modelos OPT
 
