@@ -1,0 +1,178 @@
+{
+  "accepted_sources": [
+    {
+      "name": "robustez_sintetica_v3_2026-09-13",
+      "purpose": "synthetic_numerical",
+      "priority": 10,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\robustez_sintetica_v3_2026-09-13",
+      "manifest": "manifest.json",
+      "manifest_sha256": "d9070a13166c6ac5e093b668959af5b0032fe1da8bd9e4fc917a89a78ab8477d",
+      "config": "config.snapshot.json",
+      "config_sha256": "ec86e4f80a6ba5f9647d3520007b473bebc54e12abbc6c30ed69277f5e43427b",
+      "environment": "environment.json",
+      "environment_sha256": "de91debc567f2465ea96b253b49e3b374bf22021888f8b80ad12fc308d31cc74",
+      "status": "complete",
+      "schema_version": 3
+    },
+    {
+      "name": "hardware_nativo_v3_2026-09-14",
+      "purpose": "synthetic_hardware",
+      "priority": 11,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\hardware_nativo_v3_2026-09-14",
+      "manifest": "manifest.json",
+      "manifest_sha256": "542dadd6d117e85f7c9f2d64ac3ea1c33e66504b1fc844dd2e3c6dc90c3ca948",
+      "config": "config.snapshot.json",
+      "config_sha256": "f2be4be104cdabaac166aca559406a600615004adc7109ff9ce62c5bb13ab28f",
+      "environment": "environment.json",
+      "environment_sha256": "cefed5c84ea045113c0f3c281937ef75dd42ba62018beaefc4d49a855e5223da",
+      "status": "complete",
+      "schema_version": 3
+    },
+    {
+      "name": "hardware_stress_complementar_v3_2026-09-17",
+      "purpose": "synthetic_stress",
+      "priority": 12,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\hardware_stress_complementar_v3_2026-09-17",
+      "manifest": "manifest.json",
+      "manifest_sha256": "4aa9dfbbafa60703afe5a1264a57c0a54677950c6d89afb794ec9c4f8868c2b2",
+      "config": "config.snapshot.json",
+      "config_sha256": "4b279db8673bcccc64c70cf84721ac07ec2834194eb4f94db3e6ee23afce1677",
+      "environment": "environment.json",
+      "environment_sha256": "61f088bdcb6daecb1330c33ea09f5b3942b7fc18fd6fac9f0da1d552658e585d",
+      "status": "complete",
+      "schema_version": 3
+    },
+    {
+      "name": "modelos_opt_v1_2026-09-15",
+      "purpose": "opt_pretrained",
+      "priority": 100,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_v1_2026-09-15",
+      "manifest": "manifest.json",
+      "manifest_sha256": "966ef550ae80e50dd88752c0b8a2f1cda6d515a93f6a71b723fa5abae0454aa4",
+      "config": "config.snapshot.json",
+      "config_sha256": "ed6e285a1a1ea02a654fb25b1d5416157724e2c445c8d1153bf8494995f2c816",
+      "environment": "environment.json",
+      "environment_sha256": "0989939fefc4fb4c9b666d3014fb8510c91c34c0772b26e05e37594502385a0c",
+      "status": "complete",
+      "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_2_7b_2026-09-15",
+      "purpose": "opt_pretrained",
+      "priority": 101,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_2_7b_2026-09-15",
+      "manifest": "manifest.json",
+      "manifest_sha256": "4ad256c032adbd05eae98a727f34bb7befeb60cb707d499d0a67cfb75c3f01b8",
+      "config": "config.snapshot.json",
+      "config_sha256": "fd75fdc740e53226ba03166988704975817e566b650e9ec72c729fdfad7474f8",
+      "environment": "environment.json",
+      "environment_sha256": "70f12fe1830986b9bbd5f5b87809ba15d764a2b050a60dc516b581536127abfe",
+      "status": "complete",
+      "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_6_7b_2026-09-16",
+      "purpose": "opt_pretrained",
+      "priority": 102,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_6_7b_2026-09-16",
+      "manifest": "manifest.json",
+      "manifest_sha256": "14ce78928a767621a9885c7b7406289b5b0225d1b4351bfa66425e65f97190b0",
+      "config": "config.snapshot.json",
+      "config_sha256": "6be82e5795fa431c04880251986e6412d3d511345338509a1c670e1113621128",
+      "environment": "environment.json",
+      "environment_sha256": "2a23ce09090f0c42852093efb234b3d2a177e41395ca3da63509beded0d5cfb6",
+      "status": "complete",
+      "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_complementar_lacunas_2026-09-17",
+      "purpose": "opt_pretrained",
+      "priority": 103,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_complementar_lacunas_2026-09-17",
+      "manifest": "manifest.json",
+      "manifest_sha256": "57049ffb282133c2512ecc3fc832b6cd0f32b3988002af2d4dc4f84adc7c086e",
+      "config": "config.snapshot.json",
+      "config_sha256": "e86bc56d9272078168a28c1767f69200ff23f2202b26bd8e2b6734dc22125403",
+      "environment": "environment.json",
+      "environment_sha256": "fd8458f1e7dc79de6b8618bd51818f1059591c66e011e99c679e4953f19db265",
+      "status": "complete",
+      "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_6_7b_complementar_lacunas_2026-09-17",
+      "purpose": "opt_pretrained",
+      "priority": 104,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_6_7b_complementar_lacunas_2026-09-17",
+      "manifest": "manifest.json",
+      "manifest_sha256": "3b42eaf4acb038d2dc467c69464ff8633c15e57408f6ba07ecd0c7cd4e79ba00",
+      "config": "config.snapshot.json",
+      "config_sha256": "97052814b042ba3d785247c689a33fef9cd88920764f1e07d007f94347cf7a41",
+      "environment": "environment.json",
+      "environment_sha256": "825497f50351a35e068f60e1ab061bfa0722c14493353aaba09b028ce419e416",
+      "status": "complete",
+      "schema_version": 1
+    }
+  ],
+  "excluded_sources": [
+    {
+      "name": "smoke_cpu_2026-08-25",
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\smoke_cpu_2026-08-25",
+      "reason": "smoke, diagnostico historico ou run substituido por evidencia posterior",
+      "exists": true
+    },
+    {
+      "name": "smoke_hardware_v3_2026-09-14",
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\smoke_hardware_v3_2026-09-14",
+      "reason": "smoke, diagnostico historico ou run substituido por evidencia posterior",
+      "exists": true
+    },
+    {
+      "name": "smoke_hardware_stress_complementar_2026-09-17",
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\smoke_hardware_stress_complementar_2026-09-17",
+      "reason": "smoke, diagnostico historico ou run substituido por evidencia posterior",
+      "exists": true
+    },
+    {
+      "name": "modelos_opt_smoke_2026-09-15",
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_smoke_2026-09-15",
+      "reason": "smoke, diagnostico historico ou run substituido por evidencia posterior",
+      "exists": true
+    },
+    {
+      "name": "modelos_opt_complementar_smoke_2026-09-17",
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_complementar_smoke_2026-09-17",
+      "reason": "smoke, diagnostico historico ou run substituido por evidencia posterior",
+      "exists": true
+    },
+    {
+      "name": "diagnostico_cpu_l64_d128_2026-08-25",
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\diagnostico_cpu_l64_d128_2026-08-25",
+      "reason": "smoke, diagnostico historico ou run substituido por evidencia posterior",
+      "exists": true
+    },
+    {
+      "name": "diagnostico_cpu_l64_d128_v2_2026-08-25",
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\diagnostico_cpu_l64_d128_v2_2026-08-25",
+      "reason": "smoke, diagnostico historico ou run substituido por evidencia posterior",
+      "exists": true
+    },
+    {
+      "name": "benchmark_gpu_4070ti_super_2026-08-29",
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\benchmark_gpu_4070ti_super_2026-08-29",
+      "reason": "smoke, diagnostico historico ou run substituido por evidencia posterior",
+      "exists": true
+    }
+  ],
+  "canonical_rules": {
+    "smoke_policy": "smokes e diagnosticos historicos sao preservados fora das conclusoes finais",
+    "stress_policy": "hardware_stress_complementar e mantido separado por canonical_source",
+    "dedupe_policy": "chaves repetidas usam maior canonical_source_priority; empates preservam a ultima fonte lida",
+    "quality_acceptable_policy": "campo original preservado; colunas delta_ppl_le_2pct/5pct/10pct sao exploratorias",
+    "evidence_levels": {
+      "A_numeric_change": "altera numericamente pesos/saidas sem garantir caminho fisico de armazenamento ou kernel",
+      "B_physical_compression": "reduz armazenamento fisico de pesos, sem implicar aceleracao",
+      "C_physical_acceleration_candidate": "usa caminho potencialmente acelerado; exige physical_kernel_status=confirmed para conclusao forte"
+    },
+    "ttft_policy": "operation=model_ttft foi preservado para compatibilidade; measurement_label=prefill_to_first_logit descreve melhor a metrica atual"
+  }
+}

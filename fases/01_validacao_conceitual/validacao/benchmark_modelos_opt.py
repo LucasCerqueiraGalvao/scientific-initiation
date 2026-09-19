@@ -48,6 +48,7 @@ MODEL_SCENARIO_KINDS = (
 )
 COMMIT_HASH_LENGTH = 40
 OPTIMIZATION_SCOPES = ("attention_only", "transformer_blocks")
+OPT_COMPONENTS = ("attention", "mlp", "q_proj", "k_proj", "v_proj", "out_proj", "fc1", "fc2")
 QUALITY_COLUMNS = [
     "experiment_id", "model_id", "model_revision", "scenario", "comparison_group",
     "optimization_scope", "dtype", "status", "skip_reason", "parameter_count",
@@ -93,6 +94,10 @@ class ModelScenario:
     optimization_scope: str
     pruning_sparsity: float
     measure_performance: bool
+    layer_start: int | None = None
+    layer_end: int | None = None
+    layers: tuple[int, ...] = ()
+    components: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -176,6 +181,42 @@ def _int_tuple(name: str, value: object) -> tuple[int, ...]:
     return result
 
 
+def _optional_non_negative_int(name: str, value: object) -> int | None:
+    if value is None:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise ExperimentConfigurationError(f"{name} deve ser inteiro nao negativo")
+    return value
+
+
+def _optional_layer_tuple(name: str, value: object) -> tuple[int, ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, list):
+        raise ExperimentConfigurationError(f"{name} deve ser lista")
+    result = tuple(_optional_non_negative_int(name, item) for item in value)
+    if any(item is None for item in result):
+        raise ExperimentConfigurationError(f"{name} nao pode conter nulo")
+    typed = tuple(int(item) for item in result)
+    if len(set(typed)) != len(typed):
+        raise ExperimentConfigurationError(f"{name} nao pode conter duplicatas")
+    return typed
+
+
+def _optional_component_tuple(value: object) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, list):
+        raise ExperimentConfigurationError("components deve ser lista")
+    components = tuple(str(item) for item in value)
+    if len(set(components)) != len(components):
+        raise ExperimentConfigurationError("components nao pode conter duplicatas")
+    unknown = set(components) - set(OPT_COMPONENTS)
+    if unknown:
+        raise ExperimentConfigurationError(f"components desconhecidos: {sorted(unknown)}")
+    return components
+
+
 def _commit_hash(name: str, value: object) -> str:
     revision = str(value)
     if len(revision) != COMMIT_HASH_LENGTH or any(character not in "0123456789abcdef" for character in revision):
@@ -230,8 +271,15 @@ def model_config_from_mapping(data: Mapping[str, object]) -> ModelExperimentConf
             "identifier", "kind", "comparison_group", "dtype", "optimization_scope",
             "pruning_sparsity", "measure_performance",
         }
-        if not isinstance(raw, Mapping) or set(raw) != required:
+        optional = {"layer_start", "layer_end", "layers", "components"}
+        if not isinstance(raw, Mapping) or not required.issubset(set(raw)) or set(raw) - required - optional:
             raise ExperimentConfigurationError("model scenario invalido")
+        layer_start = _optional_non_negative_int("layer_start", raw.get("layer_start"))
+        layer_end = _optional_non_negative_int("layer_end", raw.get("layer_end"))
+        layers = _optional_layer_tuple("layers", raw.get("layers"))
+        components = _optional_component_tuple(raw.get("components"))
+        if layer_start is not None and layer_end is not None and layer_start > layer_end:
+            raise ExperimentConfigurationError("layer_start nao pode ser maior que layer_end")
         scenario = ModelScenario(
             identifier=str(raw["identifier"]),
             kind=str(raw["kind"]),
@@ -240,6 +288,10 @@ def model_config_from_mapping(data: Mapping[str, object]) -> ModelExperimentConf
             optimization_scope=str(raw["optimization_scope"]),
             pruning_sparsity=float(raw["pruning_sparsity"]),
             measure_performance=bool(raw["measure_performance"]),
+            layer_start=layer_start,
+            layer_end=layer_end,
+            layers=layers,
+            components=components,
         )
         if scenario.identifier in ids or not scenario.identifier:
             raise ExperimentConfigurationError("scenario id vazio ou duplicado")
@@ -311,11 +363,49 @@ def load_model_config(path: str | Path) -> ModelExperimentConfig:
     return model_config_from_mapping(value)
 
 
-def is_target_linear(name: str, module: nn.Module, scope: str) -> bool:
+def _layer_index(name: str) -> int | None:
+    parts = name.casefold().split(".")
+    for index, part in enumerate(parts[:-1]):
+        if part == "layers":
+            try:
+                return int(parts[index + 1])
+            except ValueError:
+                return None
+    return None
+
+
+def _module_components(name: str) -> set[str]:
+    leaf = name.casefold().rsplit(".", 1)[-1]
+    components = {leaf}
+    if leaf in {"q_proj", "k_proj", "v_proj", "out_proj"}:
+        components.add("attention")
+    if leaf in {"fc1", "fc2"}:
+        components.add("mlp")
+    return components
+
+
+def _matches_scenario_selector(name: str, scenario: ModelScenario | None) -> bool:
+    if scenario is None:
+        return True
+    layer_index = _layer_index(name)
+    if scenario.layers and layer_index not in scenario.layers:
+        return False
+    if scenario.layer_start is not None and (layer_index is None or layer_index < scenario.layer_start):
+        return False
+    if scenario.layer_end is not None and (layer_index is None or layer_index > scenario.layer_end):
+        return False
+    if scenario.components and _module_components(name).isdisjoint(set(scenario.components)):
+        return False
+    return True
+
+
+def is_target_linear(name: str, module: nn.Module, scope: str, scenario: ModelScenario | None = None) -> bool:
     if not isinstance(module, nn.Linear):
         return False
     normalized = name.casefold()
     if normalized.endswith("lm_head") or "embed" in normalized:
+        return False
+    if not _matches_scenario_selector(normalized, scenario):
         return False
     if scope == "attention_only":
         return ".self_attn." in normalized and normalized.rsplit(".", 1)[-1] in {
@@ -328,16 +418,20 @@ def is_target_linear(name: str, module: nn.Module, scope: str) -> bool:
     raise ValueError(f"scope desconhecido: {scope}")
 
 
-def target_linears(model: nn.Module, scope: str) -> tuple[tuple[str, nn.Linear], ...]:
+def target_linears(
+    model: nn.Module,
+    scope: str,
+    scenario: ModelScenario | None = None,
+) -> tuple[tuple[str, nn.Linear], ...]:
     return tuple(
         (name, module)
         for name, module in model.named_modules()
-        if is_target_linear(name, module, scope)
+        if is_target_linear(name, module, scope, scenario)
     )
 
 
 def apply_model_scenario(model: nn.Module, scenario: ModelScenario) -> int:
-    targets = target_linears(model, scenario.optimization_scope)
+    targets = target_linears(model, scenario.optimization_scope, scenario)
     if scenario.kind != "baseline" and not targets:
         raise RuntimeError(f"nenhuma camada encontrada para scope {scenario.optimization_scope}")
     if scenario.kind == "pruning_magnitude":
@@ -386,14 +480,19 @@ def model_storage_bytes(model: nn.Module) -> int:
     return _module_storage_bytes(model)
 
 
-def observed_model_sparsity(model: nn.Module, scope: str, scenario_kind: str) -> float:
+def observed_model_sparsity(
+    model: nn.Module,
+    scope: str,
+    scenario_kind: str,
+    scenario: ModelScenario | None = None,
+) -> float:
     if scenario_kind not in {"pruning_magnitude", "pruning_2to4"}:
         return 0.0
     if scenario_kind == "pruning_2to4":
         return 0.5
     zeros = 0
     count = 0
-    for _, module in target_linears(model, scope):
+    for _, module in target_linears(model, scope, scenario):
         try:
             weight = module.weight.detach()
             dense = weight.to_dense() if weight.layout != torch.strided else weight
@@ -1418,6 +1517,7 @@ def execute_model_experiment(
                         model,
                         scenario.optimization_scope,
                         scenario.kind,
+                        scenario,
                     )
                     quality_record = {
                             "experiment_id": config.experiment_id,

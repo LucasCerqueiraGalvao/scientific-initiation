@@ -1,0 +1,46 @@
+{
+  "schema_version": 3,
+  "experiment_id": "hardware_crossover_v3",
+  "purpose": "hardware_benchmark",
+  "stage": "synthetic_hardware",
+  "device": "cuda",
+  "required_gpu_name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "data_seeds": [11, 23, 42, 101, 2026],
+  "input_distributions": ["standard_normal"],
+  "profiles": [
+    {"identifier": "cross_seq_l64", "batch_size": 1, "seq_len": 64, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "cross_seq_l128", "batch_size": 1, "seq_len": 128, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "cross_seq_l256", "batch_size": 1, "seq_len": 256, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "cross_seq_l512", "batch_size": 1, "seq_len": 512, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "cross_seq_l1024", "batch_size": 1, "seq_len": 1024, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "cross_batch_b4", "batch_size": 4, "seq_len": 128, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "cross_batch_b8", "batch_size": 8, "seq_len": 128, "d_model": 512, "num_heads": 8, "input_distribution": "standard_normal"},
+    {"identifier": "cross_width_d1024_h16", "batch_size": 1, "seq_len": 128, "d_model": 1024, "num_heads": 16, "input_distribution": "standard_normal"}
+  ],
+  "operations": ["dense_projection", "multi_head_self_attention"],
+  "scenarios": [
+    {"identifier": "baseline_bf16_compiled", "kind": "baseline", "comparison_group": "bf16_quantized", "dtype": "bfloat16"},
+    {"identifier": "int8_weight_only", "kind": "quantization_int8_weight_only", "comparison_group": "bf16_quantized", "dtype": "bfloat16"},
+    {"identifier": "int8_dynamic", "kind": "quantization_int8_dynamic", "comparison_group": "bf16_quantized", "dtype": "bfloat16"},
+    {"identifier": "baseline_fp16_compiled", "kind": "baseline", "comparison_group": "fp16_sparse", "dtype": "float16"},
+    {"identifier": "pruning_2to4", "kind": "pruning_2to4", "comparison_group": "fp16_sparse", "dtype": "float16", "pruning_sparsity": 0.5}
+  ],
+  "weight_initialization": "xavier_normal",
+  "bias_initialization": "zeros",
+  "measurement": {"warmup_iterations": 20, "measure_iterations": 50, "repetitions": 3},
+  "execution": {
+    "scenario_order": "deterministic_shuffle",
+    "compile": true,
+    "compile_mode": "reduce-overhead",
+    "save_raw_timings": true,
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 2026,
+    "capabilities_file": "resultados/hardware_capabilities.json"
+  },
+  "hardware_requirements": {
+    "compute_capability": "8.9",
+    "require_triton": true,
+    "require_cusparselt": true,
+    "temperature_abort_c": 85
+  }
+}

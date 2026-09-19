@@ -62,7 +62,7 @@ class TinyOPTStructure(nn.Module):
         self.model = nn.Module()
         self.model.decoder = nn.Module()
         self.model.decoder.embed_tokens = nn.Embedding(32, 8)
-        self.model.decoder.layers = nn.ModuleList([TinyLayer(8)])
+        self.model.decoder.layers = nn.ModuleList([TinyLayer(8), TinyLayer(8), TinyLayer(8)])
         self.lm_head = nn.Linear(8, 32, bias=False)
 
 
@@ -103,12 +103,50 @@ def test_opt_layer_selection_excludes_embeddings_and_lm_head() -> None:
     attention = target_linears(model, "attention_only")
     blocks = target_linears(model, "transformer_blocks")
 
-    assert len(attention) == 4
+    assert len(attention) == 12
     assert {name.rsplit(".", 1)[-1] for name, _ in attention} == {
         "q_proj", "k_proj", "v_proj", "out_proj"
     }
-    assert len(blocks) == 6
+    assert len(blocks) == 18
     assert all("embed" not in name and not name.endswith("lm_head") for name, _ in blocks)
+
+
+def test_opt_fine_grained_selector_filters_layers_and_components() -> None:
+    model = TinyOPTStructure()
+    mlp_middle = ModelScenario(
+        "middle_mlp",
+        "quantization_int8_fake_per_row",
+        "bf16",
+        "bfloat16",
+        "transformer_blocks",
+        0.0,
+        False,
+        layer_start=1,
+        layer_end=1,
+        components=("mlp",),
+    )
+    explicit_attention = ModelScenario(
+        "first_last_qo",
+        "quantization_int8_fake_per_row",
+        "bf16",
+        "bfloat16",
+        "attention_only",
+        0.0,
+        False,
+        layers=(0, 2),
+        components=("q_proj", "out_proj"),
+    )
+
+    assert [name for name, _ in target_linears(model, "transformer_blocks", mlp_middle)] == [
+        "model.decoder.layers.1.fc1",
+        "model.decoder.layers.1.fc2",
+    ]
+    assert [name for name, _ in target_linears(model, "attention_only", explicit_attention)] == [
+        "model.decoder.layers.0.self_attn.q_proj",
+        "model.decoder.layers.0.self_attn.out_proj",
+        "model.decoder.layers.2.self_attn.q_proj",
+        "model.decoder.layers.2.self_attn.out_proj",
+    ]
 
 
 def test_observed_model_sparsity_is_reported_only_for_pruning() -> None:
@@ -161,7 +199,7 @@ def test_opt_pruning_changes_only_selected_layers_and_is_exact() -> None:
 
     count = apply_model_scenario(model, scenario)
 
-    assert count == 4
+    assert count == 12
     for _, module in target_linears(model, "attention_only"):
         assert torch.count_nonzero(module.weight == 0).item() == module.weight.numel() // 2
     assert torch.equal(model.model.decoder.embed_tokens.weight, embedding_before)

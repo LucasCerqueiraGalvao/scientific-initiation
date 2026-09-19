@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "created_at": "2026-09-19T00:52:53-03:00",
+  "evidence_root": "fases\\01_validacao_conceitual\\evidencias\\benchmarks",
+  "artifacts": [
+    {
+      "path": "canonical_operation_summary.csv",
+      "records": 22,
+      "sha256": "19861a0c316a556a249d00813415db2b13082212b1692d9473bf4987119092e0"
+    },
+    {
+      "path": "canonical_operation_complete.csv",
+      "records": 4290,
+      "sha256": "99839b66034299235e3427fffc1a726a313ebfd0c4e38bc7ee074f0e7b7ce87f"
+    },
+    {
+      "path": "canonical_model_quality.csv",
+      "records": 75,
+      "sha256": "982cbcbf34d3ce1e02e1c09fe8008f6868455d8c53404a7386daed42eaf66822"
+    },
+    {
+      "path": "canonical_model_performance_summary.csv",
+      "records": 130,
+      "sha256": "a901a8783021069092ef36d36ee131f6d7e7896933a0bceff78bc3c486d87701"
+    },
+    {
+      "path": "canonical_model_performance_raw.csv",
+      "records": 2808,
+      "sha256": "8fecad908b432c6be55d3757b9f6cca15688f682f80e25a0a11596be4fa5e7cd"
+    },
+    {
+      "path": "discarded_model_quality_duplicates.csv",
+      "records": 40,
+      "sha256": "edbd966fa970808f68db5310c540c8a6670620c2d7bd754c9144b30148a784a3"
+    },
+    {
+      "path": "discarded_model_performance_summary_duplicates.csv",
+      "records": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "discarded_model_performance_raw_duplicates.csv",
+      "records": 0,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "source_selection.json",
+      "records": 16,
+      "sha256": "074fcc336b4ae487fa960a5942aa1d10e1485585e97e40566203e1a290bd7491"
+    }
+  ]
+}

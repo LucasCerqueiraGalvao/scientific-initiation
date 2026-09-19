@@ -64,9 +64,11 @@ o formulário institucional em Word são preservados como fontes brutas.
 - [Relatório compilado](output/pdf/relatorio_ic_transformers.pdf)
 - [Paper curto compilado](output/pdf/paper_ic_transformers.pdf)
 - [Planilha editável dos benchmarks](output/spreadsheets/benchmarks_transformers_resumo.xlsx)
+- [Planilha canônica consolidada](output/spreadsheets/benchmarks_transformers_canonico.xlsx)
 - [Fonte principal](docs/latex/relatorio_ic.tex)
 - [Como compilar](docs/latex/README.md)
 - [Índice dos documentos](docs/README.md)
+- [Fechamento científico](docs/finalizacao_pesquisa/README.md)
 - [Fase de validação](fases/01_validacao_conceitual/README.md)
 - [Registro da reunião de 31/07/2026](docs/reunioes/2026-07-31/registro.tex)
 
@@ -91,6 +93,8 @@ fases/01_validacao_conceitual/
   evidencias/                  CSV, JSON, logs, figuras e relatórios LaTeX
 
 output/pdf/                    relatório acadêmico compilado
+output/canonical/              CSVs canônicos e manifesto de proveniência
+output/spreadsheets/           planilhas editáveis dos resultados
 scripts/                       build documental e orquestração dos benchmarks
 legado/                        protótipo inicial preservado
 ```
@@ -161,6 +165,41 @@ planilha:
 complementar para 125M/350M/1.3B/2.7B e OPT-6.7B com guarda de VRAM em
 15.800 MiB. Etapas completas são ignoradas se manifesto e checksums continuarem
 válidos.
+
+Para regenerar a consolidação canônica sem rodar benchmark novo:
+
+```powershell
+$env:PYTHONPATH = "fases\01_validacao_conceitual"
+.\.venv\Scripts\python.exe -m validacao.consolidacao_resultados `
+  --evidence-root fases\01_validacao_conceitual\evidencias\benchmarks `
+  --output output\canonical
+```
+
+Essa consolidação exclui smokes e diagnósticos das conclusões, deduplica linhas
+substituídas por runs complementares e preserva proveniência por manifesto e
+checksums. A planilha `output/spreadsheets/benchmarks_transformers_canonico.xlsx`
+é alimentada por esses CSVs canônicos.
+
+As próximas coletas enxutas ficaram preparadas, mas não foram executadas nesta
+consolidação. Para o microbenchmark físico de crossover:
+
+```powershell
+.\scripts\run_benchmarks_docker.ps1 `
+  -Action Crossover `
+  -CacheRoot $cacheRoot `
+  -RunId "crossover-20260919" `
+  -Resume
+```
+
+Para a triagem de sensibilidade por componente/região em OPT-350M e OPT-1.3B:
+
+```powershell
+.\scripts\run_benchmarks_docker.ps1 `
+  -Action Sensitivity `
+  -CacheRoot $cacheRoot `
+  -RunId "sensibilidade-20260919" `
+  -Resume
+```
 
 Antes de `Probe`, `Smoke`, `ModelSmoke`, `Hardware` e `Models`, o script amostra a GPU cinco
 vezes e exige: processo do jogo fechado, uso médio abaixo de 10%, no máximo 2.048 MiB

@@ -2,7 +2,8 @@
 param(
     [ValidateSet(
         "Status", "Build", "Probe", "Prefetch", "Test", "Smoke", "Synthetic",
-        "Hardware", "ModelSmoke", "Models", "Remaining", "Complementary", "All"
+        "Hardware", "ModelSmoke", "Models", "Remaining", "Complementary",
+        "Crossover", "Sensitivity", "All"
     )]
     [string]$Action = "All",
     [string]$CacheRoot = "",
@@ -437,17 +438,17 @@ if ($Action -eq "Status") {
 Assert-Docker
 New-Item -ItemType Directory -Force -Path $hfCache, $resultRoot | Out-Null
 
-if ($Action -in @("Build", "All") -or ($Action -in @("Remaining", "Complementary") -and -not (Test-BenchmarkImage))) {
+if ($Action -in @("Build", "All") -or ($Action -in @("Remaining", "Complementary", "Crossover", "Sensitivity") -and -not (Test-BenchmarkImage))) {
     Invoke-Build
 }
-elseif ($Action -in @("Remaining", "Complementary")) {
+elseif ($Action -in @("Remaining", "Complementary", "Crossover", "Sensitivity")) {
     Write-Stage "Imagem Docker ja esta pronta; build ignorado."
 }
 
 if ($Action -notin @("Build")) { Assert-BenchmarkImage }
 
-if ($Action -in @("Probe", "Remaining", "Complementary", "All")) {
-    if ($Action -in @("Remaining", "Complementary") -and (Test-HardwareProbe)) {
+if ($Action -in @("Probe", "Remaining", "Complementary", "Crossover", "All")) {
+    if ($Action -in @("Remaining", "Complementary", "Crossover") -and (Test-HardwareProbe)) {
         Write-Stage "Probe de hardware ja foi aprovado; execucao ignorada."
     }
     else {
@@ -533,4 +534,21 @@ if ($Action -eq "Complementary") {
     if ($LASTEXITCODE -ne 0) {
         throw "A bateria OPT 6.7B complementar guardada falhou."
     }
+}
+if ($Action -eq "Crossover") {
+    Invoke-OperationSuite `
+        "fases/01_validacao_conceitual/experimentos/hardware_crossover_v3.json" `
+        "hardware-crossover-v3" `
+        "o microbenchmark fisico de crossover"
+}
+if ($Action -eq "Sensitivity") {
+    Assert-ModelCache
+    Invoke-ModelSuite `
+        "fases/01_validacao_conceitual/experimentos/modelos_opt_sensibilidade_350m.json" `
+        "modelos-opt-sensibilidade-350m" `
+        "a triagem de sensibilidade OPT-350M"
+    Invoke-ModelSuite `
+        "fases/01_validacao_conceitual/experimentos/modelos_opt_sensibilidade_1_3b.json" `
+        "modelos-opt-sensibilidade-1-3b" `
+        "a confirmacao de sensibilidade OPT-1.3B"
 }

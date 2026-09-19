@@ -18,6 +18,7 @@ Textos de acompanhamento:
 
 - [Diário da IC](diario_ic.tex)
 - [Paper curto compilado](../output/pdf/paper_ic_transformers.pdf)
+- [Fechamento científico](finalizacao_pesquisa/README.md)
 - [Auditoria de 25/08/2026](auditoria_estado_2026-08-25.tex)
 - [Checklist pré-benchmark](checklist_pre_benchmark.tex)
 - [Relatório da execução autônoma](relatorio_execucao_autonoma_2026-08-25.tex)
@@ -52,3 +53,7 @@ O resultado é `output/pdf/relatorio_ic_transformers.pdf`.
 Estado atual: o relatório completo e o paper curto já incorporam as extensões
 OPT-2.7B e OPT-6.7B, incluindo a distinção entre speedup físico observado e
 utilidade condicionada à preservação de qualidade.
+
+Além dos PDFs, os resultados finais possuem uma consolidação tabular canônica em
+`../output/canonical/` e uma planilha editável em
+`../output/spreadsheets/benchmarks_transformers_canonico.xlsx`.

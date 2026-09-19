@@ -103,6 +103,9 @@ Essa etapa valida correção, não velocidade.
 | `experimentos/hardware_stress_v3_complementar.json` | Perfis uniforme/outlier | Complemento físico dos perfis de stress para INT8/2:4. |
 | `experimentos/modelos_opt_complementar_performance.json` | OPT 125M, 350M, 1.3B e 2.7B | Medição de desempenho/VRAM dos prunings percentuais e INT8 fake que antes tinham só qualidade. |
 | `experimentos/modelos_opt_6_7b_complementar_guarded.json` | OPT-6.7B complementar | Mesma lacuna do complemento, mas com guarda de VRAM em 15.800 MiB e um cenário por container. |
+| `experimentos/hardware_crossover_v3.json` | Crossover físico mínimo | Sequência, batch e largura para observar quando INT8/2:4 começam ou não a compensar. |
+| `experimentos/modelos_opt_sensibilidade_350m.json` | Sensibilidade OPT-350M | Triagem barata por componente e região de camadas, sem performance completa. |
+| `experimentos/modelos_opt_sensibilidade_1_3b.json` | Sensibilidade OPT-1.3B | Confirmação intermediária dos padrões observados no 350M. |
 
 O schema v3 preserva leitura dos schemas v1/v2 e acrescenta perfis, múltiplas
 seeds, cenários parametrizados, grupos de baseline, timings brutos, memória,
@@ -243,6 +246,29 @@ Os runners escrevem checkpoints e manifestos. As análises geram intervalos
 bootstrap, curvas por sparsity, heatmaps, boxplots por seed, speedup, memória,
 armazenamento, Pareto e tabelas de casos suportados ou incompatíveis. Arquivos
 com checksum divergente são recusados.
+
+A etapa de fechamento adiciona uma consolidação canônica offline em
+[`../../output/canonical/`](../../output/canonical/) e uma planilha limpa em
+[`../../output/spreadsheets/benchmarks_transformers_canonico.xlsx`](../../output/spreadsheets/benchmarks_transformers_canonico.xlsx).
+Ela exclui smokes das conclusões, preserva duplicatas descartadas, adiciona
+níveis de evidência A/B/C e descreve `model_ttft` como
+`prefill_to_first_logit` sem quebrar compatibilidade com os CSVs legados.
+
+As próximas coletas enxutas podem ser iniciadas sem repetir as baterias antigas:
+
+```powershell
+.\scripts\run_benchmarks_docker.ps1 `
+  -Action Crossover `
+  -CacheRoot $cacheRoot `
+  -RunId "crossover-20260919" `
+  -Resume
+
+.\scripts\run_benchmarks_docker.ps1 `
+  -Action Sensitivity `
+  -CacheRoot $cacheRoot `
+  -RunId "sensibilidade-20260919" `
+  -Resume
+```
 
 `Remaining` não repete a robustez sintética já concluída. Antes de cada etapa que
 usa a GPU, o orquestrador exige jogo fechado, utilização média de cinco amostras
