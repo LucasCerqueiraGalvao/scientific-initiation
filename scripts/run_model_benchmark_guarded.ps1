@@ -85,7 +85,10 @@ if (-not (Test-Path $CacheRoot)) {
 }
 New-Item -ItemType Directory -Force -Path $guardOutputPath | Out-Null
 
-& docker rm -f $ContainerName *> $null
+$existingContainer = & docker ps -a --filter "name=^/$ContainerName$" --format "{{.ID}}" 2>$null
+if (-not [string]::IsNullOrWhiteSpace($existingContainer)) {
+    & docker rm -f $ContainerName *> $null
+}
 
 $relativeConfig = [System.IO.Path]::GetRelativePath($repoRoot, $configPath).Replace("\", "/")
 $relativeOutput = [System.IO.Path]::GetRelativePath($repoRoot, $outputPath).Replace("\", "/")
