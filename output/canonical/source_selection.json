@@ -153,6 +153,48 @@
       "environment_sha256": "2d302e78a07bc65eb036a20df180c8c6d34754fa32c8988040b76156541f00ac",
       "status": "complete",
       "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_hibridos_1_3b_quality_2026-09-19",
+      "purpose": "opt_pretrained",
+      "priority": 107,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_hibridos_1_3b_quality_2026-09-19",
+      "manifest": "manifest.json",
+      "manifest_sha256": "4726a67f8e22667697aa7b03ae397e4be0411f996e310397521978d3cc746efd",
+      "config": "config.snapshot.json",
+      "config_sha256": "76fa0f30bdc8f167ee2c752b583ba9007d54ead47508efa55558953d788200c1",
+      "environment": "environment.json",
+      "environment_sha256": "910aaecdfa0852b5ee94af8b21d5c37894633a2bb14bd8af9b24b2d96bff5f61",
+      "status": "complete",
+      "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_hibridos_1_3b_finalistas_2026-09-19",
+      "purpose": "opt_pretrained",
+      "priority": 108,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_hibridos_1_3b_finalistas_2026-09-19",
+      "manifest": "manifest.json",
+      "manifest_sha256": "ce64eed68f53ee1a58de2b69f022769193f02523a4e120327585b3f7c43a1ed3",
+      "config": "config.snapshot.json",
+      "config_sha256": "a8f1c3401e7ab3eb442ea4a564e17f87fcfad8a03c5ef2942b5d05850c6d777e",
+      "environment": "environment.json",
+      "environment_sha256": "a7ba807788e59cb02005123c26cb2f30b0353286a9372b1214fd19a81003cf0e",
+      "status": "complete",
+      "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_hibridos_6_7b_quality_2026-09-19",
+      "purpose": "opt_pretrained",
+      "priority": 109,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_hibridos_6_7b_quality_2026-09-19",
+      "manifest": "manifest.json",
+      "manifest_sha256": "aa16d0d55cc085871a84f59ced42d8ff117b9862b5c6a8cfb9cb40aa6fa26e37",
+      "config": "config.snapshot.json",
+      "config_sha256": "266d42c943feb3ddb37a9091d9093282793df118110baa5c4033be3929a58090",
+      "environment": "environment.json",
+      "environment_sha256": "18b2e40df631ee1ac9c9c327f10cc0e1070cc8accaadcbdbf4ce3a14facdc6f1",
+      "status": "complete",
+      "schema_version": 1
     }
   ],
   "excluded_sources": [

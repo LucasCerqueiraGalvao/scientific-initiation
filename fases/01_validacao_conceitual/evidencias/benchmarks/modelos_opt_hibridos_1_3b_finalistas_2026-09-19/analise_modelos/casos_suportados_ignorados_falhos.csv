@@ -1,0 +1,153 @@
+evidence_type,model_id,scenario,operation,profile_id,repeat_index,status,skip_reason
+quality,facebook/opt-1.3b,baseline_bf16,,,,complete,
+quality,facebook/opt-1.3b,int8dyn_blocks_all_reference,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,,,,complete,
+quality,facebook/opt-1.3b,hybrid_attention_0_15_only,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,,,,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_prefill,prefill_b1_l128,1,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_prefill,prefill_b1_l512,1,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_ttft,decode_b1_l128,1,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_ttft,decode_b1_l512,1,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_prefill,prefill_b1_l128,2,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_prefill,prefill_b1_l512,2,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_ttft,decode_b1_l128,2,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_ttft,decode_b1_l512,2,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_prefill,prefill_b1_l128,3,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_prefill,prefill_b1_l512,3,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_ttft,decode_b1_l128,3,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_ttft,decode_b1_l512,3,complete,
+performance,facebook/opt-1.3b,baseline_bf16,model_decode,decode_b1_l128,1,failed,"RuntimeError: Error: accessing tensor output of CUDAGraphs that has been overwritten by a subsequent run. Stack trace: File ""/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py"", line 939, in wrapper
+    output = func(self, *args, **kwargs)
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py"", line 499, in forward
+    outputs: BaseModelOutputWithPast = self.model.decoder(
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/utils/generic.py"", line 1068, in wrapper
+    output = func(self, *args, **kwargs)
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/utils/output_capturing.py"", line 286, in wrapper
+    outputs = func(self, *args, **kwargs)
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py"", line 378, in forward
+    hidden_states = decoder_layer(
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/modeling_layers.py"", line 109, in __call__
+    return super().__call__(*args, **kwargs)
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py"", line 218, in forward
+    hidden_states, _ = self.self_attn(
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/models/opt/modeling_opt.py"", line 161, in forward
+    key_states, value_states = past_key_values.update(key_states, value_states, self.layer_idx)
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/cache_utils.py"", line 1397, in update
+    keys, values = self.layers[layer_idx].update(key_states, value_states, *args, **kwargs)
+  File ""/usr/local/lib/python3.12/dist-packages/transformers/cache_utils.py"", line 146, in update
+    self.keys = torch.cat([self.keys, key_states], dim=-2). To prevent overwriting, clone the tensor outside of torch.compile() or call torch.compiler.cudagraph_mark_step_begin() before each model invocation."
+performance,facebook/opt-1.3b,baseline_bf16,model_decode,decode_b1_l512,1,failed,AssertionError: 
+performance,facebook/opt-1.3b,baseline_bf16,model_decode,decode_b1_l128,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,baseline_bf16,model_decode,decode_b1_l512,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,baseline_bf16,model_decode,decode_b1_l128,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,baseline_bf16,model_decode,decode_b1_l512,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_prefill,prefill_b1_l128,1,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_prefill,prefill_b1_l512,1,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_ttft,decode_b1_l128,1,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_ttft,decode_b1_l512,1,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_prefill,prefill_b1_l128,2,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_prefill,prefill_b1_l512,2,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_ttft,decode_b1_l128,2,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_ttft,decode_b1_l512,2,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_prefill,prefill_b1_l128,3,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_prefill,prefill_b1_l512,3,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_ttft,decode_b1_l128,3,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_ttft,decode_b1_l512,3,complete,
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_decode,decode_b1_l128,1,unsupported,"RuntimeError: self.size(0) needs to be greater than 16, but got 1"
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_decode,decode_b1_l512,1,failed,AssertionError: 
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_decode,decode_b1_l128,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_decode,decode_b1_l512,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_decode,decode_b1_l128,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,int8dyn_blocks_all_reference,model_decode,decode_b1_l512,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_prefill,prefill_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_prefill,prefill_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_ttft,decode_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_ttft,decode_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_prefill,prefill_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_prefill,prefill_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_ttft,decode_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_ttft,decode_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_prefill,prefill_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_prefill,prefill_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_ttft,decode_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_ttft,decode_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_decode,decode_b1_l128,1,unsupported,"RuntimeError: self.size(0) needs to be greater than 16, but got 1"
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_decode,decode_b1_l512,1,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_decode,decode_b1_l128,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_decode,decode_b1_l512,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_decode,decode_b1_l128,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,model_decode,decode_b1_l512,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_prefill,prefill_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_prefill,prefill_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_ttft,decode_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_ttft,decode_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_prefill,prefill_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_prefill,prefill_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_ttft,decode_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_ttft,decode_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_prefill,prefill_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_prefill,prefill_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_ttft,decode_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_ttft,decode_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_decode,decode_b1_l128,1,unsupported,"RuntimeError: self.size(0) needs to be greater than 16, but got 1"
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_decode,decode_b1_l512,1,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_decode,decode_b1_l128,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_decode,decode_b1_l512,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_decode,decode_b1_l128,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,model_decode,decode_b1_l512,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_prefill,prefill_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_prefill,prefill_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_ttft,decode_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_ttft,decode_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_prefill,prefill_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_prefill,prefill_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_ttft,decode_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_ttft,decode_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_prefill,prefill_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_prefill,prefill_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_ttft,decode_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_ttft,decode_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_decode,decode_b1_l128,1,unsupported,"RuntimeError: self.size(0) needs to be greater than 16, but got 1"
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_decode,decode_b1_l512,1,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_decode,decode_b1_l128,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_decode,decode_b1_l512,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_decode,decode_b1_l128,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,model_decode,decode_b1_l512,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_prefill,prefill_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_prefill,prefill_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_ttft,decode_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_ttft,decode_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_prefill,prefill_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_prefill,prefill_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_ttft,decode_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_ttft,decode_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_prefill,prefill_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_prefill,prefill_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_ttft,decode_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_ttft,decode_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_decode,decode_b1_l128,1,unsupported,"RuntimeError: self.size(0) needs to be greater than 16, but got 1"
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_decode,decode_b1_l512,1,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_decode,decode_b1_l128,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_decode,decode_b1_l512,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_decode,decode_b1_l128,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_attention_0_15_only,model_decode,decode_b1_l512,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_prefill,prefill_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_prefill,prefill_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_ttft,decode_b1_l128,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_ttft,decode_b1_l512,1,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_prefill,prefill_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_prefill,prefill_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_ttft,decode_b1_l128,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_ttft,decode_b1_l512,2,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_prefill,prefill_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_prefill,prefill_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_ttft,decode_b1_l128,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_ttft,decode_b1_l512,3,complete,
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_decode,decode_b1_l128,1,unsupported,"RuntimeError: self.size(0) needs to be greater than 16, but got 1"
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_decode,decode_b1_l512,1,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_decode,decode_b1_l128,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_decode,decode_b1_l512,2,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_decode,decode_b1_l128,3,failed,AssertionError: 
+performance,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,model_decode,decode_b1_l512,3,failed,AssertionError: 

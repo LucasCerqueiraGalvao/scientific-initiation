@@ -25,6 +25,9 @@ CANONICAL_MODEL_SOURCES = (
     "modelos_opt_6_7b_complementar_lacunas_2026-09-17",
     "modelos_opt_sensibilidade_350m_2026-09-19",
     "modelos_opt_sensibilidade_1_3b_2026-09-19",
+    "modelos_opt_hibridos_1_3b_quality_2026-09-19",
+    "modelos_opt_hibridos_1_3b_finalistas_2026-09-19",
+    "modelos_opt_hibridos_6_7b_quality_2026-09-19",
 )
 
 EXCLUDED_SOURCES = (

@@ -20,7 +20,13 @@ Fontes aceitas:
 - `modelos_opt_2_7b_2026-09-15`;
 - `modelos_opt_6_7b_2026-09-16`;
 - `modelos_opt_complementar_lacunas_2026-09-17`;
-- `modelos_opt_6_7b_complementar_lacunas_2026-09-17`.
+- `modelos_opt_6_7b_complementar_lacunas_2026-09-17`;
+- `hardware_crossover_v3_2026-09-19`;
+- `modelos_opt_sensibilidade_350m_2026-09-19`;
+- `modelos_opt_sensibilidade_1_3b_2026-09-19`;
+- `modelos_opt_hibridos_1_3b_quality_2026-09-19`;
+- `modelos_opt_hibridos_1_3b_finalistas_2026-09-19`;
+- `modelos_opt_hibridos_6_7b_quality_2026-09-19`.
 
 Fontes excluídas das conclusões:
 
@@ -78,6 +84,14 @@ Os cenários de OPT agora aceitam seleção por camada e componente:
 Isso permite testar sensibilidade por região do Transformer e preparar
 configurações híbridas sem reescrever o runner principal.
 
+Os cenários de OPT também aceitam `selectors`, uma lista de recortes. Cada item
+pode declarar `layer_start`, `layer_end`, `layers` e `components`. Assim um único
+cenário consegue representar, por exemplo, `MLP em todas as camadas` junto com
+`atenção apenas nas camadas 0-15`. Os CSVs de qualidade registram
+`selected_layers`, `selected_components`, `selector_summary`,
+`eligible_linear_count`, `target_parameter_count`, `eligible_parameter_count`,
+`target_linear_fraction` e `target_parameter_fraction`.
+
 ## Configurações novas preparadas
 
 - `hardware_crossover_v3.json`: microbenchmark físico mínimo para observar
@@ -85,6 +99,11 @@ configurações híbridas sem reescrever o runner principal.
 - `modelos_opt_sensibilidade_350m.json`: triagem barata de sensibilidade por
   componente/região em OPT-350M.
 - `modelos_opt_sensibilidade_1_3b.json`: confirmação intermediária em OPT-1.3B.
+- `modelos_opt_hibridos_1_3b_quality.json`: triagem híbrida em OPT-1.3B.
+- `modelos_opt_hibridos_1_3b_finalistas.json`: performance dos finalistas em
+  OPT-1.3B.
+- `modelos_opt_hibridos_6_7b_quality.json`: validação seletiva de qualidade no
+  OPT-6.7B.
 
-Essas configurações estão prontas para execução, mas não devem ser confundidas
-com evidência já coletada enquanto seus manifestos de resultado não existirem.
+Essas configurações já possuem evidência promovida e entram na consolidação
+canônica.

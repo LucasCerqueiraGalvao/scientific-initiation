@@ -1,0 +1,7 @@
+evidence_type,model_id,scenario,operation,profile_id,repeat_index,status,skip_reason
+quality,facebook/opt-6.7b,baseline_bf16,,,,complete,
+quality,facebook/opt-6.7b,int8dyn_blocks_all_reference,,,,complete,
+quality,facebook/opt-6.7b,hybrid_mlp_all_attention_bf16,,,,complete,
+quality,facebook/opt-6.7b,hybrid_mlp_all_attention_0_7,,,,complete,
+quality,facebook/opt-6.7b,hybrid_mlp_all_attention_0_15,,,,complete,
+quality,facebook/opt-6.7b,hybrid_mlp_0_15_attention_bf16,,,,complete,

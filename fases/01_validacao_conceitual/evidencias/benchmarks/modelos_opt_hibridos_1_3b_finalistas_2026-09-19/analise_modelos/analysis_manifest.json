@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "source_manifest_sha256": "ce64eed68f53ee1a58de2b69f022769193f02523a4e120327585b3f7c43a1ed3",
+  "artifacts": [
+    {
+      "path": "resumo_qualidade.csv",
+      "sha256": "3bfae01b9de51dab8b85536b5a1ec64a5872f3ace1c602666b3c8c681a2b6427",
+      "bytes": 1782
+    },
+    {
+      "path": "comparacoes_desempenho.csv",
+      "sha256": "2299a343186788f806e029380975ab06723499509935228fbaed70e29415e48a",
+      "bytes": 25371
+    },
+    {
+      "path": "resumo_desempenho.csv",
+      "sha256": "173c7b861e76ad5eb01d3342b4ee7cd2865a95a4d99ea62b386bb61743e06ca7",
+      "bytes": 3152
+    },
+    {
+      "path": "casos_suportados_ignorados_falhos.csv",
+      "sha256": "2d8fe259eb9f24523d2baf68a70a6489a3f4acb5747dbdaa9b54298d41a4b5ee",
+      "bytes": 15591
+    },
+    {
+      "path": "qualidade_por_sparsity_e_modelo.png",
+      "sha256": "9c5ab3a29f59e17c2c437cdc2c53d7e7948e61a84a6cbef64301a3caca62a12b",
+      "bytes": 16100
+    },
+    {
+      "path": "speedup_prefill_decode.png",
+      "sha256": "fe451eacfce737bb06f347c23a340cdaf186a456bd82683abb24c6b8083cca93",
+      "bytes": 132691
+    },
+    {
+      "path": "memoria_pico_ci95.png",
+      "sha256": "185448167f88d18f318ff1cb0bf8acfcbe4d8be6c8db44c51c423339cc9a96ce",
+      "bytes": 138089
+    },
+    {
+      "path": "armazenamento_relativo.png",
+      "sha256": "4070e5c4b5ec69e69709f4dd023bdc8de1bfb2e5df42cdfd5b2b21e8a03b6b00",
+      "bytes": 133951
+    },
+    {
+      "path": "pareto_qualidade_latencia.png",
+      "sha256": "a447e90dd76339b150405d4e45b310ee2afd2804dac2a9d8c376bcba6bd26a6f",
+      "bytes": 63072
+    },
+    {
+      "path": "relatorio_modelos_opt.tex",
+      "sha256": "de83520ec4b5896a0ffbfddf719896d3c8b2109c7762bc2d8f1080db071583f2",
+      "bytes": 848
+    }
+  ]
+}

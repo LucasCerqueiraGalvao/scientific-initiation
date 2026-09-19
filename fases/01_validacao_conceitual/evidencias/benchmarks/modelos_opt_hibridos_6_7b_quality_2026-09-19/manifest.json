@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_hibridos_6_7b_quality",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "06b2db92969eca71a92301a132376873a7146e2bc7af9183f84726ca27eae4ce",
+  "code_sha256": "ec3c98be6d8f55f8e0edb26e4ab11d934c242c383e880abd961c9547b64e57c9",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "models": [
+    {
+      "model_id": "facebook/opt-6.7b",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-6.7b",
+      "scenario": "int8dyn_blocks_all_reference",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-6.7b",
+      "scenario": "hybrid_mlp_all_attention_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-6.7b",
+      "scenario": "hybrid_mlp_all_attention_0_7",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-6.7b",
+      "scenario": "hybrid_mlp_all_attention_0_15",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-6.7b",
+      "scenario": "hybrid_mlp_0_15_attention_bf16",
+      "status": "complete"
+    }
+  ],
+  "resumed_at": [
+    "2026-09-19T08:54:29+00:00",
+    "2026-09-19T09:09:41+00:00",
+    "2026-09-19T09:19:55+00:00",
+    "2026-09-19T09:31:23+00:00",
+    "2026-09-19T09:44:05+00:00",
+    "2026-09-19T09:50:54+00:00"
+  ],
+  "artifacts": [
+    {
+      "path": "quality.csv",
+      "sha256": "7acf2c043c3e3eb662114b1da4fde843d72e80efaef8ec1db5b76ef2554ef9f6",
+      "records": 6
+    },
+    {
+      "path": "quality_windows.csv",
+      "sha256": "51d7f1b01758ac4e4803861a506489dbfbb6cc5a18ca18bd1e5f41b8c03ef5b2",
+      "records": 384
+    },
+    {
+      "path": "prompt_metrics.csv",
+      "sha256": "c8a3160ae4de593bcaeff9fa3a2a575dd19be65e7e0e45c3a8c00c548feb0b2b",
+      "records": 120
+    },
+    {
+      "path": "performance.csv",
+      "sha256": "4714d501ad795ce46ee665a199cb3aee14594f22ae16b47b25c612dfbe6f764a",
+      "records": 0
+    },
+    {
+      "path": "timings.csv",
+      "sha256": "631360774be328277c6fdd2f5b605617f3e874d1263cf0af3d1ae93284c7209e",
+      "records": 0
+    },
+    {
+      "path": "evaluation_subset.json",
+      "sha256": "adfe631f1284b2277c43043052beb753f66410c21502e2c1546e32792ac52a4e",
+      "records": 1
+    },
+    {
+      "path": "model_operators.json",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "records": 0
+    },
+    {
+      "path": "baseline_prompts_1cc3bdf653736d79.pt",
+      "sha256": "51af5fe28bc3bc589eda321179a3250ec0a412f68a36d27d67959753d2941f0c",
+      "records": 1
+    }
+  ],
+  "last_partial_at": "2026-09-19T09:50:43+00:00",
+  "completed_at": "2026-09-19T09:50:54+00:00"
+}

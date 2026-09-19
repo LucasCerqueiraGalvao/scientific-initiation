@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_hibridos_1_3b_quality",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "fb840c506364fefa6eb6aabadf1ffee5a63c88d4a5cd71797f7dffd8796eb34c",
+  "code_sha256": "14870ba302260cff8d1e75b2dc4459453eec4994a23b8fafec9ee94cee0fece0",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "models": [
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "int8dyn_blocks_all_reference",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "hybrid_mlp_all_attention_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "hybrid_mlp_all_attention_0_7",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "hybrid_mlp_all_attention_0_15",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "hybrid_attention_0_15_only",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "hybrid_mlp_0_15_attention_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "hybrid_mlp_16_23_attention_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-1.3b",
+      "scenario": "control_attention_16_23_mlp_0_7",
+      "status": "complete"
+    }
+  ],
+  "resumed_at": [],
+  "artifacts": [
+    {
+      "path": "quality.csv",
+      "sha256": "8148bd07c6a4640289351a0e9fbb196047cbb4cd2b8ea585cbb10b4287605c5c",
+      "records": 9
+    },
+    {
+      "path": "quality_windows.csv",
+      "sha256": "93c1d900c45003990e0d3b079a1f135064bc64ec8f11742e3e9d06f2c16a0b15",
+      "records": 576
+    },
+    {
+      "path": "prompt_metrics.csv",
+      "sha256": "e9f3a10869aa0a8951250d8c0a9d9d7c1bb554679baa26313f9b73de40f5c8a7",
+      "records": 180
+    },
+    {
+      "path": "performance.csv",
+      "sha256": "4714d501ad795ce46ee665a199cb3aee14594f22ae16b47b25c612dfbe6f764a",
+      "records": 0
+    },
+    {
+      "path": "timings.csv",
+      "sha256": "631360774be328277c6fdd2f5b605617f3e874d1263cf0af3d1ae93284c7209e",
+      "records": 0
+    },
+    {
+      "path": "evaluation_subset.json",
+      "sha256": "f0dc891ff731a608468c1dd6c02b9e165f89ac95dd8f807529001f0705a7d712",
+      "records": 1
+    },
+    {
+      "path": "model_operators.json",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "records": 0
+    },
+    {
+      "path": "baseline_prompts_81c1443c96cec356.pt",
+      "sha256": "4b964e5c162adf08e43579b8d633b5d03b22cd5503c309c053b7a9592ec2f18b",
+      "records": 1
+    }
+  ],
+  "completed_at": "2026-09-19T08:02:11+00:00"
+}

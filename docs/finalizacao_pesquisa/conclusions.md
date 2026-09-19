@@ -13,6 +13,12 @@ operações isoladas. A sensibilidade em OPT-1.3B, porém, mostrou que MLP é be
 mais tolerante que atenção final, apontando para híbridos que preservem a atenção
 final em BF16.
 
+A execução híbrida posterior confirmou essa hipótese apenas no OPT-1.3B. Os
+híbridos recuperaram qualidade e apresentaram medianas de speedup positivas em
+prefill/prompt-forward, mas sem intervalo de confiança inteiramente acima de
+`1,0x`. No OPT-6.7B, nenhum híbrido INT8 dynamic testado preservou qualidade; a
+perplexidade aumentou de `157%` a `207%` nos recortes híbridos.
+
 ## Hipóteses
 
 | Hipótese | Estado | Evidência atual |
@@ -27,10 +33,12 @@ final em BF16.
 | H8: modelos maiores tendem a expor mais oportunidade de speedup físico. | Parcial | OPT-6.7B mostrou speedup em alguns caminhos, mas o melhor ganho em blocos INT8 dynamic não preservou qualidade. |
 | H9: armazenamento menor implica VRAM menor. | Parcial | Weight-only reduz armazenamento; VRAM depende do backend e de buffers intermediários. |
 | H10: armazenamento menor implica latência menor. | Não sustentada | Weight-only ficou lento no backend medido. |
-| H11: estratégias híbridas podem dominar extremos. | Em aberto | Infraestrutura de seleção fina foi implementada; falta executar triagem e finalistas. |
+| H11: estratégias híbridas podem dominar extremos. | Parcial e limitada | No OPT-1.3B, híbridos preservaram qualidade e tiveram medianas de speedup positivas; no OPT-6.7B, todos os híbridos INT8 dynamic testados falharam qualidade. |
 
 Após a rodada complementar, H11 ficou mais plausível: `attention 16-23` falhou
 no OPT-1.3B, enquanto todos os recortes de MLP passaram no critério oficial.
+Após a rodada híbrida, H11 deixou de ser uma hipótese aberta ampla: ela é
+plausível para OPT-1.3B neste backend, mas não escalou para OPT-6.7B.
 
 ## Posição científica recomendada
 
@@ -42,6 +50,8 @@ no OPT-1.3B, enquanto todos os recortes de MLP passaram no critério oficial.
   confirmar o kernel.
 - Tratar o OPT-6.7B como validação seletiva: ele é caro demais para exploração
   ampla e sensível demais para conclusões apressadas.
-- Priorizar próximos experimentos por sensibilidade de camada/componente e
-  híbridos pequenos, porque eles atacam diretamente a tensão entre speedup e
-  qualidade.
+- Não executar performance 6.7B de híbridos INT8 dynamic simples enquanto a
+  qualidade estiver reprovada.
+- Priorizar, se houver continuação, uma investigação de quantização calibrada ou
+  backend alternativo para explicar por que o INT8 dynamic degradou tanto o
+  OPT-6.7B.

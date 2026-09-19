@@ -15,6 +15,9 @@ Arquivos:
   formato rastreável.
 - [execucao_complementar_2026-09-19.md](execucao_complementar_2026-09-19.md):
   relatório da rodada Crossover + Sensitivity, com proposta mínima de híbridos.
+- [execucao_hibridos_2026-09-19.md](execucao_hibridos_2026-09-19.md):
+  relatório da triagem híbrida OPT-1.3B, performance dos finalistas e validação
+  de qualidade no OPT-6.7B.
 
 Artefatos relacionados:
 

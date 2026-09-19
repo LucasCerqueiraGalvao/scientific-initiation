@@ -1,0 +1,10 @@
+evidence_type,model_id,scenario,operation,profile_id,repeat_index,status,skip_reason
+quality,facebook/opt-1.3b,baseline_bf16,,,,complete,
+quality,facebook/opt-1.3b,int8dyn_blocks_all_reference,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_all_attention_bf16,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_all_attention_0_7,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_all_attention_0_15,,,,complete,
+quality,facebook/opt-1.3b,hybrid_attention_0_15_only,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_0_15_attention_bf16,,,,complete,
+quality,facebook/opt-1.3b,hybrid_mlp_16_23_attention_bf16,,,,complete,
+quality,facebook/opt-1.3b,control_attention_16_23_mlp_0_7,,,,complete,

@@ -1,0 +1,7 @@
+model_id,scenario,kind,comparison_group,optimization_scope,status,skip_reason,pruning_sparsity,observed_sparsity,perplexity,perplexity_increase_percent,logits_mse,logits_kl_divergence,top1_agreement,generated_token_agreement,storage_megabytes,quality_acceptable
+facebook/opt-6.7b,baseline_bf16,baseline,bf16,none,complete,,0.0,0.0,15.34603333272162,0.0,0.0,-3.725290298461913e-10,1.0,1.0,12700.03125,True
+facebook/opt-6.7b,int8dyn_blocks_all_reference,quantization_int8_dynamic,bf16,transformer_blocks,complete,,0.0,0.0,40.67493109639149,165.05175777027836,3.9423667967319487,2.7125830471515657,0.3,0.04375,6558.28125,False
+facebook/opt-6.7b,hybrid_mlp_all_attention_bf16,quantization_int8_dynamic,bf16,transformer_blocks,complete,,0.0,0.0,47.15130633486613,207.254033094843,4.54062249660492,3.4955511510372164,0.25,0.04765625,8605.28125,False
+facebook/opt-6.7b,hybrid_mlp_all_attention_0_7,quantization_int8_dynamic,bf16,transformer_blocks,complete,,0.0,0.0,39.93585290818818,160.23567160534475,3.6434178590774535,2.6955067247152327,0.25,0.03125,8093.53125,False
+facebook/opt-6.7b,hybrid_mlp_all_attention_0_15,quantization_int8_dynamic,bf16,transformer_blocks,complete,,0.0,0.0,39.48084345913047,157.2706744676967,3.7169928789138793,2.733793154358864,0.25,0.04765625,7581.78125,False
+facebook/opt-6.7b,hybrid_mlp_0_15_attention_bf16,quantization_int8_dynamic,bf16,transformer_blocks,complete,,0.0,0.0,45.58884973546316,197.0725316897117,4.408794093132019,3.429719167947769,0.25,0.04296875,10652.65625,False

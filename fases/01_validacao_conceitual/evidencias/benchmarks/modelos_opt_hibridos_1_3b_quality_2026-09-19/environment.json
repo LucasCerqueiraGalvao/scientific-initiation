@@ -1,0 +1,36 @@
+{
+  "captured_at": "2026-09-19T07:36:21+00:00",
+  "python_version": "3.12.3",
+  "python_implementation": "CPython",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "machine": "x86_64",
+  "processor": "x86_64",
+  "torch_version": "2.11.0+cu128",
+  "torch_cuda_build": "12.8",
+  "cuda_available": true,
+  "cuda_device_count": 1,
+  "device": "cuda:0",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 4070 Ti SUPER",
+    "total_memory_bytes": 17170956288,
+    "compute_capability": "8.9"
+  },
+  "torch_num_threads": 6,
+  "torch_num_interop_threads": 12,
+  "package_versions": {
+    "numpy": "2.4.3",
+    "pandas": "3.0.5",
+    "scikit-learn": "1.9.1",
+    "matplotlib": "3.11.2",
+    "seaborn": "0.13.2",
+    "torchao": "0.17.0",
+    "transformers": "5.17.0",
+    "datasets": "5.0.1",
+    "accelerate": "1.15.0"
+  },
+  "git": {
+    "commit": "",
+    "branch": "",
+    "worktree_clean_at_start": false
+  }
+}
