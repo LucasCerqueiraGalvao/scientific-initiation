@@ -13,6 +13,8 @@ Arquivos:
   restringem as conclusões.
 - [conclusions.md](conclusions.md): conclusões atuais e hipóteses H1-H11 em
   formato rastreável.
+- [execucao_complementar_2026-09-19.md](execucao_complementar_2026-09-19.md):
+  relatório da rodada Crossover + Sensitivity, com proposta mínima de híbridos.
 
 Artefatos relacionados:
 

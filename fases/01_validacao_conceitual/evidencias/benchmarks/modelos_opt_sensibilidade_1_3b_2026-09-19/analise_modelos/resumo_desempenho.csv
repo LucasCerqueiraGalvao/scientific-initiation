@@ -1,0 +1,1 @@
+model_id,operation,scenario,paired_cases,speedup_mean,speedup_median,speedup_ci95_low,speedup_ci95_high,memory_ratio_mean,memory_ratio_median,memory_ratio_ci95_low,memory_ratio_ci95_high,storage_ratio_mean,kernel_confirmed,conclusion

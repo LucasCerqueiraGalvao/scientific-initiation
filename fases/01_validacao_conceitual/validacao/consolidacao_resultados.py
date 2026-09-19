@@ -14,6 +14,7 @@ CANONICAL_OPERATION_SOURCES = (
     "robustez_sintetica_v3_2026-09-13",
     "hardware_nativo_v3_2026-09-14",
     "hardware_stress_complementar_v3_2026-09-17",
+    "hardware_crossover_v3_2026-09-19",
 )
 
 CANONICAL_MODEL_SOURCES = (
@@ -22,6 +23,8 @@ CANONICAL_MODEL_SOURCES = (
     "modelos_opt_6_7b_2026-09-16",
     "modelos_opt_complementar_lacunas_2026-09-17",
     "modelos_opt_6_7b_complementar_lacunas_2026-09-17",
+    "modelos_opt_sensibilidade_350m_2026-09-19",
+    "modelos_opt_sensibilidade_1_3b_2026-09-19",
 )
 
 EXCLUDED_SOURCES = (

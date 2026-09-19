@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "experiment_id": "modelos_opt_sensibilidade_350m",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "5a652db7e46a5633c6bbef826a9da972b3a78fe566b22943e6ac7cc126fafad2",
+  "code_sha256": "907c30af14750e6599aa08cbc36b4559edeeeecbb042fca97993df6bcf557c81",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "models": [
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "baseline_bf16",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "int8dyn_attention_all",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "int8dyn_mlp_all",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "int8dyn_attention_layers_0_7",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "int8dyn_attention_layers_8_15",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "int8dyn_attention_layers_16_23",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "int8dyn_mlp_layers_0_7",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "int8dyn_mlp_layers_8_15",
+      "status": "complete"
+    },
+    {
+      "model_id": "facebook/opt-350m",
+      "scenario": "int8dyn_mlp_layers_16_23",
+      "status": "complete"
+    }
+  ],
+  "resumed_at": [],
+  "artifacts": [
+    {
+      "path": "quality.csv",
+      "sha256": "ca824d0b6450ff6c26bfa9a8890cf05266ba837d6216820c832d359a7432b482",
+      "records": 9
+    },
+    {
+      "path": "quality_windows.csv",
+      "sha256": "da2d33caa0581dd4dbd6468b1f646c30004cd5f65be871690231a39bd15e2636",
+      "records": 576
+    },
+    {
+      "path": "prompt_metrics.csv",
+      "sha256": "1883d30277bc02ba15834f1604824d54d65132bd1fcefa7f150548588f66f621",
+      "records": 180
+    },
+    {
+      "path": "performance.csv",
+      "sha256": "4714d501ad795ce46ee665a199cb3aee14594f22ae16b47b25c612dfbe6f764a",
+      "records": 0
+    },
+    {
+      "path": "timings.csv",
+      "sha256": "631360774be328277c6fdd2f5b605617f3e874d1263cf0af3d1ae93284c7209e",
+      "records": 0
+    },
+    {
+      "path": "evaluation_subset.json",
+      "sha256": "44122bef335eeda8e8b1babcecc86422e1f1f9aba43c9080c462dc75353adc28",
+      "records": 1
+    },
+    {
+      "path": "model_operators.json",
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
+      "records": 0
+    },
+    {
+      "path": "baseline_prompts_e3ef40fe526f3f80.pt",
+      "sha256": "e296d97f0d494798f19ad583f2a35f328f29953eebf08d0e1ad95a2091fdb02b",
+      "records": 1
+    }
+  ],
+  "completed_at": "2026-09-19T06:03:34+00:00"
+}

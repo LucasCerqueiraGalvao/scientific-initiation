@@ -7,6 +7,12 @@ física não viram aceleração automaticamente. O resultado depende de workload
 shape, kernel, escopo de aplicação e custo em qualidade. A evidência mais forte
 para avanço agora está em seletor fino e híbridos, não em repetir grades enormes.
 
+A execução complementar de 19/09/2026 reforçou essa leitura. O microbenchmark de
+crossover não encontrou ganho sustentado em INT8 dynamic, weight-only ou 2:4 nas
+operações isoladas. A sensibilidade em OPT-1.3B, porém, mostrou que MLP é bem
+mais tolerante que atenção final, apontando para híbridos que preservem a atenção
+final em BF16.
+
 ## Hipóteses
 
 | Hipótese | Estado | Evidência atual |
@@ -22,6 +28,9 @@ para avanço agora está em seletor fino e híbridos, não em repetir grades eno
 | H9: armazenamento menor implica VRAM menor. | Parcial | Weight-only reduz armazenamento; VRAM depende do backend e de buffers intermediários. |
 | H10: armazenamento menor implica latência menor. | Não sustentada | Weight-only ficou lento no backend medido. |
 | H11: estratégias híbridas podem dominar extremos. | Em aberto | Infraestrutura de seleção fina foi implementada; falta executar triagem e finalistas. |
+
+Após a rodada complementar, H11 ficou mais plausível: `attention 16-23` falhou
+no OPT-1.3B, enquanto todos os recortes de MLP passaram no critério oficial.
 
 ## Posição científica recomendada
 

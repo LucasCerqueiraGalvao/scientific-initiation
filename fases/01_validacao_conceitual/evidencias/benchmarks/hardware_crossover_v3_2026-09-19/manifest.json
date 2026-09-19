@@ -1,0 +1,43 @@
+{
+  "schema_version": 3,
+  "experiment_id": "hardware_crossover_v3",
+  "status": "complete",
+  "config": "config.snapshot.json",
+  "config_sha256": "6e6f624fcf0ad1b09d2f9361b07f1ef0e24160396129a16c309a8089023b6105",
+  "code_sha256": "907c30af14750e6599aa08cbc36b4559edeeeecbb042fca97993df6bcf557c81",
+  "environment": "environment.json",
+  "environment_sha256": "f2303a071d8c63ae675d0534c5486b85028f70578209daef1b0662c076419309",
+  "runs": [
+    {
+      "repeat_index": 1,
+      "csv": "run_01.csv",
+      "csv_sha256": "847ad1c23f2fa2c06f7fa71a0617b57deabcac2f367c6ffe5ecce172b27e8dfe",
+      "timings": "run_01.timings.csv",
+      "timings_sha256": "142a51832c45e4c9d980909936060fd51028dfddc21636adb0a041087c6a155b",
+      "records": 400,
+      "timing_samples": 20000
+    },
+    {
+      "repeat_index": 2,
+      "csv": "run_02.csv",
+      "csv_sha256": "952ba65038297ce6cd27534acd78c989aeade1eddb99cfc7fd1c0fb9b82026d1",
+      "timings": "run_02.timings.csv",
+      "timings_sha256": "49b77eb1f98fa0376629d184c32a4dca560128fb21c41d131360a666b1f8844b",
+      "records": 400,
+      "timing_samples": 20000
+    },
+    {
+      "repeat_index": 3,
+      "csv": "run_03.csv",
+      "csv_sha256": "63b9ea070caa5d92b52bbdfd5df672a4d0bad1efa85d137d1cd739cba9525d3d",
+      "timings": "run_03.timings.csv",
+      "timings_sha256": "57333e8001917c1e256036be1a077adea48f1a26ba37151d1377ffe62e4d5cd6",
+      "records": 400,
+      "timing_samples": 20000
+    }
+  ],
+  "resumed_at": [],
+  "timings": "timings.csv",
+  "timings_sha256": "634f797842ac68cd42de8fd9c7c891485c1b240369e2048ba109cfff2676d612",
+  "completed_at": "2026-09-19T05:48:03+00:00"
+}

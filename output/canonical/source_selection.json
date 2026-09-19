@@ -43,6 +43,20 @@
       "schema_version": 3
     },
     {
+      "name": "hardware_crossover_v3_2026-09-19",
+      "purpose": "synthetic_hardware",
+      "priority": 13,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\hardware_crossover_v3_2026-09-19",
+      "manifest": "manifest.json",
+      "manifest_sha256": "3cddb8f411d097ffb2a0dcf204584568283bee9745689ab451309ceac4d70815",
+      "config": "config.snapshot.json",
+      "config_sha256": "c0b2dccfd1d77ea5d0b30f228a878a5d1df6d5087ca362c788e15c0898dafb15",
+      "environment": "environment.json",
+      "environment_sha256": "9045233690322bee3965d780d984dc17cb850450848f1f61be316f59003ff68b",
+      "status": "complete",
+      "schema_version": 3
+    },
+    {
       "name": "modelos_opt_v1_2026-09-15",
       "purpose": "opt_pretrained",
       "priority": 100,
@@ -109,6 +123,34 @@
       "config_sha256": "97052814b042ba3d785247c689a33fef9cd88920764f1e07d007f94347cf7a41",
       "environment": "environment.json",
       "environment_sha256": "825497f50351a35e068f60e1ab061bfa0722c14493353aaba09b028ce419e416",
+      "status": "complete",
+      "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_sensibilidade_350m_2026-09-19",
+      "purpose": "opt_pretrained",
+      "priority": 105,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_sensibilidade_350m_2026-09-19",
+      "manifest": "manifest.json",
+      "manifest_sha256": "29e8eb65293647d82fa5e9ad20adfb27e6f99af72dfed503997c9f27aa2e7db9",
+      "config": "config.snapshot.json",
+      "config_sha256": "07b4816951f7a7c861b30b046689277b74dcac2652154693898d8a8f871958fd",
+      "environment": "environment.json",
+      "environment_sha256": "a8500d0022bf0a19e0c1a698752fc4897c73e9c7733d58aa5307b521471eec01",
+      "status": "complete",
+      "schema_version": 1
+    },
+    {
+      "name": "modelos_opt_sensibilidade_1_3b_2026-09-19",
+      "purpose": "opt_pretrained",
+      "priority": 106,
+      "path": "fases\\01_validacao_conceitual\\evidencias\\benchmarks\\modelos_opt_sensibilidade_1_3b_2026-09-19",
+      "manifest": "manifest.json",
+      "manifest_sha256": "cc9f9eb0a8c083fb048561d7b6ca3e13c696d8484fdae5d977c3bf271754fe41",
+      "config": "config.snapshot.json",
+      "config_sha256": "e8ff85a29f58d3e15f41d3029d3ec030c2297a1ee83ff8c36346d38f13bbfc79",
+      "environment": "environment.json",
+      "environment_sha256": "2d302e78a07bc65eb036a20df180c8c6d34754fa32c8988040b76156541f00ac",
       "status": "complete",
       "schema_version": 1
     }

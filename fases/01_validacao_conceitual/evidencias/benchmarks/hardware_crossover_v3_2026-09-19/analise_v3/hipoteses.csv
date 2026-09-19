@@ -1,0 +1,2 @@
+hypothesis,comparison,paired_cases,int8_lower_mse_rate,mse_difference_mean,mse_difference_ci95_low,mse_difference_ci95_high,conclusion
+H6,mse_vs_sparsity,240,,,,,sustentada
