@@ -56,7 +56,10 @@ QUALITY_COLUMNS = [
     "observed_sparsity", "mean_loss", "perplexity", "perplexity_increase_ratio",
     "logits_mse", "logits_cosine", "logits_kl_divergence", "top1_agreement",
     "generated_token_agreement", "exact_generation_rate", "quality_acceptable",
-    "weight_sha256", "evaluation_subset_sha256",
+    "weight_sha256", "evaluation_subset_sha256", "selected_layers",
+    "selected_components", "selector_summary", "eligible_linear_count",
+    "target_parameter_count", "eligible_parameter_count", "target_linear_fraction",
+    "target_parameter_fraction",
 ]
 WINDOW_COLUMNS = [
     "model_id", "scenario", "window_index", "start_token", "token_count", "loss", "perplexity"
@@ -86,6 +89,14 @@ class DatasetSpec:
 
 
 @dataclass(frozen=True)
+class ModuleSelector:
+    layer_start: int | None = None
+    layer_end: int | None = None
+    layers: tuple[int, ...] = ()
+    components: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class ModelScenario:
     identifier: str
     kind: str
@@ -98,6 +109,7 @@ class ModelScenario:
     layer_end: int | None = None
     layers: tuple[int, ...] = ()
     components: tuple[str, ...] = ()
+    selectors: tuple[ModuleSelector, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -217,6 +229,31 @@ def _optional_component_tuple(value: object) -> tuple[str, ...]:
     return components
 
 
+def _selector_from_mapping(raw: object, index: int) -> ModuleSelector:
+    optional = {"layer_start", "layer_end", "layers", "components"}
+    if not isinstance(raw, Mapping) or set(raw) - optional:
+        raise ExperimentConfigurationError(f"selector {index} invalido")
+    selector = ModuleSelector(
+        layer_start=_optional_non_negative_int(f"selectors[{index}].layer_start", raw.get("layer_start")),
+        layer_end=_optional_non_negative_int(f"selectors[{index}].layer_end", raw.get("layer_end")),
+        layers=_optional_layer_tuple(f"selectors[{index}].layers", raw.get("layers")),
+        components=_optional_component_tuple(raw.get("components")),
+    )
+    if selector.layer_start is not None and selector.layer_end is not None and selector.layer_start > selector.layer_end:
+        raise ExperimentConfigurationError(f"selector {index}: layer_start nao pode ser maior que layer_end")
+    return selector
+
+
+def _optional_selector_tuple(value: object) -> tuple[ModuleSelector, ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, list):
+        raise ExperimentConfigurationError("selectors deve ser lista")
+    if not value:
+        return ()
+    return tuple(_selector_from_mapping(item, index) for index, item in enumerate(value))
+
+
 def _commit_hash(name: str, value: object) -> str:
     revision = str(value)
     if len(revision) != COMMIT_HASH_LENGTH or any(character not in "0123456789abcdef" for character in revision):
@@ -271,13 +308,16 @@ def model_config_from_mapping(data: Mapping[str, object]) -> ModelExperimentConf
             "identifier", "kind", "comparison_group", "dtype", "optimization_scope",
             "pruning_sparsity", "measure_performance",
         }
-        optional = {"layer_start", "layer_end", "layers", "components"}
+        optional = {"layer_start", "layer_end", "layers", "components", "selectors"}
         if not isinstance(raw, Mapping) or not required.issubset(set(raw)) or set(raw) - required - optional:
             raise ExperimentConfigurationError("model scenario invalido")
         layer_start = _optional_non_negative_int("layer_start", raw.get("layer_start"))
         layer_end = _optional_non_negative_int("layer_end", raw.get("layer_end"))
         layers = _optional_layer_tuple("layers", raw.get("layers"))
         components = _optional_component_tuple(raw.get("components"))
+        selectors = _optional_selector_tuple(raw.get("selectors"))
+        if selectors and any(raw.get(key) is not None for key in ("layer_start", "layer_end", "layers", "components")):
+            raise ExperimentConfigurationError("selectors nao pode ser combinado com layer_start/layer_end/layers/components")
         if layer_start is not None and layer_end is not None and layer_start > layer_end:
             raise ExperimentConfigurationError("layer_start nao pode ser maior que layer_end")
         scenario = ModelScenario(
@@ -292,6 +332,7 @@ def model_config_from_mapping(data: Mapping[str, object]) -> ModelExperimentConf
             layer_end=layer_end,
             layers=layers,
             components=components,
+            selectors=selectors,
         )
         if scenario.identifier in ids or not scenario.identifier:
             raise ExperimentConfigurationError("scenario id vazio ou duplicado")
@@ -384,19 +425,33 @@ def _module_components(name: str) -> set[str]:
     return components
 
 
+def _matches_module_selector(name: str, selector: ModuleSelector) -> bool:
+    layer_index = _layer_index(name)
+    if selector.layers and layer_index not in selector.layers:
+        return False
+    if selector.layer_start is not None and (layer_index is None or layer_index < selector.layer_start):
+        return False
+    if selector.layer_end is not None and (layer_index is None or layer_index > selector.layer_end):
+        return False
+    if selector.components and _module_components(name).isdisjoint(set(selector.components)):
+        return False
+    return True
+
+
 def _matches_scenario_selector(name: str, scenario: ModelScenario | None) -> bool:
     if scenario is None:
         return True
-    layer_index = _layer_index(name)
-    if scenario.layers and layer_index not in scenario.layers:
-        return False
-    if scenario.layer_start is not None and (layer_index is None or layer_index < scenario.layer_start):
-        return False
-    if scenario.layer_end is not None and (layer_index is None or layer_index > scenario.layer_end):
-        return False
-    if scenario.components and _module_components(name).isdisjoint(set(scenario.components)):
-        return False
-    return True
+    if scenario.selectors:
+        return any(_matches_module_selector(name, selector) for selector in scenario.selectors)
+    return _matches_module_selector(
+        name,
+        ModuleSelector(
+            layer_start=scenario.layer_start,
+            layer_end=scenario.layer_end,
+            layers=scenario.layers,
+            components=scenario.components,
+        ),
+    )
 
 
 def is_target_linear(name: str, module: nn.Module, scope: str, scenario: ModelScenario | None = None) -> bool:
@@ -428,6 +483,86 @@ def target_linears(
         for name, module in model.named_modules()
         if is_target_linear(name, module, scope, scenario)
     )
+
+
+def _format_selector_layers(selector: ModuleSelector) -> str:
+    if selector.layers:
+        return ",".join(str(layer) for layer in selector.layers)
+    if selector.layer_start is None and selector.layer_end is None:
+        return "all"
+    start = "*" if selector.layer_start is None else str(selector.layer_start)
+    end = "*" if selector.layer_end is None else str(selector.layer_end)
+    return f"{start}-{end}"
+
+
+def _scenario_selectors(scenario: ModelScenario) -> tuple[ModuleSelector, ...]:
+    if scenario.selectors:
+        return scenario.selectors
+    return (
+        ModuleSelector(
+            layer_start=scenario.layer_start,
+            layer_end=scenario.layer_end,
+            layers=scenario.layers,
+            components=scenario.components,
+        ),
+    )
+
+
+def _selector_summary(scenario: ModelScenario) -> str:
+    if scenario.optimization_scope == "none":
+        return ""
+    fragments = []
+    for selector in _scenario_selectors(scenario):
+        components = ",".join(selector.components) if selector.components else "all"
+        fragments.append(f"{components}@{_format_selector_layers(selector)}")
+    return ";".join(fragments)
+
+
+def _linear_parameter_count(linears: Sequence[tuple[str, nn.Linear]]) -> int:
+    return sum(sum(parameter.numel() for parameter in module.parameters(recurse=False)) for _, module in linears)
+
+
+def scenario_selection_metadata(model: nn.Module, scenario: ModelScenario) -> dict[str, object]:
+    targets = target_linears(model, scenario.optimization_scope, scenario)
+    eligible = target_linears(model, scenario.optimization_scope, None)
+    target_params = _linear_parameter_count(targets)
+    eligible_params = _linear_parameter_count(eligible)
+    selectors = _scenario_selectors(scenario)
+    selected_layers = sorted(
+        {
+            layer
+            for name, _ in targets
+            for layer in [_layer_index(name)]
+            if layer is not None
+        }
+    )
+    selected_components = sorted(
+        {
+            component
+            for name, _ in targets
+            for component in _module_components(name)
+            if component in OPT_COMPONENTS
+        }
+    )
+    if scenario.optimization_scope == "none":
+        selector_summary = ""
+    elif scenario.selectors or any(
+        (selector.layer_start is not None or selector.layer_end is not None or selector.layers or selector.components)
+        for selector in selectors
+    ):
+        selector_summary = _selector_summary(scenario)
+    else:
+        selector_summary = "all@all"
+    return {
+        "selected_layers": ",".join(str(layer) for layer in selected_layers) if selected_layers else "",
+        "selected_components": ",".join(selected_components),
+        "selector_summary": selector_summary,
+        "eligible_linear_count": len(eligible),
+        "target_parameter_count": target_params,
+        "eligible_parameter_count": eligible_params,
+        "target_linear_fraction": (len(targets) / len(eligible)) if eligible else 0.0,
+        "target_parameter_fraction": (target_params / eligible_params) if eligible_params else 0.0,
+    }
 
 
 def apply_model_scenario(model: nn.Module, scenario: ModelScenario) -> int:
@@ -1482,6 +1617,7 @@ def execute_model_experiment(
                             "performance_tokens_sha256": _hash_values(subset.performance_tokens),
                         }
                     baseline_token_source = subset.performance_tokens
+                    selection_metadata = scenario_selection_metadata(model, scenario)
                     target_count = apply_model_scenario(model, scenario)
                     storage_bytes = model_storage_bytes(model)
                     weight_hash = model_weight_hash(model)
@@ -1546,6 +1682,7 @@ def execute_model_experiment(
                             "quality_acceptable": acceptable,
                             "weight_sha256": weight_hash,
                             "evaluation_subset_sha256": subset.sha256,
+                            **selection_metadata,
                         }
                     if scenario.measure_performance and not already_completed:
                         benchmark_model = model

@@ -16,6 +16,7 @@ from validacao.benchmark_modelos_opt import (
     QUALITY_COLUMNS,
     TIMING_COLUMNS,
     WINDOW_COLUMNS,
+    ModuleSelector,
     ModelScenario,
     apply_model_scenario,
     build_evaluation_subset,
@@ -25,6 +26,7 @@ from validacao.benchmark_modelos_opt import (
     load_prompts,
     model_weight_hash,
     observed_model_sparsity,
+    scenario_selection_metadata,
     target_linears,
 )
 from validacao.analise_benchmark_modelos_opt import (
@@ -147,6 +149,48 @@ def test_opt_fine_grained_selector_filters_layers_and_components() -> None:
         "model.decoder.layers.2.self_attn.q_proj",
         "model.decoder.layers.2.self_attn.out_proj",
     ]
+
+
+def test_opt_hybrid_selector_combines_multiple_layer_component_cuts() -> None:
+    model = TinyOPTStructure()
+    scenario = ModelScenario(
+        "hybrid_mlp_all_attention_first_half",
+        "quantization_int8_dynamic",
+        "bf16",
+        "bfloat16",
+        "transformer_blocks",
+        0.0,
+        False,
+        selectors=(
+            ModuleSelector(components=("mlp",)),
+            ModuleSelector(layer_start=0, layer_end=1, components=("attention",)),
+        ),
+    )
+
+    selected = [name for name, _ in target_linears(model, "transformer_blocks", scenario)]
+    metadata = scenario_selection_metadata(model, scenario)
+
+    assert selected == [
+        "model.decoder.layers.0.self_attn.q_proj",
+        "model.decoder.layers.0.self_attn.k_proj",
+        "model.decoder.layers.0.self_attn.v_proj",
+        "model.decoder.layers.0.self_attn.out_proj",
+        "model.decoder.layers.0.fc1",
+        "model.decoder.layers.0.fc2",
+        "model.decoder.layers.1.self_attn.q_proj",
+        "model.decoder.layers.1.self_attn.k_proj",
+        "model.decoder.layers.1.self_attn.v_proj",
+        "model.decoder.layers.1.self_attn.out_proj",
+        "model.decoder.layers.1.fc1",
+        "model.decoder.layers.1.fc2",
+        "model.decoder.layers.2.fc1",
+        "model.decoder.layers.2.fc2",
+    ]
+    assert metadata["eligible_linear_count"] == 18
+    assert metadata["selected_layers"] == "0,1,2"
+    assert metadata["selected_components"] == "attention,fc1,fc2,k_proj,mlp,out_proj,q_proj,v_proj"
+    assert metadata["selector_summary"] == "mlp@all;attention@0-1"
+    assert metadata["target_linear_fraction"] == pytest.approx(14 / 18)
 
 
 def test_observed_model_sparsity_is_reported_only_for_pruning() -> None:
