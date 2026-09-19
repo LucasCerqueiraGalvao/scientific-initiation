@@ -316,7 +316,13 @@ def model_config_from_mapping(data: Mapping[str, object]) -> ModelExperimentConf
         layers = _optional_layer_tuple("layers", raw.get("layers"))
         components = _optional_component_tuple(raw.get("components"))
         selectors = _optional_selector_tuple(raw.get("selectors"))
-        if selectors and any(raw.get(key) is not None for key in ("layer_start", "layer_end", "layers", "components")):
+        legacy_selector_fields = (
+            layer_start is not None
+            or layer_end is not None
+            or bool(layers)
+            or bool(components)
+        )
+        if selectors and legacy_selector_fields:
             raise ExperimentConfigurationError("selectors nao pode ser combinado com layer_start/layer_end/layers/components")
         if layer_start is not None and layer_end is not None and layer_start > layer_end:
             raise ExperimentConfigurationError("layer_start nao pode ser maior que layer_end")
