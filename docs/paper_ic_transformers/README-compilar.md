@@ -28,7 +28,7 @@ output\pdf\paper_ic_transformers.pdf
 
 ## Estado cientifico usado no paper
 
-O artigo registra os resultados consolidados ate 15/09/2026:
+O artigo registra os resultados consolidados ate 19/09/2026:
 
 - 18 comparacoes conceituais aprovadas entre implementacao manual, NumPy,
   PyTorch, PyTorch SDPA e Keras/TensorFlow.
@@ -37,3 +37,10 @@ O artigo registra os resultados consolidados ate 15/09/2026:
 - kernels INT8 dinamico e 2:4 confirmados por profiler.
 - avaliacao OPT v1 com 45 registros de qualidade, 1.296 registros de desempenho
   e 10.080 timings; decode registrado como limitacao tecnica.
+- extensoes OPT-2.7B e OPT-6.7B para avaliar escala.
+- microbenchmark de crossover fisico.
+- sensibilidade por componente/layer em OPT-350M e OPT-1.3B.
+- configuracoes hibridas em OPT-1.3B e validacao seletiva de qualidade em
+  OPT-6.7B.
+- classificacao final das hipoteses H1-H12 e decisao de encerramento
+  cientifico.

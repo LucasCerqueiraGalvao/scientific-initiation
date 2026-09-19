@@ -116,28 +116,26 @@
 \section{Resumo}
 % -----------------------------------------------------------
 
-Este trabalho investiga os efeitos de quantiza\c{c}\~ao INT8 e pruning por
-magnitude sobre opera\c{c}\~oes centrais de arquiteturas Transformer durante
-inferencia. O estudo separa quatro niveis de evidencia: valida\c{c}\~ao
-conceitual, equivalencia numerica entre implementa\c{c}\~oes, benchmark
-sintetico robusto e valida\c{c}\~ao de caminhos fisicos de hardware. Foram
-aprovadas 18 compara\c{c}\~oes conceituais entre implementa\c{c}\~ao manual,
+Este trabalho investiga em quais condi\c{c}\~oes t\'ecnicas compress\~ao
+num\'erica e estrutural em Transformers se convertem em benef\'icios f\'isicos
+reais de mem\'oria e desempenho durante infer\^encia. O estudo separa altera\c{c}\~ao
+num\'erica, compress\~ao f\'isica e acelera\c{c}\~ao f\'isica, evitando tratar
+zeros l\'ogicos, pesos compactos e kernels acelerados como a mesma evid\^encia.
+Foram aprovadas 18 compara\c{c}\~oes conceituais entre implementa\c{c}\~ao manual,
 NumPy, PyTorch, PyTorch SDPA e Keras/TensorFlow. Em seguida, foram executados
-2.340 registros sinteticos e 117.000 amostras individuais de latencia para
-proje\c{c}\~ao densa e self-attention multi-head. A bateria fisica, executada
-em uma RTX 4070 Ti SUPER com Docker, PyTorch 2.11, CUDA 12.8, TorchAO e
-cuSPARSELt, produziu 1.650 registros e 82.500 medi\c{c}\~oes. Os resultados
-mostram que INT8 fake preservou melhor a saida que pruning no recorte
-sintetico; ja no recorte fisico, INT8 e 2:4 reduziram armazenamento e memoria,
-mas nao reduziram latencia nas opera\c{c}\~oes isoladas. A avaliacao em
-OPT-125M, OPT-350M e OPT-1.3B gerou 45 registros de qualidade, 2.880 janelas de
-perplexidade, 900 metricas de prompts e 1.296 registros de desempenho. Nos
-modelos pre-treinados, INT8 preservou melhor qualidade que pruning; prefill e
-TTFT nao sustentaram speedup pelos criterios completos, e decode permaneceu
-limitado por interacao entre CUDA Graphs, KV cache e \texttt{torch.compile}.
-Uma extensao exploratoria com OPT-2.7B e OPT-6.7B mostrou que a escala pode
-favorecer alguns caminhos de prefill, mas tambem aumentou o risco de degradacao
-de qualidade quando a tecnica foi aplicada aos blocos Transformer inteiros.
+2.340 registros sint\'eticos, 117.000 amostras individuais de lat\^encia,
+benchmarks f\'isicos com kernels INT8 e 2:4 confirmados, microbenchmarks de
+crossover, avalia\c{c}\~oes OPT de 125M a 6.7B, an\'alise de sensibilidade por
+componente/camada e uma tentativa h\'ibrida controlada. Os resultados mostram
+que INT8 fake preservou melhor a sa\'ida que pruning no recorte sint\'etico; que
+weight-only comprimiu mem\'oria e armazenamento preservando qualidade, mas sem
+acelera\c{c}\~ao no backend avaliado; que INT8 dynamic e 2:4 s\'o sustentam
+conclus\~oes f\'isicas quando representa\c{c}\~ao e kernel s\~ao confirmados; e que
+speedups observados em modelos maiores podem ser inviabilizados por degrada\c{c}\~ao
+de perplexidade. Nas configura\c{c}\~oes h\'ibridas, a seletividade por componente
+preservou qualidade no OPT-1.3B, mas n\~ao se transferiu ao OPT-6.7B. Assim,
+n\~ao foi demonstrada uma configura\c{c}\~ao que combinasse simultaneamente
+preserva\c{c}\~ao de qualidade e speedup confirmado no maior modelo avaliado.
 
 \noindent\textbf{Palavras-chave:} Transformer; self-attention; quantiza\c{c}\~ao; pruning; benchmark; inferencia.
 
@@ -523,6 +521,73 @@ qualidade colapsar.
   \caption{Speedup em prefill e TTFT na extensao OPT-6.7B.}
 \end{figure}
 
+\subsection{Sensibilidade e configuracoes hibridas}
+
+A fase de sensibilidade avaliou INT8 dinamico por componente e regiao nos
+modelos OPT-350M e OPT-1.3B. O objetivo foi verificar se atencao, MLP e regioes
+do Transformer respondem de forma homogenea a quantizacao. Os resultados
+indicaram sensibilidade heterogenea: configuracoes que preservavam componentes
+mais sensiveis em BF16 podiam manter qualidade em modelos menores, enquanto
+quantizacao ampla dos blocos tendia a aumentar a perplexidade.
+
+Com base nessa leitura, foi executada uma etapa hibrida controlada. No
+OPT-1.3B, configuracoes que preservaram a atencao sensivel conseguiram manter
+qualidade. O controle envolvendo atencao final apresentou pior resultado. Os
+finalistas hibridos com maior participacao de MLP quantizado tiveram medianas
+de desempenho positivas, mas seus intervalos bootstrap de 95\% cruzaram 1,0x.
+Portanto, nao houve speedup estatisticamente confirmado.
+
+\begin{table}[H]
+\centering
+\caption{Finalistas hibridos no OPT-1.3B}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Configuracao} & \textbf{Delta PPL} & \textbf{Speedup prefill} & \textbf{IC95 prefill} \\
+\midrule
+MLP todas, atencao BF16 & -1,098\% & 1,110 & [0,881; 1,309] \\
+MLP todas, atencao 0--7 BF16 & -0,815\% & 1,131 & [0,872; 1,299] \\
+MLP todas, atencao 0--15 BF16 & -0,370\% & 1,108 & [0,841; 1,310] \\
+Atencao 0--15 quantizada & -0,102\% & 0,964 & [0,865; 0,990] \\
+MLP 0--15, atencao BF16 & -1,506\% & 1,100 & [0,861; 1,178] \\
+\bottomrule
+\end{tabular}% 
+}
+\end{table}
+
+No OPT-6.7B, todas as configuracoes hibridas testadas falharam em qualidade.
+O aumento de perplexidade ficou aproximadamente entre +157\% e +207\%. Por
+isso, o benchmark fisico dessas candidatas foi corretamente evitado: medir
+latencia de configuracoes previamente descartadas por qualidade ampliaria custo
+sem responder a pergunta principal.
+
+\begin{table}[H]
+\centering
+\caption{Hibridos avaliados em qualidade no OPT-6.7B}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Configuracao} & \textbf{PPL} & \textbf{Delta PPL} & \textbf{Decisao} \\
+\midrule
+Baseline BF16 & 15,346 & 0,0\% & referencia \\
+INT8 dinamico em blocos & 40,675 & +165,052\% & descartado por qualidade \\
+MLP todas, atencao BF16 & 47,151 & +207,254\% & descartado por qualidade \\
+MLP todas, atencao 0--7 BF16 & 39,936 & +160,236\% & descartado por qualidade \\
+MLP todas, atencao 0--15 BF16 & 39,481 & +157,271\% & descartado por qualidade \\
+MLP 0--15, atencao BF16 & 45,589 & +197,073\% & descartado por qualidade \\
+\bottomrule
+\end{tabular}% 
+}
+\end{table}
+
+A conclusao nao e que hibridos nao funcionam. Nas configuracoes avaliadas, a
+seletividade por componente foi capaz de preservar qualidade no OPT-1.3B, mas
+esse comportamento nao se transferiu para o OPT-6.7B. Portanto, a sensibilidade
+observada em modelos menores nao se mostrou diretamente transferivel entre
+escalas. Tambem nao foi demonstrada uma configuracao hibrida que combinasse
+simultaneamente preservacao de qualidade e speedup confirmado no maior modelo
+avaliado.
+
 \subsection{Kernels confirmados}
 
 O profiler registrou caminhos distintos para cada tecnica fisica. O INT8
@@ -570,6 +635,39 @@ houve speedup fisico em alguns caminhos, mas acompanhado de degradacao de
 perplexidade. Essa leitura evita extrapolar benchmarks sinteticos, zeros
 logicos ou speedup isolado sem verificar qualidade.
 
+\subsection{Hipoteses finais}
+
+\begin{longtable}{p{0.10\linewidth}p{0.22\linewidth}p{0.58\linewidth}}
+\toprule
+\textbf{Hip.} & \textbf{Classificacao} & \textbf{Evidencia resumida} \\
+\midrule
+H1 & sustentada & Reducao de precisao ou pesos nao implicou automaticamente reducao de latencia. \\
+H2 & sustentada & Alteracao numerica, compressao fisica e aceleracao fisica apareceram como fenomenos distintos. \\
+H3 & sustentada & Speedup dependeu de representacao, kernel e backend, nao apenas da tecnica nominal. \\
+H4 & nao sustentada & O crossover fisico de operacoes isoladas nao encontrou ganho confirmado. \\
+H5 & parcialmente sustentada & Workload e escala mudaram o comportamento, mas nao garantiram ganho util. \\
+H6 & sustentada & Pruning denso revelou redundancia numerica sem produzir ganho fisico automatico. \\
+H7 & parcialmente sustentada & 2:4 acionou sparse fisico, mas magnitude pruning degradou qualidade. \\
+H8 & sustentada & Weight-only reduziu memoria/armazenamento e preservou qualidade, mas nao acelerou. \\
+H9 & sustentada & Componentes e regioes tiveram sensibilidades diferentes a quantizacao. \\
+H10 & nao sustentada & A politica observada em modelos menores nao transferiu ao OPT-6.7B. \\
+H11 & nao sustentada & Nenhum hibrido combinou qualidade preservada e speedup confirmado no maior modelo. \\
+H12 & parcialmente sustentada & Distribuicao e outliers influenciaram medicoes, sem reverter as conclusoes centrais. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Resultados negativos como evidencia}
+
+Os resultados negativos delimitam o espaco experimental. A ausencia de
+crossover confirmado nas operacoes isoladas mostra que kernels fisicos podem
+ser anulados por overheads e shapes desfavoraveis. O weight-only muito lento
+mostra que compressao de pesos nao e equivalente a aceleracao. O 2:4 por
+magnitude mostra que sparsity fisica pode ser inviavel quando a selecao de
+pesos degrada qualidade. O INT8 dinamico no OPT-6.7B mostra que escala pode
+favorecer latencia, mas nao torna a configuracao util se a perplexidade cresce
+fora dos limites. A falha dos hibridos no OPT-6.7B mostra que sensibilidade
+observada em modelos menores nao deve ser transferida sem validacao.
+
 \subsection{Respostas parciais as perguntas de pesquisa}
 
 \begin{longtable}{p{0.13\linewidth}p{0.78\linewidth}}
@@ -597,35 +695,70 @@ de GPU podem sofrer interferencia de processos concorrentes, clocks dinamicos
 e temperatura. Por isso, os runners exigem GPU ociosa antes da coleta final.
 
 % -----------------------------------------------------------
-\section{Proximos passos}
+\section{Limitacoes}
 % -----------------------------------------------------------
 
-A etapa seguinte e decidir como tratar a medicao de decode. Uma alternativa e
-reexecutar apenas esse recorte com marcacao explicita de passos de CUDA Graph
-ou sem o modo \texttt{reduce-overhead}; outra e declarar decode fora do escopo
-desta versao e concentrar a conclusao em qualidade, prefill, TTFT, memoria e
-armazenamento. Tambem resta ajustar o texto para o formato especifico de
-submissao escolhido.
+O estudo foi executado em uma unica GPU principal, uma RTX 4070 Ti SUPER, e em
+uma unica familia de modelos, OPT. O dataset de qualidade foi relativamente
+estreito: WikiText-2 com 64 janelas de 512 tokens. A avaliacao de geracao usou
+20 prompts locais e decoding greedy, sem multiplas seeds independentes de
+dataset ou prompts. Os clocks e estados de energia da GPU nao foram fixados,
+embora o protocolo tenha usado GPU ociosa, warm-up, sincronizacao CUDA,
+repeticoes e bootstrap para reduzir ruido.
+
+O campo historico \texttt{model\_ttft} mede, na pratica,
+\texttt{prefill\_to\_first\_logit}; nao e TTFT completo de sistema com
+tokenizacao, fila, streaming e overhead de servico. A confirmacao de kernels e
+mais forte nos caminhos em que o profiler registrou explicitamente os
+operadores esperados. O backend weight-only avaliado nao representa todos os
+backends possiveis. O pruning 2:4 atual usa selecao simples por magnitude. Por
+fim, o espaco hibrido foi propositalmente pequeno e nao deve ser lido como busca
+exaustiva.
+
+% -----------------------------------------------------------
+\section{Trabalhos futuros}
+% -----------------------------------------------------------
+
+Os resultados sugerem trabalhos futuros sem transforma-los em pendencias
+obrigatorias desta iniciacao cientifica. O primeiro caminho e avaliar kernels
+weight-only mais especializados, mantendo a distincao entre compressao e
+latencia. O segundo e substituir a selecao simples por magnitude no 2:4 por uma
+estrategia post-training informada por ativacoes, como Wanda
+\cite{sun2024wanda}; SparseGPT \cite{frantar2023sparsegpt} tambem e relevante,
+mas tem custo e complexidade maiores. Outras continuacoes naturais incluem
+quantizacao com tratamento explicito de outliers, outras GPUs, outras familias
+de LLMs, politicas sensiveis a camada e calibracao hibrida mais sofisticada.
+
+Para o fechamento atual, Wanda e classificada como util mas opcional. Ela
+ajudaria a separar se a falha de qualidade do 2:4 vem do formato sparse ou da
+selecao ingenua de pesos, mas a tese central da pesquisa ja esta sustentada
+pelos dados existentes.
 
 % -----------------------------------------------------------
 \section{Conclus\~ao}
 % -----------------------------------------------------------
 
-O estudo validou conceitualmente a implementa\c{c}\~ao de self-attention e
-consolidou tres conjuntos experimentais robustos. A evidencia sintetica mostra
-que INT8 fake preserva melhor a saida que pruning por magnitude, enquanto a
-evidencia fisica mostra redu\c{c}\~ao de armazenamento e memoria para INT8 e
-2:4, mas contradiz ganho de latencia nas opera\c{c}\~oes isoladas avaliadas.
+O estudo validou conceitualmente a implementacao de self-attention e consolidou
+uma cadeia experimental que vai de operacoes deterministicas ate modelos OPT
+pre-treinados. A evidencia sintetica mostra que INT8 fake preserva melhor a
+saida que pruning por magnitude. A evidencia fisica mostra que representacoes
+compactas reduzem armazenamento e memoria, mas nao garantem latencia menor. A
+avaliacao em OPT mostra que speedup pode aparecer em escala maior, mas pode ser
+anulado cientificamente por degradacao de qualidade.
 
-A contribui\c{c}\~ao principal e metodologica e experimental: o
-trabalho evita misturar equivalencia matematica, representa\c{c}\~ao compacta e
-acelera\c{c}\~ao fisica como se fossem a mesma evid\^encia. A conclus\~ao final
-mostra que os efeitos observados nos benchmarks controlados aparecem
-parcialmente em modelos pre-treinados: INT8 preserva qualidade melhor que
-pruning, pruning degrada com sparsity, e redu\c{c}\~ao de representa\c{c}\~ao
-ou memoria nao garante latencia menor. A extensao com OPT-6.7B acrescenta que
-speedup pode surgir em escala maior, mas esse ganho so e cientificamente util
-quando a qualidade tambem permanece dentro dos limites definidos.
+A contribuicao principal e metodologica e experimental: o trabalho separa
+alteracao numerica, compressao fisica e aceleracao fisica, e mostra que cada
+uma precisa ser medida com instrumentos diferentes. Weight-only preservou
+qualidade e comprimiu memoria, mas nao acelerou no backend avaliado. INT8
+dinamico acelerou alguns caminhos do OPT-6.7B, mas com perplexidade fora dos
+limites. 2:4 confirmou sparse fisico, mas a selecao por magnitude degradou
+qualidade. Hibridos preservaram qualidade no OPT-1.3B, mas nao apresentaram
+speedup confirmado e nao transferiram essa qualidade ao OPT-6.7B.
+
+Assim, os dados atuais sao suficientes para encerrar a iniciacao cientifica: a
+pesquisa responde, com evidencia rastreavel, que reduzir bits ou pesos nao
+implica automaticamente acelerar inferencia. O beneficio final depende de
+representacao, kernel, workload, qualidade e escala.
 
 % -----------------------------------------------------------
 \printbibliography[title={Refer\^encias}]

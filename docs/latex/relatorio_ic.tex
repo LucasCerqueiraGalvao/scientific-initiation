@@ -20,13 +20,14 @@
     Relatorio tecnico, protocolo experimental e caderno de pesquisa\par}
   \vspace{1.2cm}
 
-  \begin{icstatus}[Estado da pesquisa em 18/09/2026]{icGreen}
+  \begin{icstatus}[Estado da pesquisa em 19/09/2026]{icGreen}
     A validacao conceitual ampliada aprovou 18 comparacoes. As baterias
-    sintetica v3, fisica v3, OPT v1, as extensoes OPT-2.7B/OPT-6.7B e a
-    bateria complementar de lacunas foram concluidas e analisadas. O resultado
-    mais recente mostra que pruning percentual denso e INT8 fake nos OPT nao
-    reduzem VRAM nem sustentam speedup, enquanto caminhos fisicos maiores podem
-    acelerar apenas quando a qualidade tambem precisa ser auditada.
+    sintetica v3, fisica v3, OPT v1, as extensoes OPT-2.7B/OPT-6.7B,
+    crossover, sensibilidade e hibridos foram concluidas e analisadas. O
+    fechamento cientifico mostra que compressao numerica, compressao fisica e
+    aceleracao fisica sao fenomenos distintos; nenhuma configuracao hibrida
+    demonstrou simultaneamente qualidade preservada e speedup confirmado no
+    maior modelo avaliado.
   \end{icstatus}
 
   \vfill
@@ -35,7 +36,7 @@
     \textbf{Orientacao} & Prof. Me. Walter Silva Oliveira \\
     \textbf{Grupo} & LPCIAD \\
     \textbf{Repositorio} & \href{https://github.com/LucasCerqueiraGalvao/scientific-initiation}{GitHub} \\
-    \textbf{Versao documental} & 18 de setembro de 2026
+    \textbf{Versao documental} & 19 de setembro de 2026
   \end{tabular}
 
   \vspace{1.4cm}
@@ -60,6 +61,7 @@ academico tambem aparece em LaTeX neste volume.
 \input{docs/latex/capitulos/01_visao_geral.tex}
 \input{docs/latex/capitulos/02_plano_trabalho.tex}
 \input{docs/latex/capitulos/03_estado_e_proximos_passos.tex}
+\input{docs/latex/capitulos/04_encerramento_cientifico.tex}
 
 \part{Fundamentacao e validacao tecnica}
 \input{fases/01_validacao_conceitual/docs/base_teorica_validacao.tex}

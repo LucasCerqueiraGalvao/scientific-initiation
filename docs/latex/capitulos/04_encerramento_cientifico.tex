@@ -1,0 +1,79 @@
+\chapter{Encerramento cientifico}
+
+\section{Narrativa final}
+
+O fechamento da pesquisa deve ser apresentado como uma investigacao das
+condicoes em que compressao numerica e estrutural em Transformers se convertem
+em beneficios fisicos reais de memoria e desempenho. A sequencia experimental
+parte de equivalencia conceitual, passa por alteracao numerica, compressao
+fisica, kernels fisicos, microbenchmarks, modelos OPT, qualidade, escala,
+sensibilidade e configuracoes hibridas.
+
+O resultado central e que reduzir bits ou pesos nao implica automaticamente
+acelerar inferencia. Representacao fisica e kernel sao fundamentais; overheads
+podem eliminar ganhos; resultados locais em microbenchmarks nao necessariamente
+predizem comportamento ponta a ponta; e speedup sem qualidade aceitavel nao e
+configuracao util.
+
+\section{Hipoteses finais}
+
+\begin{longtable}{@{}p{0.08\linewidth}p{0.22\linewidth}p{0.60\linewidth}@{}}
+\toprule
+\textbf{Hip.} & \textbf{Classificacao} & \textbf{Resumo da evidencia} \\
+\midrule
+H1 & sustentada & Reducao de precisao ou pesos nao implicou automaticamente reducao de latencia. \\
+H2 & sustentada & Compressao numerica, compressao fisica e aceleracao fisica apareceram como fenomenos distintos. \\
+H3 & sustentada & Aceleracao dependeu de representacao, kernel e backend. \\
+H4 & nao sustentada & O crossover fisico de operacoes isoladas nao encontrou ganho confirmado. \\
+H5 & parcialmente sustentada & Workload e escala influenciaram os resultados, mas nao garantiram ganho util. \\
+H6 & sustentada & Pruning denso revelou redundancia numerica sem ganho fisico automatico. \\
+H7 & parcialmente sustentada & 2:4 acionou sparse fisico, mas magnitude pruning degradou qualidade. \\
+H8 & sustentada & Weight-only reduziu memoria/armazenamento e preservou qualidade sem acelerar. \\
+H9 & sustentada & Componentes e layers apresentaram sensibilidades diferentes a quantizacao. \\
+H10 & nao sustentada & A politica de sensibilidade dos modelos menores nao transferiu ao OPT-6.7B. \\
+H11 & nao sustentada & Nenhum hibrido combinou qualidade preservada e speedup confirmado no maior modelo. \\
+H12 & parcialmente sustentada & Distribuicao e outliers influenciaram comportamento sem mudar a conclusao central. \\
+\bottomrule
+\end{longtable}
+
+\section{Resultados hibridos}
+
+Nas configuracoes avaliadas, a seletividade por componente foi capaz de
+preservar qualidade no OPT-1.3B, mas esse comportamento nao se transferiu para
+o OPT-6.7B. Portanto, a sensibilidade observada em modelos menores nao se
+mostrou diretamente transferivel entre escalas.
+
+No OPT-1.3B, os finalistas hibridos com MLP quantizado e atencao preservada
+apresentaram medianas de desempenho positivas, como 1,110x, 1,131x e 1,108x em
+prefill. Contudo, os intervalos de 95\% cruzaram 1,0x, de modo que nao existe
+speedup estatisticamente confirmado. No OPT-6.7B, as configuracoes hibridas
+avaliadas falharam qualidade, com aumento de perplexidade aproximadamente entre
++157\% e +207\%. Por isso, os benchmarks fisicos dessas candidatas foram
+corretamente evitados.
+
+\section{Resultados negativos}
+
+Os resultados negativos sao parte da contribuicao. A ausencia de crossover
+confirmado mostra que kernels fisicos podem nao compensar overheads em
+operacoes isoladas. O weight-only mostrou compressao e preservacao de qualidade
+sem aceleracao no backend avaliado. O 2:4 confirmou sparse fisico, mas a
+selecao por magnitude degradou qualidade. O INT8 dinamico acelerou caminhos do
+OPT-6.7B, mas com perplexidade fora dos limites. Os hibridos preservaram
+qualidade no OPT-1.3B sem speedup confirmado e falharam qualidade no OPT-6.7B.
+
+\section{Lacuna opcional: 2:4 com selecao melhor}
+
+A unica extensao experimental ainda potencialmente relevante e melhorar a
+selecao de pesos do 2:4. Wanda e a abordagem mais adequada se houver tempo:
+e post-training, usa informacao de ativacao, dispensa fine-tuning pesado e pode
+preservar o mesmo backend sparse caso a saida seja convertida para 2:4.
+SparseGPT tambem e relevante, mas tem custo computacional e complexidade de
+integracao maiores. A classificacao final dessa extensao e util mas opcional,
+nao essencial para encerrar a iniciacao cientifica.
+
+\section{Decisao de encerramento}
+
+Os dados atuais sao suficientes para encerrar a IC. A pesquisa responde a
+pergunta principal com evidencia rastreavel: alterar numeros, comprimir
+representacao e acelerar fisicamente sao niveis diferentes de evidencia. O
+beneficio final depende de representacao, kernel, workload, qualidade e escala.

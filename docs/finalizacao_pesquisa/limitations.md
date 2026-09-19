@@ -1,46 +1,53 @@
-# Limitações atuais
+# Limitações finais
 
-## Metodológicas
+## Escopo experimental
 
-- A métrica chamada historicamente de `model_ttft` não é TTFT completo de
-  serviço; ela representa `prefill_to_first_logit`.
-- `quality_acceptable` usa apenas Delta PPL. KL, MSE, top-1 agreement e token
-  agreement são métricas complementares, não critérios oficiais de aprovação.
-- O dataset de qualidade usa WikiText-2 com 64 janelas. Isso é adequado para
-  triagem controlada, mas ainda pequeno para alegações gerais sobre linguagem.
-- Os prompts locais são úteis para divergência de geração, mas não substituem
-  avaliação humana ou benchmark amplo de tarefas.
-- Smokes e diagnósticos são evidência de infraestrutura, não evidência para
-  conclusão científica.
-- Speedups devem ser interpretados por workload, modelo e operação. Um ganho em
-  `prefill_to_first_logit` não prova ganho em decode autoregressivo.
+- A pesquisa foi executada em uma única GPU principal: RTX 4070 Ti SUPER.
+- A família de modelos avaliada foi OPT; os resultados não devem ser
+  generalizados automaticamente para LLaMA, Mistral, Gemma ou outras famílias.
+- O dataset principal de qualidade foi WikiText-2 com 64 janelas de 512 tokens,
+  o que é adequado para triagem controlada, mas estreito para alegações gerais
+  sobre linguagem.
+- A avaliação de geração usou 20 prompts locais e decoding greedy de 64 tokens;
+  isso não substitui benchmarks amplos de tarefas nem avaliação humana.
+- Não foram usadas múltiplas seeds independentes de dataset/prompt.
+
+## Medição
+
+- Os clocks, power state e detalhes finos do driver não foram fixados.
+- O protocolo controla parte do ruído com GPU ociosa, limite de temperatura,
+  warm-up, sincronização CUDA, repetições e bootstrap, mas não elimina toda a
+  variabilidade de ambiente.
+- O campo histórico `model_ttft` mede `prefill_to_first_logit`, não TTFT
+  completo de sistema com tokenização, fila, streaming e overhead de serviço.
+- A confirmação de kernels é mais forte nos caminhos/protocolos em que o
+  profiler registrou explicitamente os operadores esperados, principalmente
+  prefill e operações isoladas.
 
 ## Técnicas
 
-- INT8 fake mede alteração numérica e fidelidade, não aceleração física.
-- Pruning denso percentual não reduz VRAM nem garante latência menor enquanto
-  continuar executando por kernels densos.
-- INT8 weight-only medido neste ambiente deve ser tratado como evidência do
-  backend usado, não como refutação geral da técnica.
-- O 2:4 por magnitude degradou qualidade, mas isso não invalida 2:4 com seleção
-  de pesos mais informada, como Wanda ou SparseGPT.
-- Conclusões causais sobre kernels só são fortes quando o profiler confirma o
-  caminho físico.
+- INT8 fake mede alteração numérica com dequantização; não prova aceleração por
+  aritmética inteira.
+- Pruning denso percentual cria zeros lógicos, mas permanece em armazenamento e
+  kernels densos quando não há representação física sparse.
+- O INT8 weight-only medido representa o backend usado nesta infraestrutura. A
+  forte regressão de latência observada não deve ser generalizada para todos os
+  kernels ou frameworks weight-only.
+- O 2:4 atual usa seleção simples por magnitude. A degradação de qualidade não
+  invalida o formato 2:4 em si; indica que a estratégia de seleção de pesos
+  avaliada foi insuficiente para preservar qualidade.
+- O espaço híbrido foi propositalmente pequeno. Ele testa transferibilidade de
+  uma política seletiva plausível, não uma busca exaustiva por configuração
+  ótima.
 
-## Ambiente
+## Interpretação
 
-- Os manifestos antigos não registram com granularidade completa versões exatas
-  de cuBLAS/cuBLASLt/cuDNN.
-- Clocks, power state e interferência fina do driver WDDM não são totalmente
-  controlados. O protocolo reduz ruído com guardas de GPU ociosa, warm-up,
-  sincronização CUDA e repetições, mas não fixa todos os estados de energia.
-- O decode com KV cache sob `torch.compile` e CUDA Graphs ficou preservado como
-  falha técnica em parte das execuções, não como conclusão de desempenho.
-
-## Escala
-
-- OPT-6.7B deve ser usado para validar finalistas, não para busca combinatória.
-- O ganho em modelos maiores apareceu em alguns caminhos físicos, mas nem sempre
-  preservou qualidade. A hipótese de escala precisa ser formulada como
-  condicional: escala pode favorecer speedup, desde que a técnica mantenha
-  qualidade e use kernel adequado.
+- Resultados locais em microbenchmarks não predizem necessariamente o
+  comportamento end-to-end em modelos completos.
+- Speedup sem qualidade aceitável não deve ser tratado como configuração útil.
+- Qualidade aceitável sem speedup confirmado também não demonstra benefício de
+  latência.
+- A sensibilidade observada em modelos menores não se transferiu diretamente ao
+  OPT-6.7B nas configurações avaliadas.
+- Os resultados negativos são parte da evidência: eles delimitam onde compressão
+  numérica, compressão física e aceleração física deixam de coincidir.

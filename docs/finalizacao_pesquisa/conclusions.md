@@ -1,57 +1,76 @@
-# Conclusões atuais
+# Conclusões científicas finais
 
-## Síntese
+## Conclusão central
 
-A pesquisa já sustenta uma conclusão central: compressão numérica e compressão
-física não viram aceleração automaticamente. O resultado depende de workload,
-shape, kernel, escopo de aplicação e custo em qualidade. A evidência mais forte
-para avanço agora está em seletor fino e híbridos, não em repetir grades enormes.
+Nas evidências coletadas, reduzir bits ou pesos não implicou automaticamente
+acelerar inferência em Transformers. A transformação precisa chegar à
+representação física correta, acionar o kernel adequado e ainda compensar seus
+overheads no workload real. Além disso, speedup sem qualidade aceitável não
+caracteriza uma configuração útil.
 
-A execução complementar de 19/09/2026 reforçou essa leitura. O microbenchmark de
-crossover não encontrou ganho sustentado em INT8 dynamic, weight-only ou 2:4 nas
-operações isoladas. A sensibilidade em OPT-1.3B, porém, mostrou que MLP é bem
-mais tolerante que atenção final, apontando para híbridos que preservem a atenção
-final em BF16.
+## Híbridos
 
-A execução híbrida posterior confirmou essa hipótese apenas no OPT-1.3B. Os
-híbridos recuperaram qualidade e apresentaram medianas de speedup positivas em
-prefill/prompt-forward, mas sem intervalo de confiança inteiramente acima de
-`1,0x`. No OPT-6.7B, nenhum híbrido INT8 dynamic testado preservou qualidade; a
-perplexidade aumentou de `157%` a `207%` nos recortes híbridos.
+Nas configurações avaliadas, a seletividade por componente foi capaz de
+preservar qualidade no OPT-1.3B, mas esse comportamento não se transferiu para
+o OPT-6.7B. Portanto, a sensibilidade observada em modelos menores não se
+mostrou diretamente transferível entre escalas.
 
-## Hipóteses
+Não foi demonstrada uma configuração híbrida que combinasse simultaneamente
+preservação de qualidade e speedup confirmado no maior modelo avaliado.
 
-| Hipótese | Estado | Evidência atual |
-| --- | --- | --- |
-| H1: as implementações manuais representam as mesmas operações conceituais das bibliotecas. | Sustentada | 18/18 comparações passaram contra NumPy, PyTorch SDPA e TensorFlow/Keras. |
-| H2: INT8 fake preserva melhor fidelidade que pruning denso em operações isoladas. | Sustentada | No sintético v3, INT8 fake teve MSE menor que pruning em todos os pares. |
-| H3: pruning denso percentual acelera por si só. | Não sustentada | Pruning denso continua em caminho denso, sem redução consistente de VRAM/latência. |
-| H4: kernels físicos sempre aceleram operações isoladas. | Não sustentada | Em `hardware_nativo_v3`, INT8 dynamic e 2:4 foram confirmados, mas ficaram mais lentos que baselines compilados no recorte. |
-| H5: workload/shape afeta crossover de desempenho. | Parcial | Há indícios por sequência, batch e modelo, mas falta microbenchmark dedicado de crossover. |
-| H6: INT8 em modelos pré-treinados preserva qualidade melhor que pruning agressivo. | Sustentada parcialmente | INT8 fake/weight-only ficaram estáveis; INT8 dynamic varia por modelo/escopo. |
-| H7: pruning 2:4 por magnitude é suficiente para preservar qualidade. | Não sustentada | 2:4 por magnitude degradou qualidade nos OPTs medidos. |
-| H8: modelos maiores tendem a expor mais oportunidade de speedup físico. | Parcial | OPT-6.7B mostrou speedup em alguns caminhos, mas o melhor ganho em blocos INT8 dynamic não preservou qualidade. |
-| H9: armazenamento menor implica VRAM menor. | Parcial | Weight-only reduz armazenamento; VRAM depende do backend e de buffers intermediários. |
-| H10: armazenamento menor implica latência menor. | Não sustentada | Weight-only ficou lento no backend medido. |
-| H11: estratégias híbridas podem dominar extremos. | Parcial e limitada | No OPT-1.3B, híbridos preservaram qualidade e tiveram medianas de speedup positivas; no OPT-6.7B, todos os híbridos INT8 dynamic testados falharam qualidade. |
+Isso não significa que híbridos não funcionam em geral. Significa que, no
+espaço experimental avaliado, a política derivada dos modelos menores não
+fechou o compromisso qualidade/desempenho em escala maior.
 
-Após a rodada complementar, H11 ficou mais plausível: `attention 16-23` falhou
-no OPT-1.3B, enquanto todos os recortes de MLP passaram no critério oficial.
-Após a rodada híbrida, H11 deixou de ser uma hipótese aberta ampla: ela é
-plausível para OPT-1.3B neste backend, mas não escalou para OPT-6.7B.
+## Weight-only
 
-## Posição científica recomendada
+A investigação principal de weight-only pode ser considerada encerrada neste
+backend:
 
-- Separar sempre três perguntas: erro numérico, compressão física e aceleração
-  física.
-- Chamar INT8 fake e pruning denso de evidência nível A.
-- Chamar INT8 weight-only de evidência nível B.
-- Chamar INT8 dynamic e 2:4 de evidência nível C apenas quando o profiler
-  confirmar o kernel.
-- Tratar o OPT-6.7B como validação seletiva: ele é caro demais para exploração
-  ampla e sensível demais para conclusões apressadas.
-- Não executar performance 6.7B de híbridos INT8 dynamic simples enquanto a
-  qualidade estiver reprovada.
-- Priorizar, se houver continuação, uma investigação de quantização calibrada ou
-  backend alternativo para explicar por que o INT8 dynamic degradou tanto o
-  OPT-6.7B.
+- houve compressão física real;
+- houve forte redução de VRAM/armazenamento;
+- a qualidade foi muito bem preservada;
+- nenhuma aceleração foi demonstrada;
+- houve forte regressão de latência.
+
+Essa conclusão vale para o backend avaliado, não para todos os kernels
+weight-only possíveis.
+
+## 2:4
+
+O caminho 2:4 sparse físico foi confirmado, mas a seleção simples por magnitude
+degradou fortemente a qualidade em modelos OPT. Isso deixa uma lacuna
+específica: ainda não está separado se o problema principal é a sparsity 2:4 ou
+o algoritmo simples de pruning.
+
+Uma avaliação técnica indica que Wanda é a extensão mais simples e coerente se
+for decidido fazer mais um experimento. Wanda é post-training, activation-aware,
+dispensa fine-tuning pesado e pode preservar o mesmo backend sparse caso o
+resultado final seja convertido para 2:4. SparseGPT também é relevante, mas é
+mais custoso e mais complexo de integrar.
+
+Classificação: útil mas opcional. A pesquisa já pode ser encerrada sem Wanda;
+esse experimento acrescentaria evidência específica para H7, não para a tese
+central inteira.
+
+## Resposta sobre encerramento
+
+Os dados atuais já são suficientes para encerrar a IC. A pesquisa responde à
+pergunta principal com evidência rastreável: compressão numérica, compressão
+física e aceleração física não são equivalentes, e o benefício final depende de
+representação, kernel, workload, qualidade e escala.
+
+Um experimento Wanda/SparseGPT 2:4 acrescentaria evidência suficiente para
+justificar o custo? Classificação: opcional. Se houver tempo, Wanda é a melhor
+escolha; se o objetivo for fechar relatório/artigo, não é necessário.
+
+## Problemas que ainda impediriam encerramento
+
+Não há bloqueio científico forte para encerrar. O que ainda precisa de cuidado
+é editorial:
+
+- garantir que smokes não sejam usados como evidência final;
+- manter `TTFT` descrito como `prefill_to_first_logit`;
+- não generalizar weight-only para todos os backends;
+- não escrever que híbridos falharam em geral;
+- não transformar speedup com Delta PPL alto em recomendação prática.
