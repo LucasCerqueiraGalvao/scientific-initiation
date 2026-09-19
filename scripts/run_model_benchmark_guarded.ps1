@@ -34,6 +34,16 @@ function Resolve-RepoPath([string]$Path) {
     return (Join-Path $repoRoot $Path)
 }
 
+function Get-RelativeRepoPath([string]$Path) {
+    $base = (Resolve-Path $repoRoot).Path
+    $target = if (Test-Path $Path) { (Resolve-Path $Path).Path } else { [System.IO.Path]::GetFullPath($Path) }
+    if (-not $base.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $base = $base + [System.IO.Path]::DirectorySeparatorChar
+    }
+    $relative = ([Uri]$base).MakeRelativeUri([Uri]$target).ToString()
+    return [Uri]::UnescapeDataString($relative).Replace("\", "/")
+}
+
 function Get-GpuSnapshot {
     $raw = & nvidia-smi `
         --query-gpu=timestamp,temperature.gpu,utilization.gpu,memory.used,memory.total,power.draw,clocks.current.graphics `
@@ -90,8 +100,8 @@ if (-not [string]::IsNullOrWhiteSpace($existingContainer)) {
     & docker rm -f $ContainerName *> $null
 }
 
-$relativeConfig = [System.IO.Path]::GetRelativePath($repoRoot, $configPath).Replace("\", "/")
-$relativeOutput = [System.IO.Path]::GetRelativePath($repoRoot, $outputPath).Replace("\", "/")
+$relativeConfig = Get-RelativeRepoPath $configPath
+$relativeOutput = Get-RelativeRepoPath $outputPath
 $benchmarkArgs = @(
     "python", "-m", "validacao.benchmark_modelos_opt",
     "--config", $relativeConfig,
@@ -158,7 +168,7 @@ $summary = [ordered]@{
     container = $ContainerName
     config = $relativeConfig
     output_dir = $relativeOutput
-    guard_output_dir = [System.IO.Path]::GetRelativePath($repoRoot, $guardOutputPath).Replace("\", "/")
+    guard_output_dir = Get-RelativeRepoPath $guardOutputPath
     stopped_by_guard = $stoppedByGuard
     gpu_memory_stop_mib = $GpuMemoryStopMiB
     gpu_memory_warn_mib = $GpuMemoryWarnMiB

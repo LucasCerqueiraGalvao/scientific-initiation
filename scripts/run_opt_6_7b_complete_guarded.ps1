@@ -33,7 +33,13 @@ function Get-QualityCount {
 }
 
 function Get-RelativeDockerPath([string]$Path) {
-    return [System.IO.Path]::GetRelativePath($repoRoot, $Path).Replace("\", "/")
+    $base = (Resolve-Path $repoRoot).Path
+    $target = if (Test-Path $Path) { (Resolve-Path $Path).Path } else { [System.IO.Path]::GetFullPath($Path) }
+    if (-not $base.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $base = $base + [System.IO.Path]::DirectorySeparatorChar
+    }
+    $relative = ([Uri]$base).MakeRelativeUri([Uri]$target).ToString()
+    return [Uri]::UnescapeDataString($relative).Replace("\", "/")
 }
 
 function Invoke-FinalizeManifest {
